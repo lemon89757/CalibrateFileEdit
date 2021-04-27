@@ -4,7 +4,7 @@ from anytree import Node
 from intervals import FloatInterval
 
 
-class Segment:
+class Dependency:
     def __init__(self, parameter_id=0, parameter_segment=None, transfer_num=None):
         self._parameter_id = parameter_id
         self._parameter_segment = parameter_segment
@@ -41,43 +41,10 @@ class Segment:
         self._transfer_num = value
 
 
-class Factor:
-    def __init__(self, content):
-        self._content = content
-
-    @property
-    def content(self):
-        return self._content
-
-    @content.setter
-    def content(self, value):
-        if type(value) != list:
-            raise ValueError
-        self._content = value
-
-
-class CalibrateTreeNode(Segment, NodeMixin):
-    def __init__(self, parameter_id=0, parameter_segment=None, parent=None, transfer_num=None, children=None):
-        super(CalibrateTreeNode, self).__init__(parameter_id=parameter_id, parameter_segment=parameter_segment,
-                                                transfer_num=transfer_num)
-        super(Segment, self).__init__()
-        self.parent = parent
-        self._content = None
-        if children:
-            self.children = children
-
-    @property
-    def content(self):
-        return self._content
-
-
-class CalibrateLeavesNode(Factor, NodeMixin):
-    def __init__(self, content=None, parent=None):
-        super(CalibrateLeavesNode, self).__init__(content=content)
-        super(Factor, self).__init__()
-        self.parent = parent
-        self._parameter_id = None
-        self._parameter_segment = None
+class CalibrateParameter:
+    def __init__(self, parameter_id=0, parameter_segments=None):
+        self._parameter_id = parameter_id
+        self._parameter_segments = parameter_segments
 
     @property
     def parameter_id(self):
@@ -90,8 +57,35 @@ class CalibrateLeavesNode(Factor, NodeMixin):
         self._parameter_id = value
 
     @property
-    def parameter_segment(self):
-        return self._parameter_segment
+    def parameter_segments(self):
+        return self._parameter_segments
+
+    @parameter_segments.setter
+    def parameter_segments(self, value):
+        if not all([isinstance(x, list) for x in value]):
+            raise ValueError
+        self._parameter_segments = value
+
+
+class CalibrateDependencyNode(Dependency, NodeMixin):
+    def __init__(self, parameter_id=0, parameter_segment=None, parent=None, transfer_num=None, children=None):
+        super(CalibrateDependencyNode, self).__init__(parameter_id=parameter_id, parameter_segment=parameter_segment,
+                                                      transfer_num=transfer_num)
+        super(Dependency, self).__init__()
+        self.parent = parent
+        if children:
+            self.children = children
+        self.parameter_segments = None
+
+
+class CalibrateParameterNode(CalibrateParameter, NodeMixin):
+    def __init__(self, parameter_id=0, parameter_segments=None, parent=None, children=None):
+        super(CalibrateParameterNode, self).__init__(parameter_id=parameter_id, parameter_segments=parameter_segments)
+        super(CalibrateParameter, self).__init__()
+        self.parent = parent
+        if children:
+            self.children = children
+        self.parameter_segment = None
 
 
 class CalibrateMsg:
@@ -107,8 +101,8 @@ class CalibrateMsg:
 
     @calibrate_tree.setter
     def calibrate_tree(self, value):
-        if not all([isinstance(x, CalibrateTreeNode) or isinstance(x, CalibrateLeavesNode)
-                    or isinstance(x, Node)for x in value]):
+        if not all([isinstance(x, CalibrateDependencyNode) or isinstance(x, CalibrateParameterNode)
+                    or isinstance(x, Node) for x in value]):
             raise ValueError
         self._calibrate_tree = value
 
@@ -144,17 +138,17 @@ class CalibrateMsg:
 
     def add_dependency(self, value):
         if isinstance(value, list):
-            if not all([isinstance(x, CalibrateTreeNode) for x in value]):
+            if not all([isinstance(x, CalibrateDependencyNode) for x in value]):
                 raise ValueError
             else:
                 self._calibrate_tree += value
-        elif isinstance(value, CalibrateTreeNode):
+        elif isinstance(value, CalibrateDependencyNode):
             self._calibrate_tree.append(value)
         else:
             raise ValueError
 
     def delete_dependency(self, value):
-        if type(value) != CalibrateTreeNode:
+        if type(value) != CalibrateDependencyNode:
             raise ValueError
         for node in self._calibrate_tree:
             if value.parameter_id == node.parameter_id and value.parent == node.parent and value.parameter_segment == node.parameter_segment:
