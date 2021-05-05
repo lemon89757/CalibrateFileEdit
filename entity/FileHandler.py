@@ -3,7 +3,6 @@ import json
 import os
 import entity.CalibrateFile
 from intervals import FloatInterval
-from anytree import Node
 
 
 class FileHandler:
@@ -17,32 +16,238 @@ class FileHandler:
         self._dependency_leaves = []
         self._parameter_nodes = []
 
+        self._former_nodes_num = 0
+        self._dependency_entry_list = []
+
     def save(self):
         pass
 
+    def calibrate_msg_to_file(self, all_channel_msg):
+        calibrate_file = dict()
+        calibrate_file["channel_number"] = self.get_channel_number(all_channel_msg)
+        calibrate_file["rev_depends"] = self.get_rev_depends(all_channel_msg)
+        root_nodes = []
+        for channel in all_channel_msg:
+            for calibrate_msg in channel.values():
+                root_nodes.append(calibrate_msg.calibrate_tree)
+        calibrate_file["depends"] = self.depends_to_file(root_nodes)
+        calibrate_file["channels"] = self.channels_to_file(all_channel_msg)
+        return calibrate_file
+
+    # 获取通道数量
     @staticmethod
-    def get_channel_number(channels):
-        channel_number = len(channels)
+    def get_channel_number(all_channel_msg):
+        channel_number = len(all_channel_msg)
         return channel_number
 
-    def calibrate_msg_to_file(self, calibrate_msg):  # TODO
-        pass
-        # if not isinstance(calibrate_msg, entity.CalibrateFile.CalibrateMsg):
-        #     raise ValueError
-        # depends = calibrate_msg.dependency_list
-        # model = calibrate_msg.calibrate_model
-        # calibrate_parameter_id = calibrate_msg.parameter_id
-        # entry = 0
-        # msg = [calibrate_parameter_id, entry, depends, model, [], [], []]
-        # for node in calibrate_msg.calibrate_tree:
-        #     if not isinstance(node, entity.CalibrateFile.CalibrateLeavesNode):
-        #         pass
-        #     else:
-        #         count = 0
-        #         factors = node.content
-        #         msg[6].append(factors)
+    # 生成反向依赖
+    @staticmethod
+    def correct_rev_depends(rev_depends):
+        for rev_depend in rev_depends:
+            rev_depend_list = rev_depend[1]
+            expect_parameter_id = rev_depend[0]
+            dependency_parameter_id = rev_depend[1][0]
+            if expect_parameter_id != dependency_parameter_id:
+                rev_depend_list.remove(expect_parameter_id)
+                rev_depend_list.insert(0, expect_parameter_id)
+                rev_depend[1] = rev_depend_list
+            else:
+                pass
 
-    # 读取文件操作部分
+    def get_rev_depends(self, channels):  # TODO 反向依赖的生成
+        rev_depends = []
+        for channel in channels:
+            for calibrate_msg in channel.values():
+                root_node = calibrate_msg.calibrate_tree
+                parameter_dependency_list = self.get_dependency_list(root_node)
+                parameter_dependency_list.insert(0, calibrate_msg.parameter_id)
+                for dependency_id in parameter_dependency_list:
+                    if len(rev_depends) == 0:
+                        rev_depend = [dependency_id, [dependency_id, calibrate_msg.parameter_id]]
+                        rev_depend[1] = list(set(rev_depend[1]))
+                        rev_depends.append(rev_depend)
+                    else:
+                        count = 0
+                        for i in rev_depends:
+                            parameter_id = i[0]
+                            # rev_depend_list = i[1]
+                            if dependency_id == parameter_id:
+                                i[1].append(calibrate_msg.parameter_id)
+                                i[1] = list(set(i[1]))
+                            else:
+                                count += 1
+                        if count == len(rev_depends):
+                            rev_depend = [dependency_id, [dependency_id, calibrate_msg.parameter_id]]
+                            rev_depend[1] = list(set(rev_depend[1]))
+                            rev_depends.append(rev_depend)
+        self.correct_rev_depends(rev_depends)
+        return rev_depends
+
+    # 通道文件生成(先生成依赖文件再执行此步骤)
+    # 依赖入口列表的生成是在depends_to_file中
+    def channels_to_file(self, all_channel_msg):
+        channels = [[]]                            # 考虑了0通道
+        for channel in all_channel_msg:
+            channel_file = self.channel_to_file(channel)
+            channels.append(channel_file)
+        return channels
+
+    def channel_to_file(self, channel):
+        channel_to_file = []
+        root_node_index = 0
+        for calibrate_msg in channel.values():
+            dependency_entry = self.get_dependency_entry(root_node_index)
+            dependency_list = self.get_dependency_list(calibrate_msg.calibrate_tree)
+            calibrate_model = calibrate_msg.calibrate_model
+            join_parameters_list = calibrate_msg.join_parameters_list
+            parameter_msg = self.get_hardware_list_and_calibrate_factors_list(calibrate_msg.calibrate_tree)
+            hardware_segments_list = parameter_msg[0]
+            calibrate_factors_list = parameter_msg[1]
+            calibrate_msg_file = [calibrate_msg.parameter_id, dependency_entry, dependency_list, calibrate_model,
+                                  join_parameters_list, hardware_segments_list, calibrate_factors_list]
+            channel_to_file.append(calibrate_msg_file)
+            root_node_index += 1
+        return channel_to_file
+
+    @staticmethod
+    def get_hardware_list_and_calibrate_factors_list(root_node):
+        hardware_list = []
+        factor_list = []
+        parameter_nodes = root_node.leaves
+        transfer_num = 0
+        for node in parameter_nodes:
+            hardware = []
+            for segment in node.parameter_segments:
+                interval = segment[0]
+                factors = segment[1]
+                left_num = interval.lower
+                right_num = interval.upper
+                file_interval = [left_num, right_num]
+                file_segment = [file_interval, transfer_num]
+                hardware.append(file_segment)
+                transfer_num += 1
+                factor_list.append(factors)
+            hardware_list.append(hardware)
+        return hardware_list, factor_list
+
+    def get_dependency_entry(self, root_node_index):
+        dependency_entry = self._dependency_entry_list[root_node_index]
+        return dependency_entry
+
+    @staticmethod
+    def get_dependency_list(root_node):
+        dependency_list = []
+        leaf_nodes = root_node.leaves
+        one_leaf_node = leaf_nodes[0]
+        one_branch = one_leaf_node.path
+        one_dependency_branch = one_branch[1:-1]
+        for dependency in one_dependency_branch:
+            dependency_list.append(dependency.parameter_id)
+        return dependency_list
+
+    # 依赖文件生成
+    def depends_to_file(self, root_nodes):  # TODO 公共树文件怎么生成
+        depends = []
+        for node in root_nodes:
+            one_root_depends = self.root_depends_to_json_file(node)
+            self.update_transfer_num(one_root_depends, depends)
+            entry = len(depends)
+            self._dependency_entry_list.append(entry)
+            depends += one_root_depends
+        return depends
+
+    @staticmethod
+    def get_leaf_nodes_num(root_node):
+        leaf_nodes = root_node.leaves
+        leaf_nodes_num = len(leaf_nodes)
+        return leaf_nodes_num
+
+    def root_depends_to_json_file(self, root_node):
+        self._former_nodes_num = 0
+        leaf_nodes_num = self.get_leaf_nodes_num(root_node)
+        root_depends = []
+        parent_node = root_node
+        # self.update_children_depends_transfer_num(parent_node)
+        # children_nodes = parent_node.children
+        # children_depend = self.children_depend_to_file(children_nodes)
+        # depends.append(children_depend)
+        parent_nodes = [parent_node]
+        next_parent_nodes = []
+        leaf_nodes_count = 0
+        while True:
+            for node in parent_nodes:
+                try:
+                    self.update_children_depends_transfer_num(node)
+                    children_nodes = node.children
+                    next_parent_nodes += children_nodes
+                    children_depend = self.children_depend_to_file(children_nodes)
+                    root_depends.append(children_depend)
+                except ValueError:
+                    leaf_nodes_count = leaf_nodes_count + len(node.children)
+                    children_nodes = node.children
+                    # next_parent_nodes += children_nodes
+                    children_depend = self.children_depend_to_file(children_nodes)
+                    root_depends.append(children_depend)
+            if leaf_nodes_count == leaf_nodes_num:
+                break
+            parent_nodes = next_parent_nodes
+        self.update_leaf_dependency_transfer_num(root_depends)
+        return root_depends
+
+    @staticmethod
+    def update_leaf_dependency_transfer_num(root_depends):
+        leaf_node_count = 0
+        for depend in root_depends:
+            for segment in depend[1]:
+                if segment[1] < 0:
+                    leaf_node_count += 1
+                    segment[1] = -leaf_node_count
+                else:
+                    pass
+
+    @staticmethod
+    def update_transfer_num(root_depends, depends):  # root_depends放入depends前更新
+        for depend in root_depends:
+            segments = depend[1]
+            for segment in segments:
+                transfer_num = segment[1]
+                if transfer_num > 0:
+                    transfer_num = len(depends) + transfer_num
+                    segment[1] = transfer_num
+                elif transfer_num < 0:
+                    pass
+            depend[1] = segments
+
+    @staticmethod
+    def children_depend_to_file(children_nodes):  # 同一父结点的子依赖结点的to_file
+        one_child_node = children_nodes[0]
+        children_depend = [one_child_node.parameter_id, []]
+        segments = children_depend[1]
+        for node in children_nodes:
+            left_num = node.parameter_segment.lower
+            right_num = node.parameter_segment.upper
+            interval = [left_num, right_num]
+            transfer_num = node.transfer_num
+            segment = [interval, transfer_num]
+            segments.append(segment)
+        return children_depend
+
+    def update_children_depends_transfer_num(self, parent_node):
+        children_nodes = list(parent_node.children)
+        leaf_depend_node_count = 0
+        child_node_count = 0
+        for node in children_nodes:
+            child_node_count += 1
+            if node.height == 1:
+                leaf_depend_node_count += 1
+                node.transfer_num = -child_node_count
+            else:
+                node.transfer_num = self._former_nodes_num + child_node_count
+        if leaf_depend_node_count == len(children_nodes):
+            raise ValueError
+        self._former_nodes_num += len(children_nodes)
+
+    # 读取文件部分
     def get_calibrate_file(self, file_path):  # TODO
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
@@ -61,6 +266,7 @@ class FileHandler:
         self._parameter_nodes = []
         msg = entity.CalibrateFile.CalibrateMsg()
         msg.calibrate_tree = self.get_calibrate_tree(channel_index, parameter_id)
+        msg.join_parameters_list = self.get_join_parameters_list()
         msg.parameter_id = parameter_id
         msg.dependency_list = self._current_calibrate_msg[2]
         msg.calibrate_model = self._current_calibrate_msg[3]
@@ -79,24 +285,17 @@ class FileHandler:
         return all_channel_msgs
 
     def get_calibrate_tree(self, channel_index, parameter_id):
-        tree_nodes = []
         root_node = self.get_root_node(channel_index, parameter_id)
-        tree_nodes.append(root_node)
         parent_nodes = root_node.children
-        tree_nodes += parent_nodes
-        dependency_nodes = []
         while True:
             try:
                 next_nodes = self.get_next_dependency_nodes(parent_nodes)
-                dependency_nodes += next_nodes
                 parent_nodes = next_nodes
             except InterruptedError:
                 break
-        tree_nodes += dependency_nodes
         self.get_parameter_nodes()
         self.get_parameter_nodes_factors()
-        tree_nodes += self._parameter_nodes
-        return tree_nodes
+        return root_node
 
     def get_root_node(self, channel_index, parameter_id):
         file_channels = self._calibrate_file[3]
@@ -123,6 +322,10 @@ class FileHandler:
                     dependency_segment_node.transfer_num = transfer_num
                     dependency_segment_node.parent = root_node
         return root_node
+
+    def get_join_parameters_list(self):
+        join_parameters_list = self._current_calibrate_msg[4]
+        return join_parameters_list
 
     def get_next_dependency_nodes(self, parent_nodes):
         file_depends = self._calibrate_file[2]

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from anytree import NodeMixin
-from anytree import Node
 from intervals import FloatInterval
 
 
@@ -92,7 +91,8 @@ class CalibrateMsg:
     def __init__(self, parameter_id=0, dependency_list=None, calibrate_model=0, calibrate_tree=None):
         self._parameter_id = parameter_id
         self._dependency_list = dependency_list
-        self._calibrate_model = calibrate_model
+        self._calibrate_model = calibrate_model   # 没有校正模式的更改
+        self._join_parameters_list = None         # 没有参与校正参数的更改
         self._calibrate_tree = calibrate_tree
 
     @property
@@ -101,8 +101,7 @@ class CalibrateMsg:
 
     @calibrate_tree.setter
     def calibrate_tree(self, value):
-        if not all([isinstance(x, CalibrateDependencyNode) or isinstance(x, CalibrateParameterNode)
-                    or isinstance(x, Node) for x in value]):
+        if not isinstance(value, CalibrateParameterNode):
             raise ValueError
         self._calibrate_tree = value
 
@@ -135,6 +134,16 @@ class CalibrateMsg:
         if type(value) != int:
             raise ValueError
         self._calibrate_model = value
+
+    @property
+    def join_parameters_list(self):
+        return self._join_parameters_list
+
+    @join_parameters_list.setter
+    def join_parameters_list(self, value):
+        if type(value) != list:
+            raise ValueError
+        self._join_parameters_list = value
 
     def add_dependency(self, value):
         if isinstance(value, list):
