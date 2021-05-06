@@ -22,7 +22,7 @@ class FileHandler:
     def save(self):
         pass
 
-    def calibrate_msg_to_file(self, all_channel_msg):
+    def calibrate_msg_to_file_form(self, all_channel_msg):
         calibrate_file = dict()
         calibrate_file["channel_number"] = self.get_channel_number(all_channel_msg)
         calibrate_file["rev_depends"] = self.get_rev_depends(all_channel_msg)
@@ -30,8 +30,8 @@ class FileHandler:
         for channel in all_channel_msg:
             for calibrate_msg in channel.values():
                 root_nodes.append(calibrate_msg.calibrate_tree)
-        calibrate_file["depends"] = self.depends_to_file(root_nodes)
-        calibrate_file["channels"] = self.channels_to_file(all_channel_msg)
+        calibrate_file["depends"] = self.depends_to_file_form(root_nodes)   # TODO 命名,依赖入口的生成考虑放在这里
+        calibrate_file["channels"] = self.channels_to_file_form(all_channel_msg)
         return calibrate_file
 
     # 获取通道数量
@@ -42,7 +42,7 @@ class FileHandler:
 
     # 生成反向依赖
     @staticmethod
-    def correct_rev_depends(rev_depends):
+    def correct_rev_depends(rev_depends):  # 保证生成的反向依赖列表第一个元素为参数本身id
         for rev_depend in rev_depends:
             rev_depend_list = rev_depend[1]
             expect_parameter_id = rev_depend[0]
@@ -51,8 +51,6 @@ class FileHandler:
                 rev_depend_list.remove(expect_parameter_id)
                 rev_depend_list.insert(0, expect_parameter_id)
                 rev_depend[1] = rev_depend_list
-            else:
-                pass
 
     def get_rev_depends(self, channels):  # TODO 反向依赖的生成
         rev_depends = []
@@ -85,14 +83,16 @@ class FileHandler:
 
     # 通道文件生成(先生成依赖文件再执行此步骤)
     # 依赖入口列表的生成是在depends_to_file中
-    def channels_to_file(self, all_channel_msg):
-        channels = [[]]                            # 考虑了0通道
+    def channels_to_file_form(self, all_channel_msg):
+        channels = []                             # 考虑0通道
+        channel_0 = []
+        channels.append(channel_0)
         for channel in all_channel_msg:
-            channel_file = self.channel_to_file(channel)
+            channel_file = self.channel_to_file_form(channel)
             channels.append(channel_file)
         return channels
 
-    def channel_to_file(self, channel):
+    def channel_to_file_form(self, channel):
         channel_to_file = []
         root_node_index = 0
         for calibrate_msg in channel.values():
@@ -146,11 +146,11 @@ class FileHandler:
         return dependency_list
 
     # 依赖文件生成
-    def depends_to_file(self, root_nodes):  # TODO 公共树文件怎么生成
+    def depends_to_file_form(self, root_nodes):  # TODO 公共树文件怎么生成
         depends = []
         for node in root_nodes:
-            one_root_depends = self.root_depends_to_json_file(node)
-            self.update_transfer_num(one_root_depends, depends)
+            one_root_depends = self.root_depends_to_file_form(node)
+            self.update_depends_transfer_num(one_root_depends, depends)
             entry = len(depends)
             self._dependency_entry_list.append(entry)
             depends += one_root_depends
@@ -162,14 +162,14 @@ class FileHandler:
         leaf_nodes_num = len(leaf_nodes)
         return leaf_nodes_num
 
-    def root_depends_to_json_file(self, root_node):
+    def root_depends_to_file_form(self, root_node):
         self._former_nodes_num = 0
         leaf_nodes_num = self.get_leaf_nodes_num(root_node)
         root_depends = []
         parent_node = root_node
         # self.update_children_depends_transfer_num(parent_node)
         # children_nodes = parent_node.children
-        # children_depend = self.children_depend_to_file(children_nodes)
+        # children_depend = self.children_depend_to_file_form(children_nodes)
         # depends.append(children_depend)
         parent_nodes = [parent_node]
         next_parent_nodes = []
@@ -180,13 +180,13 @@ class FileHandler:
                     self.update_children_depends_transfer_num(node)
                     children_nodes = node.children
                     next_parent_nodes += children_nodes
-                    children_depend = self.children_depend_to_file(children_nodes)
+                    children_depend = self.children_depend_to_file_form(children_nodes)
                     root_depends.append(children_depend)
                 except ValueError:
                     leaf_nodes_count = leaf_nodes_count + len(node.children)
                     children_nodes = node.children
                     # next_parent_nodes += children_nodes
-                    children_depend = self.children_depend_to_file(children_nodes)
+                    children_depend = self.children_depend_to_file_form(children_nodes)
                     root_depends.append(children_depend)
             if leaf_nodes_count == leaf_nodes_num:
                 break
@@ -202,11 +202,9 @@ class FileHandler:
                 if segment[1] < 0:
                     leaf_node_count += 1
                     segment[1] = -leaf_node_count
-                else:
-                    pass
 
     @staticmethod
-    def update_transfer_num(root_depends, depends):  # root_depends放入depends前更新
+    def update_depends_transfer_num(root_depends, depends):  # root_depends放入depends前更新
         for depend in root_depends:
             segments = depend[1]
             for segment in segments:
@@ -219,7 +217,7 @@ class FileHandler:
             depend[1] = segments
 
     @staticmethod
-    def children_depend_to_file(children_nodes):  # 同一父结点的子依赖结点的to_file
+    def children_depend_to_file_form(children_nodes):  # 同一父结点的子依赖结点的to_file
         one_child_node = children_nodes[0]
         children_depend = [one_child_node.parameter_id, []]
         segments = children_depend[1]
@@ -274,11 +272,13 @@ class FileHandler:
 
     def load_all_calibrate_msg_from_file(self):  # TODO 未包含通道[]
         all_channel_msgs = []
-        channels = list(enumerate(self._calibrate_file[3]))
+        # channels = list(enumerate(self._calibrate_file[3]))
+        # lambda函数、for i, k in enumerate(list)、 list.index(channels.index) enumerate(channels)后的对象不可channels[1:]
+        channels = self._calibrate_file["channels"]
         for channel in channels[1:]:
             channel_msgs = {}
-            channel_index = channel[0]
-            for calibrate_msg in channel[1]:
+            channel_index = channels.index(channel)
+            for calibrate_msg in channel:
                 msg = self.load_calibrate_msg_from_file(channel_index, calibrate_msg[0])
                 channel_msgs[calibrate_msg[0]] = msg
             all_channel_msgs.append(channel_msgs)
@@ -298,8 +298,8 @@ class FileHandler:
         return root_node
 
     def get_root_node(self, channel_index, parameter_id):
-        file_channels = self._calibrate_file[3]
-        file_depends = self._calibrate_file[2]
+        file_channels = self._calibrate_file['channels']
+        file_depends = self._calibrate_file['depends']
         current_channel = file_channels[channel_index]
         # root_node = Node("{},{}".format(channel_index, parameter_id))
         root_node = entity.CalibrateFile.CalibrateParameterNode()
@@ -328,7 +328,7 @@ class FileHandler:
         return join_parameters_list
 
     def get_next_dependency_nodes(self, parent_nodes):
-        file_depends = self._calibrate_file[2]
+        file_depends = self._calibrate_file['depends']
         next_nodes = []
         count = 0
         for parent_node in parent_nodes:
@@ -382,13 +382,13 @@ class JsonHandler:
     @staticmethod
     def load(file_path):
         with open(file_path) as file:
-            data_json = json.load(file)  # TODO json.decoder.JSONDecodeError
-            channel_number = data_json["channel_number"]
-            rev_depends = data_json["rev_depends"]
-            depends = data_json["depends"]
-            channels = data_json["channels"]
-            calibrate_file = [channel_number, rev_depends, depends, channels]
-        return calibrate_file
+            calibrate_file = json.load(file)  # TODO json.decoder.JSONDecodeError
+            # channel_number = data_json["channel_number"]
+            # rev_depends = data_json["rev_depends"]
+            # depends = data_json["depends"]
+            # channels = data_json["channels"]
+            # calibrate_file = [channel_number, rev_depends, depends, channels]
+        return calibrate_file                # 直接返回一个字典
 
     @staticmethod
     def save():
