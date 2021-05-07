@@ -11,6 +11,9 @@ class FileHandler:
         self._sql_handler = None
         self._bin_handler = None
 
+        self._file_type = 'file_type'
+        self._file_path = 'file_path'
+
         self._calibrate_file = None
         self._current_calibrate_msg = None
         self._dependency_leaves = []
@@ -19,9 +22,20 @@ class FileHandler:
         self._former_nodes_num = 0
         self._dependency_entry_list = []
 
-    def save(self):
-        pass
+    def save(self, calibrate_file):
+        if self._file_type == '.json':
+            self._json_handler.save(self._file_path, calibrate_file)
+        if self._file_type == '.bin':
+            pass
+        if self._file_type == '.sql':
+            pass
 
+    def save_as(self, calibrate_file, file_path):  # TODO
+        suffix = os.path.splitext(file_path)[-1]
+        if suffix == '.json':
+            self._json_handler.save(file_path, calibrate_file)
+
+    # 校正文件生成部分
     def calibrate_msg_to_file_form(self, all_channel_msg):
         calibrate_file = dict()
         calibrate_file["channel_number"] = self.get_channel_number(all_channel_msg)
@@ -250,6 +264,8 @@ class FileHandler:
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
             self._calibrate_file = self._json_handler.load(file_path)
+            self._file_type = '.json'
+            self._file_path = file_path
         # elif suffix == '.bin':
         #     calibrate_file = self._bin_handler(file_path)
         #     return calibrate_file
@@ -376,8 +392,19 @@ class FileHandler:
 
 
 class JsonHandler:
-    def __init__(self):
+    def __init__(self, file_path=None):
         pass
+
+    # @property
+    # def file_path(self):
+    #     return self._file_path
+    #
+    # @file_path.setter
+    # def file_path(self, value):
+    #     suffix = os.path.splitext(value)[-1]
+    #     if suffix != '.json':
+    #         raise ValueError
+    #     self._file_path = value
 
     @staticmethod
     def load(file_path):
@@ -391,5 +418,17 @@ class JsonHandler:
         return calibrate_file                # 直接返回一个字典
 
     @staticmethod
-    def save():
+    def save(file_path, calibrate_file):
+        json_file_data = json.dumps(calibrate_file)
+        with open(file_path, 'w') as file:
+            file.write(json_file_data)
+
+
+class BinHandler:
+    def __init__(self):
+        pass
+
+
+class SQLHandler:
+    def __init__(self):
         pass
