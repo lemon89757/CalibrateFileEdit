@@ -36,18 +36,21 @@ class EditCalibrateParameterDepends:
     def add_depends_segment_nodes_until_leaf(self, start_depend_node):
         self._child_node = None
         remain_branch_length = self.get_remain_branch_length(start_depend_node.parameter_id)
-        parent_node = start_depend_node
-        count = 1
-        for i in range(remain_branch_length):
-            if count < remain_branch_length:
-                self.add_depend_segment_node(parent_node)
-                parent_node = self._child_node
-                count += 1
-            elif count == remain_branch_length:
-                leaf_nodes = self._root_node.leaves
-                parameter_id = leaf_nodes[0].parameter_id
-                handler_parameter_node = EditCalibrateParameter()
-                handler_parameter_node.add_parameter_node(parameter_id, parent_node)
+        for node in self._root_node.descendants:
+            if start_depend_node == node:
+                parent_node = node
+                count = 1
+                for i in range(remain_branch_length):
+                    if count < remain_branch_length:
+                        self.add_depend_segment_node(parent_node)
+                        parent_node = self._child_node
+                        count += 1
+                    elif count == remain_branch_length:
+                        leaf_nodes = self._root_node.leaves
+                        parameter_id = leaf_nodes[0].parameter_id
+                        handler_parameter_node = EditCalibrateParameter()
+                        self._root_node = \
+                            handler_parameter_node.add_parameter_node(parameter_id, self._root_node, parent_node)
 
     def add_depend_segment_node(self, parent_node, segment=FloatInterval.closed(float('-inf'), float('inf'))):
         # 当父节点在分支中的位置不是参数节点的前一级时，需考虑添加多级的分段
