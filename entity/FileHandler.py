@@ -22,6 +22,16 @@ class FileHandler:
         self._former_nodes_num = 0
         self._dependency_entry_list = []
 
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, value):
+        if type(value) != str:
+            raise ValueError
+        self._file_path = value
+
     def save(self, calibrate_file):
         if self._file_type == '.json':
             self._json_handler.save(self._file_path, calibrate_file)
