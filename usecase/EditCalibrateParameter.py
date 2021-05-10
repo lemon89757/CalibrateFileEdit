@@ -32,15 +32,17 @@ class EditCalibrateParameter:
                 parameter_node.parameter_id = parameter_id
                 parameter_node.parameter_segments = []
                 parameter_node.parameter_segments.append([default_segment])
-                parameter_node.parent = parent_node
+                parameter_node.parent = node
+        return root_node
 
     @staticmethod
     def delete_parameter_node(root_node, parameter_node):
         for node in root_node.descendants:
             if parameter_node == node:
-                same_parent_node = parameter_node.siblings
-                parent_node = parameter_node.parent
+                same_parent_node = node.siblings
+                parent_node = node.parent
                 parent_node.children = same_parent_node
+        return root_node
 
     def add_parameter_segment(self, segment):
         calibrate_factors = segment[1]
@@ -119,8 +121,8 @@ class EditCalibrateParameter:
         lower_num = parameter_interval.lower
         calibrate_factors = segment[1]
         x = np.linspace(lower_num, upper_num, 1000)
-        y = calibrate_factors[0]* x**5 + calibrate_factors[1]* x**4 + calibrate_factors[2]* x**3 \
-            + calibrate_factors[3]* x**2 + calibrate_factors[4]*x + calibrate_factors[5]
+        y = calibrate_factors[0] * x**5 + calibrate_factors[1] * x**4 + calibrate_factors[2] * x**3 \
+            + calibrate_factors[3] * x**2 + calibrate_factors[4]*x + calibrate_factors[5]
         plt.figure(num='校正函数图像')
         plt.xlabel("calibrate parameter input")
         plt.ylabel("calibrate parameter output")
