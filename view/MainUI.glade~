@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkBox" id="main_box">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkMenuBar" id="main_ui_menu_bar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkMenuItem">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">_File</property>
+            <property name="use-underline">True</property>
+            <child type="submenu">
+              <object class="GtkMenu">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkImageMenuItem">
+                    <property name="label">gtk-new</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="use-stock">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem">
+                    <property name="label">gtk-open</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="use-stock">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem">
+                    <property name="label">gtk-save</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="use-stock">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem">
+                    <property name="label">gtk-save-as</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="use-underline">True</property>
+                    <property name="use-stock">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="information_classify_label">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="file_information_lable">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-end">100</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="label" translatable="yes">校正文件信息</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="file_edit_label">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-end">100</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="label" translatable="yes">校正文件编辑</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="main_channel_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="channel_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="channel_lable">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">通道</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="channel_combobox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_1_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="calibrate_parameter_choose_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="calibrate_parameter_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">待校正参数</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="calibrate_parameter_choose_combobox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="senior_button">
+            <property name="label" translatable="yes">高级</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="margin-start">50</property>
+            <property name="margin-end">50</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_2_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="calibrate_model_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="medel_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">校正类型</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="model_show_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">0</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="file_merge_button">
+            <property name="label" translatable="yes">文件合并</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="margin-start">50</property>
+            <property name="margin-end">50</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_3_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="dependencied_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="dependencies_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">依赖参数信息</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="dependencies_scrolled_window">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">50</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">5</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_4_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="depend_segment_choose_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="depend_segment_choose_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">依赖分段选择</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="depend_segment_choose_scrolled_window">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="edit_depend_segment_button">
+            <property name="label" translatable="yes">编辑当前依赖分段</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="margin-start">50</property>
+            <property name="margin-end">50</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_5_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="calibrate_parameter_segment_choose_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="calibrate_parameter_segment_choose_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">待校参数分段选择</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="calibrate_parameter_segment_choose_combobox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="calibrate_parameter_segment_edit_button">
+            <property name="label" translatable="yes">编辑当前待校参数分段</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="margin-start">50</property>
+            <property name="margin-end">50</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">7</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="func_6_box">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkBox" id="calibrate_factors_box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="calibrate_factors_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="label" translatable="yes">校正系数</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="calibrate_factors_scrolled_window">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkButton" id="calibrate_factors_edit_button">
+                <property name="label" translatable="yes">当前系数编辑</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="current_factors_curve_button">
+                <property name="label" translatable="yes">当前系数曲线</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="two_curves_button">
+                <property name="label" translatable="yes">编辑前后系数曲线</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">8</property>
+      </packing>
+    </child>
+  </object>
+</interface>
