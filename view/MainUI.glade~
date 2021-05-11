@@ -2,6 +2,61 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image10">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image11">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image3">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image4">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image6">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image7">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image8">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image9">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
   <object class="GtkBox" id="main_box">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -11,55 +66,153 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
-          <object class="GtkMenuItem">
+          <object class="GtkMenuItem" id="file_item">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">_File</property>
+            <property name="label" translatable="yes">文件</property>
+            <child type="submenu">
+              <object class="GtkMenu">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkImageMenuItem" id="new_item">
+                    <property name="label">新建</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image2</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem" id="open_item">
+                    <property name="label">打开</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image3</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem" id="save_item">
+                    <property name="label">保存</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image4</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImageMenuItem" id="save_as_item">
+                    <property name="label">另存为</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image5</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuItem" id="edit_item">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">编辑</property>
             <property name="use-underline">True</property>
             <child type="submenu">
               <object class="GtkMenu">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkImageMenuItem">
-                    <property name="label">gtk-new</property>
+                  <object class="GtkImageMenuItem" id="edit_depend_segment_item">
+                    <property name="label" translatable="yes">编辑当前依赖分段</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="use-underline">True</property>
-                    <property name="use-stock">True</property>
+                    <property name="image">image1</property>
+                    <property name="use-stock">False</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkImageMenuItem">
-                    <property name="label">gtk-open</property>
+                  <object class="GtkImageMenuItem" id="edit_parameter_item">
+                    <property name="label" translatable="yes">编辑当前待校参数分段</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="use-underline">True</property>
-                    <property name="use-stock">True</property>
+                    <property name="image">image6</property>
+                    <property name="use-stock">False</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkImageMenuItem">
-                    <property name="label">gtk-save</property>
+                  <object class="GtkImageMenuItem" id="edit_factors_item">
+                    <property name="label" translatable="yes">编辑当前系数</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="use-underline">True</property>
-                    <property name="use-stock">True</property>
+                    <property name="image">image7</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuItem" id="display_item">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">显示</property>
+            <property name="use-underline">True</property>
+            <child type="submenu">
+              <object class="GtkMenu">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkImageMenuItem" id="display_factors_curve_item">
+                    <property name="label" translatable="yes">显示系数曲线</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image8</property>
+                    <property name="use-stock">False</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkImageMenuItem">
-                    <property name="label">gtk-save-as</property>
+                  <object class="GtkImageMenuItem" id="display_two_curves_item">
+                    <property name="label" translatable="yes">显示编辑前后系数曲线</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="use-underline">True</property>
-                    <property name="use-stock">True</property>
+                    <property name="image">image9</property>
+                    <property name="use-stock">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuItem" id="other_item">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">其他</property>
+            <property name="use-underline">True</property>
+            <child type="submenu">
+              <object class="GtkMenu">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkImageMenuItem" id="merge_file_item">
+                    <property name="label" translatable="yes">文件合并</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="image">image10</property>
+                    <property name="use-stock">False</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSeparatorMenuItem">
+                  <object class="GtkImageMenuItem" id="senior_item">
+                    <property name="label" translatable="yes">高级</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="image">image11</property>
+                    <property name="use-stock">False</property>
                   </object>
                 </child>
               </object>
@@ -82,30 +235,15 @@
           <object class="GtkLabel" id="file_information_lable">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-end">100</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">5</property>
-            <property name="label" translatable="yes">校正文件信息</property>
+            <property name="label" translatable="yes">校正文件信息：</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="pack-type">end</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="file_edit_label">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-end">100</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-            <property name="label" translatable="yes">校正文件编辑</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
@@ -159,17 +297,6 @@
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -219,23 +346,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="senior_button">
-            <property name="label" translatable="yes">高级</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">50</property>
-            <property name="margin-end">50</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
@@ -288,23 +398,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="file_merge_button">
-            <property name="label" translatable="yes">文件合并</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">50</property>
-            <property name="margin-end">50</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
@@ -362,18 +455,6 @@
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-start">50</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -429,23 +510,6 @@
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkButton" id="edit_depend_segment_button">
-            <property name="label" translatable="yes">编辑当前依赖分段</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">50</property>
-            <property name="margin-end">50</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -495,23 +559,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="calibrate_parameter_segment_edit_button">
-            <property name="label" translatable="yes">编辑当前待校参数分段</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">50</property>
-            <property name="margin-end">50</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
@@ -567,69 +614,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
-            <child>
-              <object class="GtkButton" id="calibrate_factors_edit_button">
-                <property name="label" translatable="yes">当前系数编辑</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="current_factors_curve_button">
-                <property name="label" translatable="yes">当前系数曲线</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="two_curves_button">
-                <property name="label" translatable="yes">编辑前后系数曲线</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>
