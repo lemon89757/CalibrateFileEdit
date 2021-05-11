@@ -3,14 +3,14 @@ import json
 from anytree import RenderTree
 from anytree.render import AsciiStyle
 
-file_path = r'C:\Users\helloTt\Desktop\tt\2021上半学期（电科）\learning_project\material\Json\2020-8-4-10-52-42ES1691FULL.json'
-file_path_2 = r'..\experiment\file_output_check.json'
+file_path = r'C:\Users\helloTt\Desktop\tt\2021上半学期（电科）\learning_project\material\Json\Mock-2021-01-21-11-29-04.json'
+file_path_2 = r'..\experiment\file_output_check_mock.json'
 handler = FileHandler()
 
 handler.get_calibrate_file(file_path_2)
 
 # 测试单个信息获取
-# msg_1 = handler.load_calibrate_msg_from_file(1, 1250102)
+msg_1 = handler.load_calibrate_msg_from_file(4, 1250102)
 # msg_2 = handler.load_calibrate_msg_from_file(1, 1204100)
 # msg_3 = handler.load_calibrate_msg_from_file(1, 1204110)
 # msg_4 = handler.load_calibrate_msg_from_file(1, 1204101)
@@ -21,9 +21,9 @@ handler.get_calibrate_file(file_path_2)
 # msg_9 = handler.load_calibrate_msg_from_file(1, 1204113)
 # msg_10 = handler.load_calibrate_msg_from_file(1, 1204104)
 # msg_11 = handler.load_calibrate_msg_from_file(1, 1204114)
-msg_12 = handler.load_calibrate_msg_from_file(1, 1204002)
+# msg_12 = handler.load_calibrate_msg_from_file(1, 1204002)
 #
-root_node = msg_12.calibrate_tree
+root_node = msg_1.calibrate_tree
 # root_nodes = [msg_1.calibrate_tree, msg_2.calibrate_tree, msg_3.calibrate_tree, msg_4.calibrate_tree,
 #               msg_5.calibrate_tree, msg_6.calibrate_tree, msg_7.calibrate_tree, msg_8.calibrate_tree,
 #               msg_9.calibrate_tree, msg_10.calibrate_tree, msg_11.calibrate_tree, msg_12.calibrate_tree]
@@ -119,8 +119,8 @@ for pre, _, node in RenderTree(root_node):
 
 # 测试获取全部校正信息
 # channels = handler.load_all_calibrate_msg_from_file()
-# channel = channels[0]
-# calibrate_msg = channel[1204100]
+# channel = channels[3]
+# calibrate_msg = channel[1250102]
 # calibrate_tree = calibrate_msg.calibrate_tree
 # root_node_1 = calibrate_tree
 # for pre, _, node in RenderTree(root_node_1):
@@ -165,7 +165,8 @@ for pre, _, node in RenderTree(root_node):
 # calibrate_file = handler.calibrate_msg_to_file_form(channels)
 # json_file_path = "file_output_check.json"
 # data = dict()
-# # data["channels"] = rev_depends
+# data["channels"] = rev_depends
 # data_json = json.dumps(calibrate_file)
-# with open(json_file_path, "w") as file:
+# with open(file_path_2, "w") as file:
 #     file.write(data_json)
+# handler.save_as(calibrate_file, json_file_path)
