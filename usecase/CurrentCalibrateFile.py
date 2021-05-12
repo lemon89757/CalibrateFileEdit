@@ -36,11 +36,34 @@ class CalibrateFileEdit:
             raise ValueError
         self._another_file_path = value
 
-    def get_current_file_channels(self):
+    @property
+    def channels(self):
+        return self._channels
+
+    @channels.setter
+    def channels(self, value):
+        self._channels = value
+
+    # 获取文件信息
+    def get_file_channels(self):
         file_handler = FileHandler()
         file_handler.get_calibrate_file(self._file_path)
-        self._channels = file_handler.load_all_calibrate_msg_from_file()
+        channels = file_handler.load_all_calibrate_msg_from_file()
+        return channels
 
+    def get_calibrate_model(self, parameter_id, channel_index):
+        channel = self._channels[channel_index]
+        calibrate_msg = channel[parameter_id]
+        model = calibrate_msg.calibrate_model
+        return model
+
+    def get_dependencies_list(self, parameter_id, channel_index):
+        channel = self._channels[channel_index]
+        calibrate_msg = channel[parameter_id]
+        dependencies_list = calibrate_msg.dependency_list
+        return dependencies_list
+
+    # 文件合并
     def merge_calibrate_file_by_method_two(self, merge_channel_index, another_channel_index, another_parameter_id):
         merge_channel = self._channels[merge_channel_index]
         self._merge.another_file = self._another_file_path
@@ -53,6 +76,7 @@ class CalibrateFileEdit:
         new_channel = self._merge.merge_by_method_three(merge_channel, another_channel_index)
         self._channels[merge_channel_index] = new_channel
 
+    # 参数信息编辑
     def modify_parameter_factors(self, parameter_node, segment, value):
         self._calibrate_parameter_edit.parameter_node = parameter_node
         self._calibrate_parameter_edit.modify_parameter_factors(value, segment)
@@ -83,17 +107,20 @@ class CalibrateFileEdit:
         root_node = self._calibrate_parameter_edit.delete_parameter_node(root_node, parameter_node)
         return root_node
 
+    # 参数分段转化成dict形式便于查找
     def get_segments_dict(self, parameter_node):
         self._calibrate_parameter_edit.parameter_node = parameter_node
         segments_dict = self._calibrate_parameter_edit.get_segments_dict()
         return segments_dict
 
+    # 显示系数曲线
     def show_current_factors_curve(self, segment):
         self._calibrate_parameter_edit.show_current_factors_curve(segment)
 
     def show_two_factors_curve(self, modified_segment):
         self._calibrate_parameter_edit.show_two_factors_curve(modified_segment)
 
+    # 依赖编辑
     def add_depend(self, root_node, depend_id, parent_id):
         self._depend_edit.root_node = root_node
         self._depend_edit.add_depend(parent_id, depend_id)
@@ -119,6 +146,7 @@ class CalibrateFileEdit:
         self._depend_edit.modify_depend_segment(lower_num, upper_num, depend_node)
         return self._depend_edit.root_node
 
+    # 保存
     def save(self):
         file_handler = FileHandler()
         file_handler.file_path = self._file_path
