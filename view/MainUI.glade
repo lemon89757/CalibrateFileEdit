@@ -385,7 +385,7 @@
                 <property name="can-focus">False</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
-                <property name="label" translatable="yes">0</property>
+                <property name="label" translatable="yes">校正类型2020</property>
               </object>
               <packing>
                 <property name="expand">False</property>

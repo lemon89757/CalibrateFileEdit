@@ -167,7 +167,7 @@
                 <property name="can-focus">False</property>
                 <child>
                   <object class="GtkImageMenuItem" id="display_factors_curve_item">
-                    <property name="label" translatable="yes">显示系数曲线</property>
+                    <property name="label" translatable="yes">显示当前系数曲线</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="image">image8</property>
@@ -385,7 +385,7 @@
                 <property name="can-focus">False</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
-                <property name="label" translatable="yes">0</property>
+                <property name="label" translatable="yes">校正类型2020</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -434,6 +434,7 @@
             <child>
               <object class="GtkScrolledWindow" id="dependencies_scrolled_window">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
@@ -489,6 +490,7 @@
             <child>
               <object class="GtkScrolledWindow" id="depend_segment_choose_scrolled_window">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
@@ -595,6 +597,7 @@
             <child>
               <object class="GtkScrolledWindow" id="calibrate_factors_scrolled_window">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
