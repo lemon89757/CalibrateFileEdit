@@ -37,6 +37,7 @@ class MainUI(Gtk.Window):
         self._choose_channel_index = None
         self._choose_parameter = None
         self._depends_id = None
+        self._parameter_segments = None
 
     @property
     def presenter(self):
@@ -171,15 +172,19 @@ class MainUI(Gtk.Window):
             self.init_calibrate_model()
             self.update_dependencies_list()
             self.init_dependencies_segment_choose()
+            self.init_calibrate_parameter_interval_combobox()
+            self.init_factors_scrolled_win()
         else:
-            parameter_combobox.connect('changed', self.update_three_about)
+            parameter_combobox.connect('changed', self.update_next_about)
 
     def init_calibrate_parameter_choose_combobox(self):
         parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
         empty_type_model = Gtk.ListStore(int, str)
         parameter_combobox.set_model(empty_type_model)
 
-    def update_three_about(self, widget):
+    def update_next_about(self, widget):
+        self.init_factors_scrolled_win()
+        self.init_calibrate_parameter_interval_combobox()
         self.update_calibrate_model()
         self.update_dependencies_list()
         self.update_dependencies_segment_choose()
@@ -212,6 +217,7 @@ class MainUI(Gtk.Window):
         dependencies_scrolled_win.set_sensitive(False)
         dependencies_text_buffer = Gtk.TextBuffer()
         dependencies_text_view = Gtk.TextView()
+        dependencies_text_view.set_sensitive(False)
         if self._choose_channel_index != 2020:
             parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
             parameter_activated = parameter_combobox.get_active()
@@ -258,6 +264,7 @@ class MainUI(Gtk.Window):
 
         if calibrate_parameter == 2020:
             self.init_dependencies_segment_choose()
+            self.init_calibrate_parameter_interval_combobox()
         else:
             dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
             child = dependencies_choose_scroll_win.get_child()
@@ -320,10 +327,15 @@ class MainUI(Gtk.Window):
         first_combobox.pack_start(first_cell, True)
         first_combobox.add_attribute(first_cell, 'text', 1)
         # first_combobox.set_active(0)
-
-        first_combobox.connect('changed', self.update_next_depend_segment)
+        if len(self._depends_id) != 1:
+            first_combobox.connect('changed', self.update_next_depend_segment)
+        else:
+            first_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
 
     def update_next_depend_segment(self, widget):
+        self.init_calibrate_parameter_interval_combobox()
+        self.init_factors_scrolled_win()
+
         dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
         viewport = dependencies_choose_scroll_win.get_child()
         main_box = viewport.get_child()
@@ -365,6 +377,8 @@ class MainUI(Gtk.Window):
             # segment = FloatInterval.from_string(segment_str)
             # self._depend_path.append([self._depends_id[self._depend_choosed_num - 1], segment])
             next_box = boxes[focus_parameter_id_index+1]
+            next_label = next_box.get_children()[0]
+            next_depend_id = int(next_label.get_text())
             next_combobox = next_box.get_children()[1]
             next_combobox.clear()
             # current_depend_id = self._depends_id[self._depend_choosed_num]
@@ -375,8 +389,10 @@ class MainUI(Gtk.Window):
             next_combobox.pack_start(current_cell, True)
             next_combobox.add_attribute(current_cell, 'text', 1)
             # next_combobox.set_active(0)
-
-            next_combobox.connect('changed', self.update_next_depend_segment)
+            if next_depend_id == self._depends_id[-1]:
+                next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
+            else:
+                next_combobox.connect('changed', self.update_next_depend_segment)
 
     def update_depend_path(self, parameter_id):
         dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
@@ -401,14 +417,108 @@ class MainUI(Gtk.Window):
                 break
         return depend_path
 
+    def init_calibrate_parameter_interval_combobox(self):
+        interval_combobox = self.builder.get_object('calibrate_parameter_segment_choose_combobox')
+        empty_model = Gtk.ListStore()
+        interval_combobox.clear()
+        interval_combobox.set_model(empty_model)
+
+    def update_calibrate_parameter_interval_combobox(self, widget):
+        interval_combobox = self.builder.get_object('calibrate_parameter_segment_choose_combobox')
+        interval_combobox.clear()
+
+        dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
+        viewport = dependencies_choose_scroll_win.get_child()
+        main_box = viewport.get_child()
+        boxes = main_box.get_children()
+
+        last_box = boxes[-1]
+        last_combobox = last_box.get_children()[1]
+        segment_activated = last_combobox.get_active()
+        model = last_combobox.get_model()
+        _iter = model.get_iter_from_string('{}'.format(segment_activated))
+        segment_str = model.get_value(_iter, 1)
+        last_segment = FloatInterval.from_string(segment_str)
+        default_segment = FloatInterval.closed(2020, 2020)
+
+        if last_segment == default_segment:
+            self.init_calibrate_parameter_interval_combobox()
+        else:
+            parameter_path = [[self._choose_parameter, None]]
+            for box in boxes:
+                children = box.get_children()
+                label = children[0]
+                depend_id = int(label.get_text())
+                combobox = children[1]
+                segment_activated = combobox.get_active()
+                model = combobox.get_model()
+                _iter = model.get_iter_from_string('{}'.format(segment_activated))
+                segment_str = model.get_value(_iter, 1)
+                focus_segment = FloatInterval.from_string(segment_str)
+                parameter_path.append([depend_id, focus_segment])
+            parameter_segments = self._presenter.get_calibrate_parameter_segments(self._choose_channel_index,
+                                                                                  self._choose_parameter, parameter_path)
+            self._parameter_segments = parameter_segments
+
+            interval_model = Gtk.ListStore(int, str)
+            interval_model.append([2020, '[2020, 2020]'])
+            for interval in parameter_segments.keys():
+                lower_num = interval.lower
+                upper_num = interval.upper
+                interval_model.append([2020, '[{}, {}]'.format(lower_num, upper_num)])
+            interval_combobox.set_model(interval_model)
+            cell = Gtk.CellRendererText()
+            interval_combobox.pack_start(cell, True)
+            interval_combobox.add_attribute(cell, 'text', 1)
+            interval_combobox.connect('changed', self.update_factors_scrolled_win)
+
+    def init_factors_scrolled_win(self):
+        factors_scrolled_win = self.builder.get_object('calibrate_factors_scrolled_window')
+        factors_scrolled_win.set_sensitive(False)
+        factors_text_view = Gtk.TextView()
+        child = factors_scrolled_win.get_child()
+        if child:
+            factors_scrolled_win.remove(child)
+        factors_scrolled_win.add(factors_text_view)
+
+    def update_factors_scrolled_win(self, widget):
+        factors_scrolled_win = self.builder.get_object('calibrate_factors_scrolled_window')
+        factors_scrolled_win.set_sensitive(True)
+        factors_text_buffer = Gtk.TextBuffer()
+        factors_text_view = Gtk.TextView()
+        factors_text_view.set_sensitive(False)   # TODO 滚动窗口的显示有较长延迟
+
+        interval_combobox = self.builder.get_object('calibrate_parameter_segment_choose_combobox')
+        interval_activated = interval_combobox.get_active()
+        model = interval_combobox.get_model()
+        _iter = model.get_iter_from_string('{}'.format(interval_activated))
+        interval_str = model.get_value(_iter, 1)
+        interval = FloatInterval.from_string(interval_str)
+
+        default_interval = FloatInterval.closed(2020, 2020)
+        if default_interval == interval:
+            self.init_factors_scrolled_win()
+        else:
+            factors = self._parameter_segments[interval]
+            factors_text_buffer.set_text('{}'.format(factors))
+            factors_text_view.set_buffer(factors_text_buffer)
+
+            factors_scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+            child = factors_scrolled_win.get_child()
+            if child:
+                factors_scrolled_win.remove(child)
+            factors_scrolled_win.add(factors_text_view)
+
+        factors_scrolled_win.show_all()
+
     def init_all(self):     # TODO 没写完
         self.update_channels_combobox()
 
     def open_file(self, widget):  # TODO
-        dialog = Gtk.FileChooserDialog("文件选择", self.main_window,
-                                       Gtk.FileChooserAction.OPEN,
-                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(title="文件选择", parent=self.main_window,
+                                       action=Gtk.FileChooserAction.OPEN,
+                                       buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
