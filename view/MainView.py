@@ -3,7 +3,6 @@ import os
 import copy
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from intervals import FloatInterval
 from presenter.MainUIPresenter import MainUIPresenter
 
 
@@ -16,7 +15,7 @@ class MainUI(Gtk.Window):
         self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'MainUI.glade'))
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
-        self.main_window.set_default_size(600, 450)
+        self.main_window.set_default_size(600, 400)
         self.main_window_state = False  # TODO
 
         self.ui = self.builder.get_object('main_box')
@@ -36,7 +35,6 @@ class MainUI(Gtk.Window):
 
         self._choose_channel_index = None
         self._choose_parameter = None
-        self._depends_id = None
 
     @property
     def presenter(self):
@@ -126,11 +124,11 @@ class MainUI(Gtk.Window):
         merge_file_menu_item = self.builder.get_object('merge_file_item')
         merge_file_menu_item.connect('activate', self.show_merge_file_ui)
 
-    def update_channels_combobox(self):
+    def init_channels_combobox(self):
         channels_combobox = self.builder.get_object('channel_combobox')
         channels_combobox.clear()
         channels_model = Gtk.ListStore(int, str)
-        channels_model.append([2020, '2020'])    # 默认通道
+        channels_model.append([2020, '通道2020'])    # 默认通道
         channels = copy.deepcopy(self._presenter.get_channels())
         for channel in channels:
             channels_model.append([channels.index(channel), '通道{}'.format(channels.index(channel)+1)])
@@ -139,15 +137,16 @@ class MainUI(Gtk.Window):
         channels_combobox.pack_start(channels_cell, True)
         channels_combobox.add_attribute(channels_cell, 'text', 1)
         channels_combobox.set_active(0)
-        channels_combobox.connect('changed', self.update_calibrate_parameter_choose_combobox)
+        channels_combobox.connect('changed', self.init_calibrate_parameter_choose_combobox)
 
-    def update_calibrate_parameter_choose_combobox(self, widget):
+    def init_calibrate_parameter_choose_combobox(self, widget):
         channels_combobox = self.builder.get_object('channel_combobox')
         channel_activated = channels_combobox.get_active()
         model = channels_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(channel_activated))
         channel_index = model.get_value(_iter, 0)
         self._choose_channel_index = channel_index
+        empty_model = False
 
         parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
         if channel_index != 2020:
@@ -163,28 +162,21 @@ class MainUI(Gtk.Window):
             parameter_combobox.pack_start(parameter_cell, True)
             parameter_combobox.add_attribute(parameter_cell, 'text', 1)
             parameter_combobox.set_active(0)
-            empty_model = False
         else:
-            self.init_calibrate_parameter_choose_combobox()
+            empty_type_model = Gtk.ListStore(int, str)
+            parameter_combobox.set_model(empty_type_model)
             empty_model = True
         if empty_model:
             self.init_calibrate_model()
-            self.update_dependencies_list()
-            self.init_dependencies_segment_choose()
+            self.init_dependencies_list()
         else:
-            parameter_combobox.connect('changed', self.update_three_about)
+            parameter_combobox.connect('changed', self.init_two_about)
 
-    def init_calibrate_parameter_choose_combobox(self):
-        parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
-        empty_type_model = Gtk.ListStore(int, str)
-        parameter_combobox.set_model(empty_type_model)
+    def init_two_about(self, widget):
+        self.init_calibrate_model()
+        self.init_dependencies_list()
 
-    def update_three_about(self, widget):
-        self.update_calibrate_model()
-        self.update_dependencies_list()
-        self.update_dependencies_segment_choose()
-
-    def update_calibrate_model(self):
+    def init_calibrate_model(self):
         calibrate_model_label = self.builder.get_object('model_show_label')
         if self._choose_channel_index != 2020:
             parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
@@ -192,10 +184,10 @@ class MainUI(Gtk.Window):
             model = parameter_combobox.get_model()
             _iter = model.get_iter_from_string('{}'.format(parameter_activated))
             calibrate_parameter = model.get_value(_iter, 0)
+            self._choose_parameter = calibrate_parameter
 
             if calibrate_parameter == 2020:
-                self.init_calibrate_model()
-                # self.init_dependencies_segment_choose()
+                calibrate_model_label.set_text('校正类型2020')
             else:
                 # print(calibrate_parameter)   # TODO 多次输出同一参数值
                 calibrate_model = self._presenter.get_calibrate_model(calibrate_parameter, self._choose_channel_index)
@@ -203,11 +195,7 @@ class MainUI(Gtk.Window):
         else:
             calibrate_model_label.set_text('校正类型2020')
 
-    def init_calibrate_model(self):
-        calibrate_model_label = self.builder.get_object('model_show_label')
-        calibrate_model_label.set_text('校正类型2020')
-
-    def update_dependencies_list(self):
+    def init_dependencies_list(self):
         dependencies_scrolled_win = self.builder.get_object('dependencies_scrolled_window')
         dependencies_scrolled_win.set_sensitive(False)
         dependencies_text_buffer = Gtk.TextBuffer()
@@ -224,7 +212,7 @@ class MainUI(Gtk.Window):
                                                                           self._choose_channel_index)
                 dependencies_text_buffer.set_text('{}'.format(dependencies_list))
 
-                self.update_dependencies_segment_choose()
+                self.init_dependencies_segment_choose()
 
         dependencies_text_view.set_buffer(dependencies_text_buffer)
         dependencies_scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -237,172 +225,9 @@ class MainUI(Gtk.Window):
 
     def init_dependencies_segment_choose(self):
         dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
-        viewport = dependencies_choose_scroll_win.get_child()
-        if isinstance(viewport, Gtk.Viewport):
-            main_box = viewport.get_child()
-            boxes = main_box.get_children()
-            for box in boxes:
-                children = box.get_children()
-                combobox = children[1]
-                combobox.clear()
-                model = Gtk.ListStore()
-                combobox.set_model(model)
-
-    def update_dependencies_segment_choose(self):
-        parameter_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
-        parameter_activated = parameter_combobox.get_active()
-        model = parameter_combobox.get_model()
-        _iter = model.get_iter_from_string('{}'.format(parameter_activated))
-        calibrate_parameter = model.get_value(_iter, 0)
-        self._choose_parameter = calibrate_parameter
-
-        if calibrate_parameter == 2020:
-            self.init_dependencies_segment_choose()
-        else:
-            dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
-            child = dependencies_choose_scroll_win.get_child()
-            if child:
-                dependencies_choose_scroll_win.remove(child)
-            depends_id = self._presenter.get_depends_id(self._choose_channel_index, calibrate_parameter)
-            self._depends_id = depends_id
-
-            viewport = Gtk.Viewport()
-            main_box = Gtk.Box()
-
-            for value in depends_id:
-                child_box = Gtk.Box()
-                child_box.set_orientation(Gtk.Orientation.VERTICAL)
-                label = Gtk.Label()
-                label.set_text('{}'.format(value))
-                child_box.pack_start(label, True, True, 2)
-                child_combobox = Gtk.ComboBox()
-                child_model = Gtk.ListStore()
-                child_combobox.set_model(child_model)
-                # child_combobox.set_active(0)
-
-                # child_model = Gtk.ListStore(int, str)  # TODO 怎样才能只放一个数据进去
-                # for segment in first_segments:
-                #     lower_num = segment.lower
-                #     upper_num = segment.upper
-                #     child_model.append([2020, '[{}, {}]'.format(lower_num, upper_num)])
-                # child_combobox.set_model(child_model)
-                child_box.pack_start(child_combobox, True, True, 2)
-                main_box.add(child_box)
-
-            viewport.add(main_box)
-            dependencies_choose_scroll_win.add(viewport)
-            dependencies_choose_scroll_win.show_all()
-            self.update_first_depend_segments()
-
-    def update_first_depend_segments(self):
-        dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
-        viewport = dependencies_choose_scroll_win.get_child()
-        main_box = viewport.get_child()
-
-        boxes = main_box.get_children()
-        first_box = boxes[0]
-        first_box_children = first_box.get_children()
-        first_combobox = first_box_children[1]
-        first_combobox.clear()
-
-        first_path = [[self._choose_parameter, None]]
-        first_depend_id = self._depends_id[0]
-        first_segments = self._presenter.get_depend_segments(self._choose_channel_index, self._choose_parameter,
-                                                             first_path, first_depend_id)
-        first_model = Gtk.ListStore(int, str)
-        first_model.append([2020, '[2020, 2020]'])
-        for segment in first_segments:
-            lower_num = segment.lower
-            upper_num = segment.upper
-            first_model.append([2020, '[{}, {}]'.format(lower_num, upper_num)])
-        first_combobox.set_model(first_model)
-        first_cell = Gtk.CellRendererText()
-        first_combobox.pack_start(first_cell, True)
-        first_combobox.add_attribute(first_cell, 'text', 1)
-        # first_combobox.set_active(0)
-
-        first_combobox.connect('changed', self.update_next_depend_segment)
-
-    def update_next_depend_segment(self, widget):
-        dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
-        viewport = dependencies_choose_scroll_win.get_child()
-        main_box = viewport.get_child()
-        boxes = main_box.get_children()
-
-        focus_box = main_box.get_focus_child()
-        focus_box_children = focus_box.get_children()
-        focus_label = focus_box_children[0]
-        focus_parameter_id = int(focus_label.get_text())
-        focus_combobox = focus_box_children[1]
-        segment_activated = focus_combobox.get_active()
-        model = focus_combobox.get_model()
-        _iter = model.get_iter_from_string('{}'.format(segment_activated))
-        segment_str = model.get_value(_iter, 1)
-        focus_segment = FloatInterval.from_string(segment_str)
-
-        default_segment = FloatInterval.closed(2020, 2020)
-        # if focus_segment != default_segment:
-        #     depend_path = self.update_depend_path(focus_parameter_id)
-        focus_parameter_id_index = self._depends_id.index(focus_parameter_id)    # TODO 这里也遇到了相同执行多次的问题: set_active的问题？
-        if focus_parameter_id_index+1 < len(self._depends_id):
-            next_parameter_id = self._depends_id[focus_parameter_id_index+1]
-            next_model = Gtk.ListStore(int, str)
-            if focus_segment != default_segment:
-                depend_path = self.update_depend_path(focus_parameter_id)
-                next_segments = self._presenter.get_depend_segments(self._choose_channel_index, self._choose_parameter,
-                                                                    depend_path, next_parameter_id)
-                next_model.append([2020, '[2020, 2020]'])
-                for segment in next_segments:
-                    lower_num = segment.lower
-                    upper_num = segment.upper
-                    next_model.append([2020, '[{}, {}]'.format(lower_num, upper_num)])
-            # former_box = boxes[self._depend_choosed_num - 1]
-            # former_combobox = former_box.get_children()[1]
-            # segment_activated = former_combobox.get_active()
-            # model = former_combobox.get_model()
-            # _iter = model.get_iter_from_string('{}'.format(segment_activated))
-            # segment_str = model.get_value(_iter, 1)
-            # segment = FloatInterval.from_string(segment_str)
-            # self._depend_path.append([self._depends_id[self._depend_choosed_num - 1], segment])
-            next_box = boxes[focus_parameter_id_index+1]
-            next_combobox = next_box.get_children()[1]
-            next_combobox.clear()
-            # current_depend_id = self._depends_id[self._depend_choosed_num]
-            # current_segments = self._presenter.get_depend_segments
-            # (self._choose_channel_index, self._choose_parameter, self._depend_path, current_depend_id)
-            next_combobox.set_model(next_model)
-            current_cell = Gtk.CellRendererText()
-            next_combobox.pack_start(current_cell, True)
-            next_combobox.add_attribute(current_cell, 'text', 1)
-            # next_combobox.set_active(0)
-
-            next_combobox.connect('changed', self.update_next_depend_segment)
-
-    def update_depend_path(self, parameter_id):
-        dependencies_choose_scroll_win = self.builder.get_object('depend_segment_choose_scrolled_window')
-        viewport = dependencies_choose_scroll_win.get_child()
-        main_box = viewport.get_child()
-        boxes = main_box.get_children()
-
-        depend_path = [[self._choose_parameter, None]]
-        for box in boxes:
-            children = box.get_children()
-            label = children[0]
-            depend_id = int(label.get_text())
-            combobox = children[1]
-            segment_activated = combobox.get_active()
-            model = combobox.get_model()
-            _iter = model.get_iter_from_string('{}'.format(segment_activated))
-            segment_str = model.get_value(_iter, 1)
-            segment = FloatInterval.from_string(segment_str)
-            # print(label.get_text()) print(segment)
-            depend_path.append([depend_id, segment])
-            if depend_id == parameter_id:
-                break
-        return depend_path
 
     def init_all(self):     # TODO 没写完
-        self.update_channels_combobox()
+        self.init_channels_combobox()
 
     def open_file(self, widget):  # TODO
         dialog = Gtk.FileChooserDialog("文件选择", self.main_window,
