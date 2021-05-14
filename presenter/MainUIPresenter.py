@@ -50,3 +50,26 @@ class MainUIPresenter:
         parent_node = self.get_depend_parent_node(channel_index, calibrate_parameter_id, path, depend_id)
         depend_segments = self._editor.get_depend_segments(parent_node)
         return depend_segments
+
+    def get_parameter_parent_node(self, channel_index, calibrate_parameter_id, path):
+        channels = self._editor.channels
+        choose_channel = channels[channel_index]
+        calibrate_msg = choose_channel[calibrate_parameter_id]
+        root_node = calibrate_msg.calibrate_tree
+
+        for node in root_node.leaves:
+            count = 0
+            for node_i in node.path:
+                realistic_parameter_id = path[count][0]
+                realistic_parameter_segment = path[count][1]
+                if realistic_parameter_id == node_i.parameter_id \
+                        and realistic_parameter_segment == node_i.parameter_segment:
+                    count += 1
+                if count == len(path):
+                    return node_i
+
+    def get_calibrate_parameter_segments(self, channel_index, calibrate_parameter_id, path):
+        # segments中包含全部待校参数分段，以及对应的校正系数
+        depend_leaf_node = self.get_parameter_parent_node(channel_index, calibrate_parameter_id, path)
+        parameter_segments = self._editor.get_parameter_segments(depend_leaf_node)
+        return parameter_segments
