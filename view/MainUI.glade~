@@ -434,7 +434,6 @@
             <child>
               <object class="GtkScrolledWindow" id="dependencies_scrolled_window">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
@@ -490,7 +489,6 @@
             <child>
               <object class="GtkScrolledWindow" id="depend_segment_choose_scrolled_window">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
@@ -514,7 +512,7 @@
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
+        <property name="expand">True</property>
         <property name="fill">True</property>
         <property name="position">6</property>
       </packing>
@@ -597,7 +595,6 @@
             <child>
               <object class="GtkScrolledWindow" id="calibrate_factors_scrolled_window">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
