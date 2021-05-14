@@ -44,7 +44,7 @@ class CalibrateFileEdit:
     def channels(self, value):
         self._channels = value
 
-    # 获取文件信息
+    # 获取校正信息
     def get_file_channels(self):
         file_handler = FileHandler()
         file_handler.get_calibrate_file(self._file_path)
@@ -62,6 +62,59 @@ class CalibrateFileEdit:
         calibrate_msg = channel[parameter_id]
         dependencies_list = calibrate_msg.dependency_list
         return dependencies_list
+
+    def get_depends_id(self, channel_index, parameter_id):
+        depends_id = []
+        channel = self._channels[channel_index]
+        calibrate_msg = channel[parameter_id]
+        root_node = calibrate_msg.calibrate_tree
+        leaf_nodes = root_node.leaves
+        a_branch_node = leaf_nodes[0].ancestors
+        for node in a_branch_node:
+            depends_id.append(node.parameter_id)
+        depends_id.pop(0)
+        # first_depend = self.get_next_level_depend([root_node])
+        # depends[first_depend[0]] = first_depend[1]
+        # parent_nodes = root_node.children
+        # height = parent_nodes[0].height
+        # while height > 1:
+        #     depend = self.get_next_level_depend(parent_nodes)
+        #     depends[depend[0]] = depend[1]
+        #     next_parent_nodes = []
+        #     for node in parent_nodes:
+        #         children = node.children
+        #         for node_i in children:
+        #             next_parent_nodes.append(node_i)
+        #     parent_nodes = next_parent_nodes
+        #     height = parent_nodes[0].height
+        return depends_id
+
+    @staticmethod
+    def get_depend_segments(parent_node):
+        depend_segments = []
+        children = parent_node.children
+        for child in children:
+            depend_segments.append(child.parameter_segment)
+        return depend_segments
+
+    # @staticmethod
+    # def get_next_level_depend(parent_nodes):
+    #     depend = []
+    #     segments = []
+    #     for node in parent_nodes:
+    #         children = node.children
+    #         for child in children:
+    #             segment = child.parameter_segment
+    #             lower_num = segment.lower
+    #             upper_num = segment.upper
+    #             segment_list = [lower_num, upper_num]
+    #             segments.append(segment_list)
+    #     parent_node = parent_nodes[0]
+    #     child_node = parent_node.children[0]
+    #     parameter_id = child_node.parameter_id
+    #     depend.append(parameter_id)
+    #     depend.append(segments)
+    #     return depend
 
     # 文件合并
     def merge_calibrate_file_by_method_two(self, merge_channel_index, another_channel_index, another_parameter_id):
