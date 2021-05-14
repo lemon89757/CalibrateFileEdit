@@ -14,7 +14,7 @@ class CalibrateFileEdit:
 
         self._file_path = 'file_path'
         self._another_file_path = 'file_path'
-        self._channels = None
+        self._channels = None   # 当前文件的channels
 
     @property
     def file_path(self):
@@ -96,6 +96,11 @@ class CalibrateFileEdit:
         for child in children:
             depend_segments.append(child.parameter_segment)
         return depend_segments
+
+    def get_parameter_segments(self, depend_leaf_node):
+        parameter_node = depend_leaf_node.children[0]
+        parameter_segments = self.get_segments_dict(parameter_node)
+        return parameter_segments
 
     # @staticmethod
     # def get_next_level_depend(parent_nodes):
