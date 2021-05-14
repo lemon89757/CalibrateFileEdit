@@ -107,12 +107,12 @@ class EditCalibrateParameter:
     def get_segments_dict(self):
         # 数据处理时的segment形式应该为[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]，此处理为方便显示时查找。
         segments = self._parameter_node.parameter_segments
+        segments_dict = dict()
         for segment in segments:
             interval = segment[0]
             factors = segment[1]
-            segment = dict()
-            segment[interval] = factors
-        return segments
+            segments_dict[interval] = factors
+        return segments_dict
 
     @staticmethod
     def show_current_factors_curve(segment):
