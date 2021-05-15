@@ -424,6 +424,8 @@ class MainUI(Gtk.Window):
         interval_combobox.set_model(empty_model)
 
     def update_calibrate_parameter_interval_combobox(self, widget):
+        self.init_factors_scrolled_win()
+
         interval_combobox = self.builder.get_object('calibrate_parameter_segment_choose_combobox')
         interval_combobox.clear()
 
