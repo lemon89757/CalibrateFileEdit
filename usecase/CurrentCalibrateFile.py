@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# import copy
 from entity.FileHandler import FileHandler
 from usecase.EditCalibrateParameter import EditCalibrateParameter
 from usecase.EditCalibrateParameterDepends import EditCalibrateParameterDepends
@@ -12,19 +11,19 @@ class CalibrateFileEdit:
         self._depend_edit = EditCalibrateParameterDepends()
         self._merge = MergeCalibrateFile()
 
-        self._file_path = 'file_path'
+        self._current_file_path = 'file_path'
         self._another_file_path = 'file_path'
-        self._channels = None   # 当前文件的channels
+        self._current_channels = None   # 当前文件的channels
 
     @property
-    def file_path(self):
-        return self._file_path
+    def current_file_path(self):
+        return self._current_file_path
 
-    @file_path.setter
-    def file_path(self, value):
+    @current_file_path.setter
+    def current_file_path(self, value):
         if type(value) != str:
             raise value
-        self._file_path = value
+        self._current_file_path = value
 
     @property
     def another_file_path(self):
@@ -37,35 +36,35 @@ class CalibrateFileEdit:
         self._another_file_path = value
 
     @property
-    def channels(self):
-        return self._channels
+    def current_channels(self):
+        return self._current_channels
 
-    @channels.setter
-    def channels(self, value):
-        self._channels = value
+    @current_channels.setter
+    def current_channels(self, value):
+        self._current_channels = value
 
     # 获取校正信息
     def get_file_channels(self):
         file_handler = FileHandler()
-        file_handler.get_calibrate_file(self._file_path)
+        file_handler.get_calibrate_file(self._current_file_path)
         channels = file_handler.load_all_calibrate_msg_from_file()
         return channels
 
     def get_calibrate_model(self, parameter_id, channel_index):
-        channel = self._channels[channel_index]
+        channel = self._current_channels[channel_index]
         calibrate_msg = channel[parameter_id]
         model = calibrate_msg.calibrate_model
         return model
 
     def get_dependencies_list(self, parameter_id, channel_index):
-        channel = self._channels[channel_index]
+        channel = self._current_channels[channel_index]
         calibrate_msg = channel[parameter_id]
         dependencies_list = calibrate_msg.dependency_list
         return dependencies_list
 
     def get_depends_id(self, channel_index, parameter_id):
         depends_id = []
-        channel = self._channels[channel_index]
+        channel = self._current_channels[channel_index]
         calibrate_msg = channel[parameter_id]
         root_node = calibrate_msg.calibrate_tree
         leaf_nodes = root_node.leaves
@@ -73,53 +72,58 @@ class CalibrateFileEdit:
         for node in a_branch_node:
             depends_id.append(node.parameter_id)
         depends_id.pop(0)
-        # first_depend = self.get_next_level_depend([root_node])
-        # depends[first_depend[0]] = first_depend[1]
-        # parent_nodes = root_node.children
-        # height = parent_nodes[0].height
-        # while height > 1:
-        #     depend = self.get_next_level_depend(parent_nodes)
-        #     depends[depend[0]] = depend[1]
-        #     next_parent_nodes = []
-        #     for node in parent_nodes:
-        #         children = node.children
-        #         for node_i in children:
-        #             next_parent_nodes.append(node_i)
-        #     parent_nodes = next_parent_nodes
-        #     height = parent_nodes[0].height
         return depends_id
 
-    @staticmethod
-    def get_depend_segments(parent_node):
+    def get_depend_parent_node(self, channel_index, calibrate_parameter_id, path, depend_id):
+        choose_channel = self._current_channels[channel_index]
+        calibrate_msg = choose_channel[calibrate_parameter_id]
+        root_node = calibrate_msg.calibrate_tree
+        same_id_depend_nodes = []
+        for node in root_node.descendants:
+            if depend_id == node.parameter_id:
+                same_id_depend_nodes.append(node)
+        for same_id_node in same_id_depend_nodes:
+            path_i = same_id_node.path
+            count = 0
+            for node_i in path_i:
+                realistic_parameter_id = path[count][0]
+                realistic_parameter_segment = path[count][1]
+                if node_i.parameter_id == realistic_parameter_id \
+                        and node_i.parameter_segment == realistic_parameter_segment:
+                    count += 1
+                if count == len(path):
+                    return same_id_node.parent
+
+    def get_depend_segments(self, channel_index, calibrate_parameter_id, path, depend_id):
+        parent_node = self.get_depend_parent_node(channel_index, calibrate_parameter_id, path, depend_id)
         depend_segments = []
         children = parent_node.children
         for child in children:
             depend_segments.append(child.parameter_segment)
         return depend_segments
 
-    def get_parameter_segments(self, depend_leaf_node):
+    def get_parameter_parent_node(self, channel_index, calibrate_parameter_id, path):
+        choose_channel = self._current_channels[channel_index]
+        calibrate_msg = choose_channel[calibrate_parameter_id]
+        root_node = calibrate_msg.calibrate_tree
+
+        for node in root_node.leaves:
+            count = 0
+            for node_i in node.path:
+                realistic_parameter_id = path[count][0]
+                realistic_parameter_segment = path[count][1]
+                if realistic_parameter_id == node_i.parameter_id \
+                        and realistic_parameter_segment == node_i.parameter_segment:
+                    count += 1
+                if count == len(path):
+                    return node_i
+
+    def get_calibrate_parameter_segments(self, channel_index, calibrate_parameter_id, path):
+        # segments中包含全部待校参数分段，以及对应的校正系数
+        depend_leaf_node = self.get_parameter_parent_node(channel_index, calibrate_parameter_id, path)
         parameter_node = depend_leaf_node.children[0]
         parameter_segments = self.get_segments_dict(parameter_node)
         return parameter_segments
-
-    # @staticmethod
-    # def get_next_level_depend(parent_nodes):
-    #     depend = []
-    #     segments = []
-    #     for node in parent_nodes:
-    #         children = node.children
-    #         for child in children:
-    #             segment = child.parameter_segment
-    #             lower_num = segment.lower
-    #             upper_num = segment.upper
-    #             segment_list = [lower_num, upper_num]
-    #             segments.append(segment_list)
-    #     parent_node = parent_nodes[0]
-    #     child_node = parent_node.children[0]
-    #     parameter_id = child_node.parameter_id
-    #     depend.append(parameter_id)
-    #     depend.append(segments)
-    #     return depend
 
     # 文件合并
     def merge_calibrate_file_by_method_two(self, merge_channel_index, another_channel_index, another_parameter_id):
