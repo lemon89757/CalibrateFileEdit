@@ -127,7 +127,9 @@ class EditCalibrateParameter:
         plt.xlabel("calibrate parameter input")
         plt.ylabel("calibrate parameter output")
         plt.plot(x, y)
-        plt.show()
+        plt.savefig(r"..\image\factors_curve.png")
+        plt.cla()
+        # plt.show()
 
     def show_two_factors_curve(self, modified_segment):
         parameter_interval = modified_segment[0]
