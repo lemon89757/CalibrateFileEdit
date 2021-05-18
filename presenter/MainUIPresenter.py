@@ -35,13 +35,13 @@ class MainUIPresenter:
         depends_id = self._editor.get_depends_id(channel_index, parameter)
         return depends_id
 
-    def get_depend_path(self, focus_depend_id):
+    def load_depend_path(self, focus_depend_id):
         dependencies_segment_choose_scrolled_win = self._view.dependencies_segment_choose_scrolled_win
         viewport = dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
         boxes = main_box.get_children()
 
-        calibrate_parameter = self.get_choosed_calibrate_parameter()
+        calibrate_parameter = self.load_choosed_calibrate_parameter()
         depend_path = [[calibrate_parameter, None]]
         for box in boxes:
             children = box.get_children()
@@ -59,11 +59,11 @@ class MainUIPresenter:
                 break
         return depend_path
 
-    def get_parameter_node_path(self):
+    def load_parameter_node_path(self):
         viewport = self._view.dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
         boxes = main_box.get_children()
-        calibrate_parameter = self.get_choosed_calibrate_parameter()
+        calibrate_parameter = self.load_choosed_calibrate_parameter()
         parameter_path = [[calibrate_parameter, None]]
         for box in boxes:
             children = box.get_children()
@@ -87,7 +87,7 @@ class MainUIPresenter:
                                                                            parameter_path)
         return parameter_segments
 
-    def get_channel_index(self):
+    def load_channel_index(self):
         channel_combobox = self._view.channel_combobox
         channel_activated = channel_combobox.get_active()
         model = channel_combobox.get_model()
@@ -95,7 +95,7 @@ class MainUIPresenter:
         channel_index = model.get_value(_iter, 0)
         return channel_index
 
-    def get_choosed_calibrate_parameter(self):
+    def load_choosed_calibrate_parameter(self):
         calibrate_parameter_choose_combobox = self._view.calibrate_parameter_choose_combobox
         parameter_activated = calibrate_parameter_choose_combobox.get_active()
         model = calibrate_parameter_choose_combobox.get_model()
@@ -103,7 +103,7 @@ class MainUIPresenter:
         calibrate_parameter = model.get_value(_iter, 0)
         return calibrate_parameter
 
-    def get_focus_depend(self):
+    def load_focus_depend(self):
         dependencies_segment_choose_scrolled_win = self._view.dependencies_segment_choose_scrolled_win
         viewport = dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
@@ -120,7 +120,20 @@ class MainUIPresenter:
         focus_segment = FloatInterval.from_string(segment_str)
         return focus_depend_id, focus_segment
 
-    def get_choosed_parameter_interval(self):
+    def load_last_dependency_segment(self):
+        viewport = self._view.dependencies_segment_choose_scrolled_win.get_child()
+        main_box = viewport.get_child()
+        boxes = main_box.get_children()
+        last_box = boxes[-1]
+        last_combobox = last_box.get_children()[1]
+        segment_activated = last_combobox.get_active()
+        model = last_combobox.get_model()
+        _iter = model.get_iter_from_string('{}'.format(segment_activated))
+        segment_str = model.get_value(_iter, 0)
+        last_segment = FloatInterval.from_string(segment_str)
+        return last_segment
+
+    def load_choosed_parameter_interval(self):
         interval_combobox = self._view.calibrate_parameter_interval_choose_combobox
         interval_activated = interval_combobox.get_active()
         model = interval_combobox.get_model()
@@ -128,3 +141,18 @@ class MainUIPresenter:
         interval_str = model.get_value(_iter, 0)
         interval = FloatInterval.from_string(interval_str)
         return interval
+
+    def load_current_factors(self):
+        text_view = self._view.factors_scrolled_win.get_child()
+        buffer = text_view.get_buffer()
+        start_iter = buffer.get_start_iter()
+        end_iter = buffer.get_end_iter()
+        text = buffer.get_text(start_iter, end_iter, False)
+        factors = eval(text)
+        return factors
+
+    def show_factors_curve(self):
+        factors = self.load_current_factors()
+        interval = self.load_choosed_parameter_interval()
+        segment = [interval, factors]
+        self._editor.show_current_factors_curve(segment)
