@@ -17,7 +17,7 @@ class MainUI(Gtk.Window):
         self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'MainUI.glade'))
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
-        self.main_window.set_default_size(600, 450)
+        self.main_window.set_default_size(500, 450)
         self.main_window_state = False  # TODO
         self.ui = self.builder.get_object('main_box')
         self.set_window_header()
@@ -32,8 +32,10 @@ class MainUI(Gtk.Window):
         self.calibrate_parameter_interval_choose_combobox = None
         self.factors_scrolled_win = None
 
+        self._state = False
         self._depends_id = None
         self._parameter_segments = None
+        self.curve = Image()
 
     @property
     def presenter(self):
@@ -112,8 +114,8 @@ class MainUI(Gtk.Window):
         show_factors_curve_menu_item = self.builder.get_object('display_factors_curve_item')
         show_factors_curve_menu_item.connect('activate', self.show_factors_curve)
 
-        show_two_curves_menu_item = self.builder.get_object('display_two_curves_item')
-        show_two_curves_menu_item.connect('activate', self.show_two_curves)
+        # show_two_curves_menu_item = self.builder.get_object('display_two_curves_item')
+        # show_two_curves_menu_item.connect('activate', self.show_two_curves)
 
     def init_others(self):
         senior_menu_item = self.builder.get_object('senior_item')
@@ -147,7 +149,7 @@ class MainUI(Gtk.Window):
         self.channel_combobox.connect('changed', self.update_calibrate_parameter_choose_combobox)
 
     def update_calibrate_parameter_choose_combobox(self, widget):
-        channel_index = self._presenter.get_channel_index()
+        channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
             parameters_model = Gtk.ListStore(int)
             parameters_model.append([2020])          # 默认参数
@@ -186,9 +188,9 @@ class MainUI(Gtk.Window):
         self.update_dependencies_segment_choose()
 
     def update_calibrate_model(self):
-        channel_index = self._presenter.get_channel_index()
+        channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
+            calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
             if calibrate_parameter == 2020:
                 self.init_calibrate_model()
             else:
@@ -207,9 +209,9 @@ class MainUI(Gtk.Window):
         dependencies_text_view = Gtk.TextView()
         dependencies_text_view.set_sensitive(False)
 
-        channel_index = self._presenter.get_channel_index()
+        channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
+            calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
             if calibrate_parameter != 2020 and channel_index != 2020:
                 dependencies_list = self._presenter.get_dependencies_list(calibrate_parameter, channel_index)
                 dependencies_text_buffer.set_text('{}'.format(dependencies_list))
@@ -236,8 +238,8 @@ class MainUI(Gtk.Window):
                 combobox.set_model(model)
 
     def update_dependencies_segment_choose(self):
-        calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
-        channel_index = self._presenter.get_channel_index()
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        channel_index = self._presenter.load_channel_index()
 
         if calibrate_parameter == 2020:
             self.clear_dependencies_segment_choose()
@@ -269,8 +271,8 @@ class MainUI(Gtk.Window):
             self.update_first_depend_segments()
 
     def update_first_depend_segments(self):
-        calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
-        channel_index = self._presenter.get_channel_index()
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        channel_index = self._presenter.load_channel_index()
 
         viewport = self.dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
@@ -308,9 +310,9 @@ class MainUI(Gtk.Window):
         main_box = viewport.get_child()
         boxes = main_box.get_children()
 
-        channel_index = self._presenter.get_channel_index()
-        calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
-        focus_depend_id, focus_segment = self._presenter.get_focus_depend()
+        channel_index = self._presenter.load_channel_index()
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        focus_depend_id, focus_segment = self._presenter.load_focus_depend()
         default_segment = FloatInterval.closed(2020, 2020)
         # if focus_segment != default_segment:
         #     depend_path = self.update_depend_path(focus_depend_id)
@@ -319,7 +321,7 @@ class MainUI(Gtk.Window):
             next_parameter_id = self._depends_id[focus_depend_id_index+1]
             next_model = Gtk.ListStore(str)
             if focus_segment != default_segment:
-                depend_path = self._presenter.get_depend_path(focus_depend_id)
+                depend_path = self._presenter.load_depend_path(focus_depend_id)
                 next_segments = self._presenter.get_depend_segments(channel_index, calibrate_parameter,
                                                                     depend_path, next_parameter_id)
                 next_model.append(['[2020, 2020]'])
@@ -327,20 +329,26 @@ class MainUI(Gtk.Window):
                     lower_num = segment.lower
                     upper_num = segment.upper
                     next_model.append(['[{}, {}]'.format(lower_num, upper_num)])
-            next_box = boxes[focus_depend_id_index+1]
-            next_label = next_box.get_children()[0]
-            next_depend_id = int(next_label.get_text())
-            next_combobox = next_box.get_children()[1]
-            next_combobox.clear()
-            next_combobox.set_model(next_model)
-            current_cell = Gtk.CellRendererText()
-            next_combobox.pack_start(current_cell, True)
-            next_combobox.add_attribute(current_cell, 'text', 0)
-            # next_combobox.set_active(0)
-            if next_depend_id == self._depends_id[-1]:
-                next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
+                next_box = boxes[focus_depend_id_index+1]
+                next_label = next_box.get_children()[0]
+                next_depend_id = int(next_label.get_text())
+                next_combobox = next_box.get_children()[1]
+                next_combobox.clear()
+                next_combobox.set_model(next_model)
+                current_cell = Gtk.CellRendererText()
+                next_combobox.pack_start(current_cell, True)
+                next_combobox.add_attribute(current_cell, 'text', 0)
+                # next_combobox.set_active(0)
+                if next_depend_id == self._depends_id[-1]:
+                    next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
+                else:
+                    next_combobox.connect('changed', self.update_next_depend_segment)
             else:
-                next_combobox.connect('changed', self.update_next_depend_segment)
+                for box in boxes[focus_depend_id_index+1:]:
+                    combobox = box.get_children()[1]
+                    combobox.clear()
+                    empty_model = Gtk.ListStore()
+                    combobox.set_model(empty_model)
 
     def clear_calibrate_parameter_interval_combobox(self):
         empty_model = Gtk.ListStore()
@@ -349,26 +357,17 @@ class MainUI(Gtk.Window):
 
     def update_calibrate_parameter_interval_combobox(self, widget):
         self.clear_factors_scrolled_win()
-        calibrate_parameter = self._presenter.get_choosed_calibrate_parameter()
-        channel_index = self._presenter.get_channel_index()
-
         self.calibrate_parameter_interval_choose_combobox.clear()
-        viewport = self.dependencies_segment_choose_scrolled_win.get_child()
-        main_box = viewport.get_child()
-        boxes = main_box.get_children()
-        last_box = boxes[-1]
-        last_combobox = last_box.get_children()[1]
-        segment_activated = last_combobox.get_active()
-        model = last_combobox.get_model()
-        _iter = model.get_iter_from_string('{}'.format(segment_activated))
-        segment_str = model.get_value(_iter, 0)
-        last_segment = FloatInterval.from_string(segment_str)
+
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        channel_index = self._presenter.load_channel_index()
+        last_segment = self._presenter.load_last_dependency_segment()
         default_segment = FloatInterval.closed(2020, 2020)
 
         if last_segment == default_segment:
             self.clear_calibrate_parameter_interval_combobox()
         else:
-            parameter_path = self._presenter.get_parameter_node_path()
+            parameter_path = self._presenter.load_parameter_node_path()
             parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
                                                                                   calibrate_parameter, parameter_path)
             self._parameter_segments = parameter_segments
@@ -399,7 +398,7 @@ class MainUI(Gtk.Window):
         factors_text_view = Gtk.TextView()
         factors_text_view.set_sensitive(False)   # TODO 滚动窗口的显示有较长延迟
 
-        interval = self._presenter.get_choosed_parameter_interval()
+        interval = self._presenter.load_choosed_parameter_interval()
         default_interval = FloatInterval.closed(2020, 2020)
         if default_interval == interval:
             self.clear_factors_scrolled_win()
@@ -417,8 +416,13 @@ class MainUI(Gtk.Window):
         self.factors_scrolled_win.show_all()
 
     def init_all(self):     # TODO 没写完
-        self.init_all_display_widget()
-        self.update_channel_combobox()
+        if not self._state:
+            self.init_all_display_widget()
+            self.init_display()
+            self.update_channel_combobox()
+            self._state = True
+        else:
+            self.update_channel_combobox()
 
     def open_file(self, widget):  # TODO
         dialog = Gtk.FileChooserDialog(title="文件选择", parent=self.main_window,
@@ -467,11 +471,93 @@ class MainUI(Gtk.Window):
     def show_factors_edit_ui(self):
         pass
 
-    def show_factors_curve(self):
+    def show_factors_curve(self, widget):
+        try:
+            # text_view = self.factors_scrolled_win.get_child()
+            # buffer = text_view.get_buffer()
+            # start_iter = buffer.get_start_iter()
+            # end_iter = buffer.get_end_iter()
+            # text = buffer.get_text(start_iter, end_iter, False)
+            # if len(text) == 0:
+            #     raise ValueError
+            # factors = eval(text)
+            # print(type(text), eval(text))   # TODO 换文件（或通道）后同样的会执行多次，即输出多次，（后面图片显示也出现多个）；还未第一次更新系数滚动窗口却已经有text_view
+            self._presenter.show_factors_curve()  # TODO 关闭matplotlib画出的图像，程序结束运行；将图像保存再显示，但同次运行程序多次画图结果会叠加在一起（直接显示也是如此）
+            if not self.curve.is_show:
+                self.curve.update_img()
+                self.curve.window.show_all()
+                self.curve.is_show = True
+            else:
+                self.curve.window.hide()     # TODO 还是存在之前可以打开多个的问题， 或者不能重复打开
+                self.curve.is_show = False
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择出校正系数")
+            dialog.run()
+            dialog.destroy()
+        # self._presenter.show_factors_curve()  # 先检查系数是否为空 AttributeError
+
+    def show_two_curves(self, widget):
         pass
 
-    def show_two_curves(self):
-        pass
+
+class Image:
+    def __init__(self):
+        self.window = Gtk.Window()
+        self.set_window_header()
+        self.is_show = False
+
+        self.image = Gtk.Image()
+
+    def update_img(self):
+        child = self.window.get_child()
+        if child:
+            self.window.remove(child)
+        self.image.set_from_file(r"..\image\factors_curve.png")
+        self.window.add(self.image)
+
+    def set_window_header(self):
+        header = Gtk.HeaderBar(title='factors curve')
+        header.props.show_close_button = False
+
+        close_button = Gtk.Button()
+        close_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-close-symbolic", Gtk.IconSize.MENU)
+        close_button.set_image(img)
+        close_button.connect('clicked', self.hide)
+
+        max_button = Gtk.Button()
+        max_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-maximize-symbolic", Gtk.IconSize.MENU)
+        max_button.set_image(img)
+        max_button.connect("clicked", self.maximize)
+
+        min_button = Gtk.Button()
+        min_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-minimize-symbolic", Gtk.IconSize.MENU)
+        min_button.set_image(img)
+        min_button.connect("clicked", self.minimize)
+
+        header.pack_end(close_button)
+        header.pack_end(max_button)
+        header.pack_end(min_button)
+
+        self.window.set_titlebar(header)
+
+    def hide(self, widget):  # close的问题：关闭之后程序虽然不结束运行，但是不能再次正确打开
+        self.is_show = False
+        self.window.hide()
+
+    def maximize(self, widget):
+        if self.window.is_maximized():
+            self.window.unmaximize()
+        else:
+            self.window.maximize()
+
+    def minimize(self, widget):
+        self.window.iconify()
 
 
 if __name__ == '__main__':
