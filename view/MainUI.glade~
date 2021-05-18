@@ -262,7 +262,6 @@
           <object class="GtkBox" id="channel_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="channel_lable">
                 <property name="visible">True</property>
@@ -274,6 +273,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">67</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -285,7 +285,7 @@
                 <property name="margin-bottom">5</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -313,7 +313,6 @@
           <object class="GtkBox" id="calibrate_parameter_choose_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="calibrate_parameter_label">
                 <property name="visible">True</property>
@@ -325,6 +324,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">50</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -336,7 +336,7 @@
                 <property name="margin-bottom">5</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -364,7 +364,6 @@
           <object class="GtkBox" id="calibrate_model_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="medel_label">
                 <property name="visible">True</property>
@@ -376,6 +375,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">55</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -388,7 +388,7 @@
                 <property name="label" translatable="yes">校正类型2020</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -416,7 +416,6 @@
           <object class="GtkBox" id="dependencied_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="dependencies_label">
                 <property name="visible">True</property>
@@ -428,6 +427,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">42</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -471,7 +471,6 @@
           <object class="GtkBox" id="depend_segment_choose_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="depend_segment_choose_label">
                 <property name="visible">True</property>
@@ -483,6 +482,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">42</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -526,7 +526,6 @@
           <object class="GtkBox" id="calibrate_parameter_segment_choose_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="calibrate_parameter_segment_choose_label">
                 <property name="visible">True</property>
@@ -538,6 +537,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">30</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -549,7 +549,7 @@
                 <property name="margin-bottom">5</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -577,7 +577,6 @@
           <object class="GtkBox" id="calibrate_factors_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="calibrate_factors_label">
                 <property name="visible">True</property>
@@ -589,6 +588,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">55</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -618,7 +618,7 @@
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
+        <property name="expand">True</property>
         <property name="fill">True</property>
         <property name="position">8</property>
       </packing>
