@@ -131,7 +131,8 @@ class EditCalibrateParameter:
         plt.cla()
         # plt.show()
 
-    def show_two_factors_curve(self, modified_segment):
+    @staticmethod
+    def show_two_factors_curve(modified_segment, current_segment):
         parameter_interval = modified_segment[0]
         upper_num = parameter_interval.upper
         lower_num = parameter_interval.lower
@@ -139,7 +140,7 @@ class EditCalibrateParameter:
         x = np.linspace(lower_num, upper_num, 1000)
         y = calibrate_factors[0] * x ** 5 + calibrate_factors[1] * x ** 4 + calibrate_factors[2] * x ** 3 \
             + calibrate_factors[3] * x ** 2 + calibrate_factors[4] * x + calibrate_factors[5]
-        before_modify_factors = self._parameter_factors_before
+        before_modify_factors = current_segment[1]
         modify_before_y = \
             before_modify_factors[0] * x ** 5 + before_modify_factors[1] * x ** 4 + before_modify_factors[2] * x ** 3 \
             + before_modify_factors[3] * x ** 2 + before_modify_factors[4] * x + before_modify_factors[5]
@@ -147,5 +148,8 @@ class EditCalibrateParameter:
         plt.xlabel("calibrate parameter input")
         plt.ylabel("calibrate parameter output")
         plt.plot(x, y, 'r', label='modified curve')
-        plt.plot(x, modify_before_y, 'b', label='curve before modify')
-        plt.show()
+        plt.plot(x, modify_before_y, 'b', label='curve before modified')
+        plt.legend(loc='upper right')
+        plt.savefig(r"..\image\two_factors_curves.png")
+        plt.cla()
+        # plt.show()
