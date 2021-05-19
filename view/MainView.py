@@ -5,10 +5,12 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from intervals import FloatInterval
 from presenter.MainUIPresenter import MainUIPresenter
+from view.FactorsEditView import FactorsEditView
 
 
 class MainUI(Gtk.Window):
     def __init__(self):
+        self._factors_edit_ui = FactorsEditView()
         self._presenter = MainUIPresenter()
         self._presenter.view = self
 
@@ -18,7 +20,6 @@ class MainUI(Gtk.Window):
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
         self.main_window.set_default_size(500, 450)
-        self.main_window_state = False  # TODO
         self.ui = self.builder.get_object('main_box')
         self.set_window_header()
         self.main_window.add(self.ui)
@@ -419,10 +420,39 @@ class MainUI(Gtk.Window):
         if not self._state:
             self.init_all_display_widget()
             self.init_display()
+            self.init_edit_operate()
             self.update_channel_combobox()
             self._state = True
         else:
+            title_bar = self.main_window.get_titlebar()
+            title_bar.set_title('CalibrateFileEdit')
             self.update_channel_combobox()
+
+    def update_modified_factors_scrolled_win(self, new_factors):
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        channel_index = self._presenter.load_channel_index()
+        parameter_path = self._presenter.load_parameter_node_path()
+        self._parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
+                                                                                    calibrate_parameter, parameter_path)
+        # 更新self._parameter_segments
+
+        self.factors_scrolled_win.set_sensitive(True)
+        factors_text_buffer = Gtk.TextBuffer()
+        factors_text_view = Gtk.TextView()
+        factors_text_view.set_sensitive(False)
+
+        factors_text_buffer.set_text('{}'.format(new_factors))
+        factors_text_view.set_buffer(factors_text_buffer)
+
+        child = self.factors_scrolled_win.get_child()
+        if child:
+            self.factors_scrolled_win.remove(child)
+        self.factors_scrolled_win.add(factors_text_view)
+        self.factors_scrolled_win.show_all()
+
+    def update_file_name_state(self):
+        title_bar = self.main_window.get_titlebar()
+        title_bar.set_title('CalibrateFileEdit*')
 
     def open_file(self, widget):  # TODO
         dialog = Gtk.FileChooserDialog(title="文件选择", parent=self.main_window,
@@ -450,8 +480,10 @@ class MainUI(Gtk.Window):
     def new_file(self):
         pass
 
-    def save(self):
-        pass
+    def save(self, widget):
+        self._presenter.save()
+        title_bar = self.main_window.get_titlebar()
+        title_bar.set_title('CalibrateFileEdit')
 
     def save_as(self):
         pass
@@ -468,8 +500,26 @@ class MainUI(Gtk.Window):
     def show_parameter_intervals_edit_ui(self):
         pass
 
-    def show_factors_edit_ui(self):
-        pass
+    def show_factors_edit_ui(self, widget):
+        try:
+            if not self._factors_edit_ui.state:
+                factors = self._presenter.load_current_factors()
+                # self._factors_edit_ui.clear()
+                # self._factors_edit_ui.init_ui()
+                self._factors_edit_ui.presenter.editor = self.presenter
+                self._factors_edit_ui.update_current_factors(factors)
+                self._factors_edit_ui.window.show_all()
+                self._factors_edit_ui.state = True
+            else:
+                self._factors_edit_ui.window.hide()
+                self._factors_edit_ui.state = False
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择出校正系数")
+            dialog.run()
+            dialog.destroy()
 
     def show_factors_curve(self, widget):
         try:

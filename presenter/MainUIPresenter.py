@@ -156,3 +156,16 @@ class MainUIPresenter:
         interval = self.load_choosed_parameter_interval()
         segment = [interval, factors]
         self._editor.show_current_factors_curve(segment)
+
+    def modify_parameter_factors(self, channel_index, calibrate_parameter_id, path, segment, modified_factors):
+        self._editor.modify_parameter_factors(channel_index, calibrate_parameter_id, path, segment, modified_factors)
+
+    def save(self):
+        self._editor.save()
+
+    def update_modified_factors(self, new_factors):
+        self._view.update_modified_factors_scrolled_win(new_factors)
+        self._view.update_file_name_state()
+
+    def show_two_factors_curve(self, modified_segment, current_segment):
+        self._editor.show_two_factors_curve(modified_segment, current_segment)
