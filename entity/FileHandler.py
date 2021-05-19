@@ -11,7 +11,6 @@ class FileHandler:
         self._sql_handler = None
         self._bin_handler = None
 
-        self._file_type = 'file_type'
         self._file_path = 'file_path'
 
         self._calibrate_file = None
@@ -33,11 +32,13 @@ class FileHandler:
         self._file_path = value
 
     def save(self, calibrate_file):
-        if self._file_type == '.json':
+        suffix = os.path.splitext(self.file_path)[-1]
+        if suffix == '.json':
             self._json_handler.save(self._file_path, calibrate_file)
-        if self._file_type == '.bin':
+            print("save yes")
+        if suffix == '.bin':
             pass
-        if self._file_type == '.sql':
+        if suffix == '.sql':
             pass
 
     def save_as(self, calibrate_file, file_path):  # TODO
@@ -274,7 +275,6 @@ class FileHandler:
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
             self._calibrate_file = self._json_handler.load(file_path)
-            self._file_type = '.json'
             self._file_path = file_path
         # elif suffix == '.bin':
         #     calibrate_file = self._bin_handler(file_path)
