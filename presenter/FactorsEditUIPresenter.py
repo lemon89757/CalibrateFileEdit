@@ -1,4 +1,4 @@
-class FactorsEditUIPresenter:   # TODO 可将MainUIPresenter传进来？
+class FactorsEditUIPresenter:   # TODO 可将MainUIPresenter作为editor(只作为转递信息的作用)传进来？ 将文件作为各种编辑器共同的属性（同一文件）会不会好一点（结构改变，需要大修改）？
     def __init__(self):
         self._editor = None
         self._view = None
