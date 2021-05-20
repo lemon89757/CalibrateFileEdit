@@ -138,18 +138,21 @@ class CalibrateFileEdit:
         new_channel = self._merge.merge_by_method_three(merge_channel, another_channel_index)
         self._current_channels[merge_channel_index] = new_channel
 
-    # 参数信息编辑  # TODO 得到是一个复制的结点？要是这样，修改完之后还要找到树中对应的结点然后替代？
+    # 参数信息编辑  # TODO 得到是一个复制的结点？要是这样，修改完之后还要找到树中对应的结点然后替代？(得到的、处理的是树中的结点)，
+    #  TODO 但是self._calibrate_parameter_editor.parameter_node = parameter_node不是将得到的结点复制给这个编辑器吗？
     def modify_parameter_factors(self, channel_index, calibrate_parameter_id, path, segment, new_factors):
         dependency_leaf_node = self.get_parameter_parent_node(channel_index, calibrate_parameter_id, path)
         parameter_node = dependency_leaf_node.children[0]
         self._calibrate_parameter_editor.parameter_node = parameter_node
         self._calibrate_parameter_editor.modify_parameter_factors(new_factors, segment)
-        return self._calibrate_parameter_editor.parameter_node
+        # return self._calibrate_parameter_editor.parameter_node
 
-    def modify_calibrate_parameter_interval(self, parameter_node, segment, value):
+    def modify_calibrate_parameter_interval(self, channel_index, calibrate_parameter_id, path, segment, new_interval):
+        dependency_leaf_node = self.get_parameter_parent_node(channel_index, calibrate_parameter_id, path)
+        parameter_node = dependency_leaf_node.children[0]
         self._calibrate_parameter_editor.parameter_node = parameter_node
-        self._calibrate_parameter_editor.modify_parameter_interval(value, segment)
-        return self._calibrate_parameter_editor.parameter_node
+        self._calibrate_parameter_editor.modify_parameter_interval(new_interval, segment)
+        # return self._calibrate_parameter_editor.parameter_node
 
     def add_parameter_segment(self, parameter_node, segment):
         self._calibrate_parameter_editor.parameter_node = parameter_node

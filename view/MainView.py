@@ -6,11 +6,13 @@ from gi.repository import Gtk
 from intervals import FloatInterval
 from presenter.MainUIPresenter import MainUIPresenter
 from view.FactorsEditView import FactorsEditView
+from view.ParameterIntervalEditView import ParameterIntervalEditView
 
 
 class MainUI(Gtk.Window):
     def __init__(self):
         self._factors_edit_ui = FactorsEditView()
+        self._parameter_interval_ui = ParameterIntervalEditView()
         self._presenter = MainUIPresenter()
         self._presenter.view = self
 
@@ -450,6 +452,28 @@ class MainUI(Gtk.Window):
         self.factors_scrolled_win.add(factors_text_view)
         self.factors_scrolled_win.show_all()
 
+    def update_modified_interval(self):
+        self.clear_factors_scrolled_win()
+        self.calibrate_parameter_interval_choose_combobox.clear()
+
+        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+        channel_index = self._presenter.load_channel_index()
+        parameter_path = self._presenter.load_parameter_node_path()
+        parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
+                                                                              calibrate_parameter, parameter_path)
+        self._parameter_segments = parameter_segments
+
+        interval_model = Gtk.ListStore(str)
+        interval_model.append(['[2020, 2020]'])
+        for interval in parameter_segments.keys():
+            lower_num = interval.lower
+            upper_num = interval.upper
+            interval_model.append(['[{}, {}]'.format(lower_num, upper_num)])
+        self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
+        cell = Gtk.CellRendererText()
+        self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
+        self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 0)
+
     def update_file_name_state(self):
         title_bar = self.main_window.get_titlebar()
         title_bar.set_title('CalibrateFileEdit*')
@@ -481,9 +505,23 @@ class MainUI(Gtk.Window):
         pass
 
     def save(self, widget):
-        self._presenter.save()
-        title_bar = self.main_window.get_titlebar()
-        title_bar.set_title('CalibrateFileEdit')
+        title = self.main_window.get_title()
+        has_already_modified = 'CalibrateFileEdit*'
+        if title == has_already_modified:
+            self._presenter.save()
+            title_bar = self.main_window.get_titlebar()
+            title_bar.set_title('CalibrateFileEdit')
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("保存成功")
+            dialog.run()
+            dialog.destroy()
+        else:
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("文件未做修改")
+            dialog.run()
+            dialog.destroy()
 
     def save_as(self):
         pass
@@ -497,8 +535,24 @@ class MainUI(Gtk.Window):
     def show_dependencies_edit_ui(self):
         pass
 
-    def show_parameter_intervals_edit_ui(self):
-        pass
+    def show_parameter_intervals_edit_ui(self, widget):
+        try:
+            if not self._parameter_interval_ui.state:
+                interval = self._presenter.load_choosed_parameter_interval()
+                self._parameter_interval_ui.presenter.editor = self.presenter
+                self._parameter_interval_ui.update_current_interval_display(interval)
+                self._parameter_interval_ui.window.show_all()
+                self._parameter_interval_ui.state = True
+            else:
+                self._parameter_interval_ui.window.hide()
+                self._parameter_interval_ui.state = False
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择出系数区间")
+            dialog.run()
+            dialog.destroy()
 
     def show_factors_edit_ui(self, widget):
         try:
@@ -565,7 +619,7 @@ class Image:
         child = self.window.get_child()
         if child:
             self.window.remove(child)
-        self.image.set_from_file(r"..\image\factors_curve.png")
+        self.image.set_from_file(r"image\factors_curve.png")
         self.window.add(self.image)
 
     def set_window_header(self):
@@ -610,9 +664,13 @@ class Image:
         self.window.iconify()
 
 
-if __name__ == '__main__':
+def main():
     main_window = MainUI()
     main_window.init_file_operate()
     Gtk.main()
+
+
+if __name__ == '__main__':
+    main()
 
 # TODO 设置控件比例、get_path

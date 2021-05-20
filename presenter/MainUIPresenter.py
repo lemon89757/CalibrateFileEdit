@@ -169,3 +169,12 @@ class MainUIPresenter:
 
     def show_two_factors_curve(self, modified_segment, current_segment):
         self._editor.show_two_factors_curve(modified_segment, current_segment)
+
+    def modify_calibrate_parameter_interval(self, channel_index, choosed_parameter, path, current_segment,
+                                            modified_interval):
+        self._editor.modify_calibrate_parameter_interval(channel_index, choosed_parameter, path, current_segment,
+                                                         modified_interval)
+
+    def update_modified_interval(self):
+        self._view.update_modified_interval()
+        self._view.update_file_name_state()
