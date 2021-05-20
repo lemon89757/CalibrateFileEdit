@@ -7,12 +7,14 @@ from intervals import FloatInterval
 from presenter.MainUIPresenter import MainUIPresenter
 from view.FactorsEditView import FactorsEditView
 from view.ParameterIntervalEditView import ParameterIntervalEditView
+from view.DependenciesSegmentEditView import DependenciesSegmentEditView
 
 
 class MainUI(Gtk.Window):
     def __init__(self):
         self._factors_edit_ui = FactorsEditView()
         self._parameter_interval_ui = ParameterIntervalEditView()
+        self._dependencies_segment_ui = DependenciesSegmentEditView()
         self._presenter = MainUIPresenter()
         self._presenter.view = self
 
@@ -39,6 +41,8 @@ class MainUI(Gtk.Window):
         self._depends_id = None
         self._parameter_segments = None
         self.curve = Image()
+
+        self.init_child_ui_editor()
 
     @property
     def presenter(self):
@@ -89,6 +93,11 @@ class MainUI(Gtk.Window):
     def file_status_monitor(self):  # TODO 文件存在改动，文件名加后缀'*'
         # connect('chang', func)
         pass
+
+    def init_child_ui_editor(self):
+        self._dependencies_segment_ui.presenter.editor = self.presenter
+        self._factors_edit_ui.presenter.editor = self.presenter
+        self._parameter_interval_ui.presenter.editor = self.presenter
 
     def init_file_operate(self):
         open_menu_item = self.builder.get_object('open_item')
@@ -241,6 +250,9 @@ class MainUI(Gtk.Window):
                 combobox.set_model(model)
 
     def update_dependencies_segment_choose(self):
+        self.clear_calibrate_parameter_interval_combobox()
+        self.clear_factors_scrolled_win()
+
         calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
         channel_index = self._presenter.load_channel_index()
 
@@ -474,6 +486,9 @@ class MainUI(Gtk.Window):
         self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
         self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 0)
 
+    def update_modified_depend_segment(self):
+        self.update_dependencies_segment_choose()
+
     def update_file_name_state(self):
         title_bar = self.main_window.get_titlebar()
         title_bar.set_title('CalibrateFileEdit*')
@@ -532,14 +547,27 @@ class MainUI(Gtk.Window):
     def show_merge_file_ui(self):
         pass
 
-    def show_dependencies_edit_ui(self):
-        pass
+    def show_dependencies_edit_ui(self, widget):
+        try:
+            if not self._dependencies_segment_ui.state:
+                self._dependencies_segment_ui.update_dependencies_choose()
+                self._dependencies_segment_ui.window.show_all()
+                self._dependencies_segment_ui.state = True
+            else:
+                self._dependencies_segment_ui.window.hide()
+                self._dependencies_segment_ui.state = False
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择好依赖分段")
+            dialog.run()
+            dialog.destroy()
 
     def show_parameter_intervals_edit_ui(self, widget):
         try:
             if not self._parameter_interval_ui.state:
                 interval = self._presenter.load_choosed_parameter_interval()
-                self._parameter_interval_ui.presenter.editor = self.presenter
                 self._parameter_interval_ui.update_current_interval_display(interval)
                 self._parameter_interval_ui.window.show_all()
                 self._parameter_interval_ui.state = True
@@ -560,7 +588,6 @@ class MainUI(Gtk.Window):
                 factors = self._presenter.load_current_factors()
                 # self._factors_edit_ui.clear()
                 # self._factors_edit_ui.init_ui()
-                self._factors_edit_ui.presenter.editor = self.presenter
                 self._factors_edit_ui.update_current_factors(factors)
                 self._factors_edit_ui.window.show_all()
                 self._factors_edit_ui.state = True
@@ -670,7 +697,7 @@ def main():
     Gtk.main()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
 # TODO 设置控件比例、get_path
