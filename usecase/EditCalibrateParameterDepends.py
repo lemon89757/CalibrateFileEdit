@@ -91,7 +91,7 @@ class EditCalibrateParameterDepends:
             raise TypeError
         check_lower = isinstance(lower_num, int) or isinstance(lower_num, float)
         check_upper = isinstance(upper_num, int) or isinstance(upper_num, float)
-        if check_upper and check_lower:
+        if not check_upper and not check_lower:
             raise ValueError('upper bound or lower bound type error')
         for node in self._root_node.descendants:
             if node == depend_node:

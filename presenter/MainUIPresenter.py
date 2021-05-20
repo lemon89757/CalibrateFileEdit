@@ -178,3 +178,32 @@ class MainUIPresenter:
     def update_modified_interval(self):
         self._view.update_modified_interval()
         self._view.update_file_name_state()
+
+    def load_choosed_dependency_segment(self, dependency_id):
+        viewport = self._view.dependencies_segment_choose_scrolled_win.get_child()
+        main_box = viewport.get_child()
+        boxes = main_box.get_children()
+        for box in boxes:
+            children = box.get_children()
+            label = children[0]
+            depend = int(label.get_text())
+            if dependency_id == depend:
+                combobox = children[1]
+                segment_activated = combobox.get_active()
+                model = combobox.get_model()
+                _iter = model.get_iter_from_string('{}'.format(segment_activated))
+                segment_str = model.get_value(_iter, 0)
+                segment = FloatInterval.from_string(segment_str)
+                return segment
+
+    def modify_dependency_segment(self, lower_num, upper_num, dependency_id):
+        channel_index = self.load_channel_index()
+        calibrate_parameter = self.load_choosed_calibrate_parameter()
+        dependency_path = self.load_depend_path(dependency_id)
+        current_segment = self.load_choosed_dependency_segment(dependency_id)
+        self._editor.modify_depend_segment(channel_index, calibrate_parameter, lower_num, upper_num, dependency_path,
+                                           dependency_id, current_segment)
+
+    def update_modified_dependency_segment(self):
+        self._view.update_modified_depend_segment()
+        self._view.update_file_name_state()
