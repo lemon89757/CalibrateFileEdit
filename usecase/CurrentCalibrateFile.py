@@ -213,10 +213,6 @@ class CalibrateFileEdit:
         depend_parent_node = self.get_depend_parent_node(channel_index, calibrate_parameter, depend_path, depend_id)
         for child in depend_parent_node.children:
             if current_segment == child.parameter_segment:
-                current_channel = self._current_channels[channel_index]
-                current_calibrate_msg = current_channel[calibrate_parameter]
-                root_node = current_calibrate_msg.calibrate_tree
-                self._depend_editor.root_node = root_node
                 self._depend_editor.modify_depend_segment(lower_num, upper_num, child)
         # return self._depend_editor.root_node
 
