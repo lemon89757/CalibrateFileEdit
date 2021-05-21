@@ -538,8 +538,84 @@ class MainUI(Gtk.Window):
             dialog.run()
             dialog.destroy()
 
-    def save_as(self):
-        pass
+    def save_as_dialog(self):
+        save_as_dialog = Gtk.FileChooserDialog("另存为",
+                                               self.main_window, Gtk.FileChooserAction.SELECT_FOLDER,
+                                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                                Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+        extra_box = Gtk.Box()
+        extra_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        file_name_entry = Gtk.Entry()
+        file_name_entry.set_text('untitled')
+        extra_box.pack_start(file_name_entry, True, True, 0)
+        file_combobox = Gtk.ComboBox()
+        file_type_model = Gtk.ListStore(str)
+        file_type_model.append(['.json'])
+        file_type_model.append(['.bin'])
+        file_type_model.append(['.sql'])
+        file_combobox.set_model(file_type_model)
+        cell = Gtk.CellRendererText()
+        file_combobox.pack_start(cell, True)
+        file_combobox.add_attribute(cell, 'text', 0)
+        file_combobox.set_active(0)
+        extra_box.pack_start(file_combobox, False, True, 0)
+
+        save_as_dialog.set_extra_widget(extra_box)
+        return save_as_dialog
+
+    @staticmethod
+    def get_whole_file_path(dialog):
+        file_path = dialog.get_filename()
+
+        extra_box = dialog.get_extra_widget()
+        children = extra_box.get_children()
+        file_name = children[0].get_text()
+        combobox = children[1]
+        model = combobox.get_model()
+        _iter = combobox.get_active_iter()
+        file_type = model.get_value(_iter, 0)
+
+        file = file_name + file_type
+        whole_file_path = os.path.join(file_path, file)
+        return whole_file_path
+
+    def save_as(self, widget):
+        if not self._state:
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("当前无文件")
+            dialog.run()
+            dialog.destroy()
+        else:
+            self.show_save_as()
+
+    def show_save_as(self):
+        save_as_dialog = self.save_as_dialog()
+        extra_box = save_as_dialog.get_extra_widget()
+        extra_box.show_all()
+        while True:
+            response = save_as_dialog.run()
+            if response == Gtk.ResponseType.OK:
+                whole_file_path = self.get_whole_file_path(save_as_dialog)
+                if not os.path.exists(whole_file_path):
+                    self._presenter.save_as(whole_file_path)
+                    dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                               buttons=Gtk.ButtonsType.OK, text="提示")
+                    dialog.format_secondary_text("保存成功")
+                    dialog.run()
+                    dialog.destroy()
+                    save_as_dialog.destroy()
+                    break
+                else:
+                    dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                               buttons=Gtk.ButtonsType.OK, text="提示")
+                    dialog.format_secondary_text("文件已存在")
+                    dialog.run()
+                    dialog.destroy()
+                    continue
+            elif response == Gtk.ResponseType.CANCEL:
+                save_as_dialog.destroy()
+                break
 
     def show_calibrate_tree_edit_ui(self):
         pass

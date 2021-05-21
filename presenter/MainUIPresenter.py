@@ -163,6 +163,9 @@ class MainUIPresenter:
     def save(self):
         self._editor.save()
 
+    def save_as(self, file_path):
+        self._editor.save_as(file_path)
+
     def update_modified_factors(self, new_factors):
         self._view.update_modified_factors_scrolled_win(new_factors)
         self._view.update_file_name_state()
