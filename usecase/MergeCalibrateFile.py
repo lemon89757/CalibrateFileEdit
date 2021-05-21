@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-from entity.FileHandler import FileHandler
+from entity.FileReadAndWrite import FileRW
 
 
 class MergeCalibrateFile:
@@ -18,7 +18,7 @@ class MergeCalibrateFile:
         self._another_file = value
 
     def get_another_file_channels_msg(self):
-        file_handler = FileHandler()
+        file_handler = FileRW()
         file_handler.get_calibrate_file(self._another_file)
         channels = file_handler.load_all_calibrate_msg_from_file()
         return channels
@@ -30,7 +30,7 @@ class MergeCalibrateFile:
         return new_channels
 
     def get_calibrate_msg(self, channel_index, parameter_id):
-        file_handler = FileHandler()
+        file_handler = FileRW()
         file_handler.get_calibrate_file(self._another_file)
         calibrate_msg = file_handler.load_calibrate_msg_from_file(channel_index, parameter_id)
         return calibrate_msg
@@ -54,7 +54,7 @@ class MergeCalibrateFile:
         except json.decoder.JSONDecodeError:
             raise ValueError('文件为空')
         another_file_channel = calibrate_file['channels'][another_file_channel_index]
-        file_handler = FileHandler()
+        file_handler = FileRW()
         file_handler.get_calibrate_file(self._another_file)
         for msg in another_file_channel:
             calibrate_msg = file_handler.load_calibrate_msg_from_file(another_file_channel_index, msg[0])
