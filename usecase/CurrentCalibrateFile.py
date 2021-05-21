@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from entity.FileHandler import FileHandler
+from entity.FileReadAndWrite import FileRW
 from usecase.EditCalibrateParameter import EditCalibrateParameter
 from usecase.EditCalibrateParameterDepends import EditCalibrateParameterDepends
 from usecase.MergeCalibrateFile import MergeCalibrateFile
@@ -45,7 +45,7 @@ class CalibrateFileEdit:
 
     # 获取校正信息
     def get_file_channels(self):
-        file_handler = FileHandler()
+        file_handler = FileRW()
         file_handler.get_calibrate_file(self._current_file_path)
         channels = file_handler.load_all_calibrate_msg_from_file()
         return channels
@@ -222,12 +222,12 @@ class CalibrateFileEdit:
 
     # 保存
     def save(self):
-        file_handler = FileHandler()
+        file_handler = FileRW()
         file_handler.file_path = self._current_file_path
         calibrate_file = file_handler.calibrate_msg_to_file_form(self._current_channels)
         file_handler.save(calibrate_file)
 
     def save_as(self, file_path):
-        file_handler = FileHandler()
+        file_handler = FileRW()
         calibrate_file = file_handler.calibrate_msg_to_file_form(self._current_channels)
         file_handler.save_as(calibrate_file, file_path)

@@ -86,16 +86,15 @@ class EditCalibrateParameterDepends:
                 parent_node = depend_node.parent
                 parent_node.children = same_parent_node
 
-    def modify_depend_segment(self, lower_num, upper_num, depend_node):
+    @staticmethod
+    def modify_depend_segment(lower_num, upper_num, depend_node):
         if not isinstance(depend_node, CalibrateDependencyNode):
             raise TypeError
         check_lower = isinstance(lower_num, int) or isinstance(lower_num, float)
         check_upper = isinstance(upper_num, int) or isinstance(upper_num, float)
         if not check_upper and not check_lower:
             raise ValueError('upper bound or lower bound type error')
-        for node in self._root_node.descendants:
-            if node == depend_node:
-                segment = FloatInterval.closed(lower_num, upper_num)
-                depend_node.parameter_segment = segment
+        new_segment = FloatInterval.closed(lower_num, upper_num)
+        depend_node.parameter_segment = new_segment
 
 # a_branch_nodes = one_leaf_node.ancestors  # 分支节点中第一个为根节点
