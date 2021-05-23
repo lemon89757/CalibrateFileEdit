@@ -8,13 +8,15 @@ from presenter.MainUIPresenter import MainUIPresenter
 from view.FactorsEditView import FactorsEditView
 from view.ParameterIntervalEditView import ParameterIntervalEditView
 from view.DependenciesSegmentEditView import DependenciesSegmentEditView
+from view.SeniorView import SeniorUI
 
 
-class MainUI(Gtk.Window):
+class MainUI:
     def __init__(self):
         self._factors_edit_ui = FactorsEditView()
         self._parameter_interval_ui = ParameterIntervalEditView()
         self._dependencies_segment_ui = DependenciesSegmentEditView()
+        self._senior_ui = SeniorUI()
         self._presenter = MainUIPresenter()
         self._presenter.view = self
 
@@ -98,6 +100,7 @@ class MainUI(Gtk.Window):
         self._dependencies_segment_ui.presenter.editor = self.presenter
         self._factors_edit_ui.presenter.editor = self.presenter
         self._parameter_interval_ui.presenter.editor = self.presenter
+        self._senior_ui.presenter.editor = self._presenter
 
     def init_file_operate(self):
         open_menu_item = self.builder.get_object('open_item')
@@ -138,12 +141,15 @@ class MainUI(Gtk.Window):
 
     def init_all_display_widget(self):
         self.channel_combobox = self.builder.get_object('channel_combobox')
+        self.channel_combobox.connect('changed', self.update_calibrate_parameter_choose_combobox)
         self.calibrate_parameter_choose_combobox = self.builder.get_object('calibrate_parameter_choose_combobox')
+        self.calibrate_parameter_choose_combobox.connect('changed', self.update_next_about)
         self.model_display_label = self.builder.get_object('model_show_label')
         self.dependencies_list_scrolled_win = self.builder.get_object('dependencies_scrolled_window')
         self.dependencies_segment_choose_scrolled_win = self.builder.get_object('depend_segment_choose_scrolled_window')
         self.calibrate_parameter_interval_choose_combobox = \
             self.builder.get_object('calibrate_parameter_segment_choose_combobox')
+        self.calibrate_parameter_interval_choose_combobox.connect('changed', self.update_factors_scrolled_win)
         self.factors_scrolled_win = self.builder.get_object('calibrate_factors_scrolled_window')
 
     def update_channel_combobox(self):
@@ -158,7 +164,6 @@ class MainUI(Gtk.Window):
         self.channel_combobox.pack_start(channels_cell, True)
         self.channel_combobox.add_attribute(channels_cell, 'text', 1)
         self.channel_combobox.set_active(0)
-        self.channel_combobox.connect('changed', self.update_calibrate_parameter_choose_combobox)
 
     def update_calibrate_parameter_choose_combobox(self, widget):
         channel_index = self._presenter.load_channel_index()
@@ -185,8 +190,6 @@ class MainUI(Gtk.Window):
             self.clear_dependencies_segment_choose()
             self.clear_calibrate_parameter_interval_combobox()
             self.clear_factors_scrolled_win()
-        else:
-            self.calibrate_parameter_choose_combobox.connect('changed', self.update_next_about)
 
     def clear_calibrate_parameter_choose_combobox(self):
         empty_type_model = Gtk.ListStore()
@@ -397,7 +400,6 @@ class MainUI(Gtk.Window):
             cell = Gtk.CellRendererText()
             self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
             self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 0)
-            self.calibrate_parameter_interval_choose_combobox.connect('changed', self.update_factors_scrolled_win)
 
     def clear_factors_scrolled_win(self):
         self.factors_scrolled_win.set_sensitive(False)
@@ -436,6 +438,7 @@ class MainUI(Gtk.Window):
             self.init_display()
             self.init_edit_operate()
             self.update_channel_combobox()
+            self.init_others()
             self._state = True
         else:
             title_bar = self.main_window.get_titlebar()
@@ -516,7 +519,7 @@ class MainUI(Gtk.Window):
         elif response == Gtk.ResponseType.CANCEL:
             dialog.destroy()
 
-    def new_file(self):
+    def new_file(self, widget):
         pass
 
     def save(self, widget):
@@ -617,10 +620,24 @@ class MainUI(Gtk.Window):
                 save_as_dialog.destroy()
                 break
 
-    def show_calibrate_tree_edit_ui(self):
-        pass
+    def show_calibrate_tree_edit_ui(self, widget):
+        try:
+            if not self._senior_ui.state:
+                self._senior_ui.update_available_parameters()
+                self._senior_ui.window.show_all()
+                self._senior_ui.state = True
+            else:
+                self._senior_ui.hide_and_update_main_ui()
+                self._senior_ui.state = False
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择有效通道")
+            dialog.run()
+            dialog.destroy()
 
-    def show_merge_file_ui(self):
+    def show_merge_file_ui(self, widget):
         pass
 
     def show_dependencies_edit_ui(self, widget):
