@@ -125,6 +125,19 @@ class CalibrateFileEdit:
         parameter_segments = self.get_segments_dict(parameter_node)
         return parameter_segments
 
+    def get_available_parameters(self, channel_index):
+        available_parameters = []
+        choosed_channel = self._current_channels[channel_index]
+        for parameter in choosed_channel.keys():
+            available_parameters.append(parameter)
+        return available_parameters
+
+    def get_root_node(self, channel_index, parameter_id):
+        choosed_channel = self._current_channels[channel_index]
+        calibrate_msg = choosed_channel[parameter_id]
+        root_node = calibrate_msg.calibrate_tree
+        return root_node
+
     # 文件合并
     def merge_calibrate_file_by_method_two(self, merge_channel_index, another_channel_index, another_parameter_id):
         merge_channel = self._current_channels[merge_channel_index]
@@ -159,10 +172,10 @@ class CalibrateFileEdit:
         self._calibrate_parameter_editor.add_parameter_segment(segment)
         return self._calibrate_parameter_editor.parameter_node
 
-    def delete_parameter_segment(self, parameter_node, segment):
+    def delete_parameter_segment(self, parameter_node, interval):
         self._calibrate_parameter_editor.parameter_node = parameter_node
-        self._calibrate_parameter_editor.delete_parameter_segment(segment)
-        return self._calibrate_parameter_editor.parameter_node
+        self._calibrate_parameter_editor.delete_parameter_segment(interval)
+        # return self._calibrate_parameter_editor.parameter_node
 
     def add_parameter_node(self, root_node, parent_node):
         leaf_nodes = root_node.leaves
@@ -201,12 +214,11 @@ class CalibrateFileEdit:
     def add_depend_segment_until_leaf(self, root_node, start_depend_node):
         self._depend_editor.root_node = root_node
         self._depend_editor.add_depends_segment_nodes_until_leaf(start_depend_node)
-        return self._depend_editor.root_node
+        # return self._depend_editor.root_node
 
-    def delete_depend_segment(self, root_node, depend_node):
-        self._depend_editor.root_node = root_node
+    def delete_depend_segment(self, depend_node):
         self._depend_editor.delete_depend_segment(depend_node)
-        return self._depend_editor.root_node
+        # return self._depend_editor.root_node
 
     def modify_depend_segment(self, channel_index, calibrate_parameter, lower_num, upper_num, depend_path, depend_id,
                               current_segment):
@@ -227,3 +239,35 @@ class CalibrateFileEdit:
         file_handler = FileRW()
         calibrate_file = file_handler.calibrate_msg_to_file_form(self._current_channels)
         file_handler.save_as(calibrate_file, file_path)
+
+    def get_current_node(self, channel_index, calibrate_parameter_id, path):
+        current_choosed_id = path[-1][0]
+        current_choosed_segment = path[-1][1]
+        if current_choosed_id != calibrate_parameter_id:
+            current_parent_node = self.get_depend_parent_node(channel_index, calibrate_parameter_id, path[:-1],
+                                                              current_choosed_id)
+            for node in current_parent_node.children:
+                if node.parameter_id == current_choosed_id and node.parameter_segment == current_choosed_segment:
+                    return node
+
+    def add_branch(self, channel_index, calibrate_parameter_id, path):
+        node = self.get_current_node(channel_index, calibrate_parameter_id, path)
+        root_node = self.get_root_node(channel_index, calibrate_parameter_id)
+        self.add_depend_segment_until_leaf(root_node, node)
+
+    def delete_branch(self, channel_index, calibrate_parameter_id, path):
+        current_choosed_id = path[-1][0]
+        if current_choosed_id == calibrate_parameter_id:
+            calibrate_parameter_parent_node = self.get_parameter_parent_node(channel_index, calibrate_parameter_id,
+                                                                             path[:-1])
+            current_node = calibrate_parameter_parent_node.children[0]
+            current_choosed_interval = path[-1][1]
+            self.delete_parameter_segment(current_node, current_choosed_interval)
+        else:
+            current_node = self.get_current_node(channel_index, calibrate_parameter_id, path)
+            self.delete_depend_segment(current_node)
+
+    def add_complete_branch(self, channel_index, calibrate_parameter_id):
+        root_node = self.get_root_node(channel_index, calibrate_parameter_id)
+        self.add_depend_segment_until_leaf(root_node, root_node)
+
