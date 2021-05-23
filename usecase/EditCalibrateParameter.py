@@ -3,13 +3,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from intervals import FloatInterval
 from entity.CalibrateFile import CalibrateParameterNode
+from anytree import RenderTree
 
 
 # segment = [具体硬件分段，对应校正系数] eg:[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]]
 class EditCalibrateParameter:
     def __init__(self):
         self._parameter_node = None
-        self._parameter_factors_before = None
 
     @property
     def parameter_node(self):
@@ -22,18 +22,16 @@ class EditCalibrateParameter:
         self._parameter_node = value
 
     @staticmethod
-    def add_parameter_node(parameter_id, root_node, parent_node):
-        for node in root_node.descendants:
-            if node == parent_node:
-                default_interval = FloatInterval.closed(float('-inf'), float('inf'))
-                default_factors = [0, 0, 0, 0, 0, 0]
-                default_segment = [default_interval, default_factors]
-                parameter_node = CalibrateParameterNode()
-                parameter_node.parameter_id = parameter_id
-                parameter_node.parameter_segments = []
-                parameter_node.parameter_segments.append([default_segment])
-                parameter_node.parent = node
-        return root_node
+    def add_parameter_node(parameter_id, parent_node):
+        default_interval = FloatInterval.closed(float('-inf'), float('inf'))
+        default_factors = [0, 0, 0, 0, 0, 0]
+        default_segment = [default_interval, default_factors]
+        parameter_node = CalibrateParameterNode()
+        parameter_node.parameter_id = parameter_id
+        parameter_node.parameter_segments = []
+        parameter_node.parameter_segments.append(default_segment)
+        parameter_node.parent = parent_node
+        # return root_node
 
     @staticmethod
     def delete_parameter_node(root_node, parameter_node):
@@ -44,12 +42,11 @@ class EditCalibrateParameter:
                 parent_node.children = same_parent_node
         return root_node
 
-    def add_parameter_segment(self, segment):
-        calibrate_factors = segment[1]
-        parameter_interval = segment[0]
-        new_parameter_node = self.add_parameter_interval(parameter_interval, self._parameter_node)
-        new_parameter_node = self.add_calibrate_factors(calibrate_factors, new_parameter_node)
-        self._parameter_node = new_parameter_node
+    def add_parameter_segment(self):
+        default_interval = FloatInterval.closed(float('-inf'), float('inf'))
+        default_factors = [0, 0, 0, 0, 0, 0]
+        self.add_parameter_interval(default_interval, self._parameter_node)
+        self.add_calibrate_factors(default_factors, self._parameter_node)
 
     @staticmethod
     def add_calibrate_factors(value, parameter_node):
@@ -62,7 +59,7 @@ class EditCalibrateParameter:
         new_segment[1] = value
         segments[-1] = new_segment
         parameter_node.parameter_segments = segments
-        return parameter_node
+        # return parameter_node
 
     @staticmethod
     def add_parameter_interval(value, parameter_node):
@@ -73,13 +70,15 @@ class EditCalibrateParameter:
         new_segment = [value, factors]
         segments.append(new_segment)
         parameter_node.parameter_segments = segments
-        return parameter_node
+        # return parameter_node
 
-    def delete_parameter_segment(self, segment):
+    def delete_parameter_segment(self, interval):
         segments = self._parameter_node.parameter_segments
         for segment_in in segments:
-            if segment == segment_in:
+            interval_in = segment_in[0]
+            if interval == interval_in:
                 segments.remove(segment_in)
+                break
         self._parameter_node.parameter_segments = segments
 
     def modify_parameter_interval(self, value, segment):
@@ -99,7 +98,6 @@ class EditCalibrateParameter:
         segments = self._parameter_node.parameter_segments
         for segment_in in segments:
             if segment == segment_in:
-                self._parameter_factors_before = segment[1]
                 segment_in[1] = value
         self._parameter_node.parameter_segments = segments
         # segment = [具体硬件分段，对应校正系数] eg:[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]]
