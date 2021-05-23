@@ -35,43 +35,43 @@ class EditCalibrateParameterDepends:
 
     def add_depends_segment_nodes_until_leaf(self, start_depend_node):
         self._child_node = None
-        remain_branch_length = self.get_remain_branch_length(start_depend_node.parameter_id)
-        for node in self._root_node.descendants:
-            if start_depend_node == node:
-                parent_node = node
-                count = 1
-                for i in range(remain_branch_length):
-                    if count < remain_branch_length:
-                        self.add_depend_segment_node(parent_node)
-                        parent_node = self._child_node
-                        count += 1
-                    elif count == remain_branch_length:
-                        leaf_nodes = self._root_node.leaves
-                        parameter_id = leaf_nodes[0].parameter_id
-                        handler_parameter_node = EditCalibrateParameter()
-                        self._root_node = \
-                            handler_parameter_node.add_parameter_node(parameter_id, self._root_node, parent_node)
+        remain_branch_length = start_depend_node.height
+        handler_parameter_node = EditCalibrateParameter()
+        if remain_branch_length == 1:
+            handler_parameter_node.parameter_node = start_depend_node.children[0]
+            handler_parameter_node.add_parameter_segment()
+        else:
+            remain_branch_id = self.get_remain_branch_id(start_depend_node.parameter_id)
+            parent_node = start_depend_node
+            count = 1
+            for i in range(remain_branch_length):
+                if count < remain_branch_length:
+                    child_id = remain_branch_id[count]
+                    self.add_depend_segment_node(parent_node, child_id)
+                    parent_node = self._child_node
+                    count += 1
+                elif count == remain_branch_length:
+                    parameter_id = remain_branch_id[-1]
+                    handler_parameter_node.add_parameter_node(parameter_id, parent_node)
 
-    def add_depend_segment_node(self, parent_node, segment=FloatInterval.closed(float('-inf'), float('inf'))):
+    def add_depend_segment_node(self, parent_node, child_id, segment=FloatInterval.closed(float('-inf'), float('inf'))):
         # 当父节点在分支中的位置不是参数节点的前一级时，需考虑添加多级的分段
-        child_nodes = parent_node.children
-        child_node_id = child_nodes[0].parameter_id
         child_node = CalibrateDependencyNode()
         child_node.parameter_segment = segment
-        child_node.parameter_id = child_node_id
+        child_node.parameter_id = child_id
         child_node.parent = parent_node
         self._child_node = child_node
 
-    def get_remain_branch_length(self, start_depend_id):
+    def get_remain_branch_id(self, start_depend_id):
+        complete_branch_id = []
         leaf_nodes = self._root_node.leaves
         a_leaf_node = leaf_nodes[0]
         a_branch_nodes = a_leaf_node.ancestors
         for node in a_branch_nodes:
-            if start_depend_id == node.parameter_id:
-                remain_branch = a_branch_nodes
-                return len(remain_branch)
-            else:
-                a_branch_nodes.remove(node)
+            complete_branch_id.append(node.parameter_id)
+        complete_branch_id.append(a_leaf_node.parameter_id)
+        index = complete_branch_id.index(start_depend_id)
+        return complete_branch_id[index:]
 
     def delete_depend(self, depend_id):   # 只是将所有该依赖的分段变为从负无穷至正无穷
         for node in self._root_node.descendants:
@@ -80,11 +80,11 @@ class EditCalibrateParameterDepends:
                 node.parameter_segment = segment
 
     def delete_depend_segment(self, depend_node):
-        for node in self._root_node.descendants:
-            if depend_node == node:
-                same_parent_node = node.siblings
-                parent_node = depend_node.parent
-                parent_node.children = same_parent_node
+        # for node in self._root_node.descendants:
+        #     if depend_node == node:
+        same_parent_node = depend_node.siblings
+        parent_node = depend_node.parent
+        parent_node.children = same_parent_node
 
     @staticmethod
     def modify_depend_segment(lower_num, upper_num, depend_node):
