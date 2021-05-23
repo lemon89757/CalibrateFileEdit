@@ -157,7 +157,8 @@ class MainUIPresenter:
         segment = [interval, factors]
         self._editor.show_current_factors_curve(segment)
 
-    def modify_parameter_factors(self, channel_index, calibrate_parameter_id, path, segment, modified_factors):
+    def modify_parameter_factors(self, calibrate_parameter_id, path, segment, modified_factors):
+        channel_index = self.load_channel_index()
         self._editor.modify_parameter_factors(channel_index, calibrate_parameter_id, path, segment, modified_factors)
 
     def save(self):
@@ -210,3 +211,45 @@ class MainUIPresenter:
     def update_modified_dependency_segment(self):
         self._view.update_modified_depend_segment()
         self._view.update_file_name_state()
+
+    def get_available_parameters(self):
+        channel_index = self.load_channel_index()
+        available_parameters = self._editor.get_available_parameters(channel_index)
+        return available_parameters
+
+    def get_root_node(self, parameter_id):
+        channel_index = self.load_channel_index()
+        root_node = self._editor.get_root_node(channel_index, parameter_id)
+        return root_node
+
+    def modify_segment(self, calibrate_parameter_id, current_factors, modified_parameter_id, path, new_segment):
+        channel_index = self.load_channel_index()
+        if calibrate_parameter_id == modified_parameter_id:
+            current_interval = path[-1][1]
+            path = path[:-1]
+            current_factors = eval(current_factors)
+            current_segment = [current_interval, current_factors]
+            new_interval = new_segment
+            self._editor.modify_calibrate_parameter_interval(channel_index, calibrate_parameter_id, path,
+                                                             current_segment, new_interval)
+        else:
+            current_segment = path[-1][1]
+            path = path[:-1]
+            self._editor.modify_depend_segment(channel_index, calibrate_parameter_id, new_segment.lower,
+                                               new_segment.upper, path, modified_parameter_id, current_segment)
+
+    def update_main_ui_from_senior(self):
+        self._view.update_file_name_state()
+        self._view.update_channel_combobox()
+
+    def add_branch(self, calibrate_parameter_id, path):
+        channel_index = self.load_channel_index()
+        self._editor.add_branch(channel_index, calibrate_parameter_id, path)
+
+    def delete_branch(self, calibrate_parameter_id, path):
+        channel_index = self.load_channel_index()
+        self._editor.delete_branch(channel_index, calibrate_parameter_id, path)
+
+    def add_complete_branch(self, calibrate_parameter_id):
+        channel_index = self.load_channel_index()
+        self._editor.add_complete_branch(channel_index, calibrate_parameter_id)
