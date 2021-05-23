@@ -35,14 +35,13 @@ class FactorsEditUIPresenter:   # TODO 可将MainUIPresenter作为editor(只作�
         self._editor.show_two_factors_curve(modified_segment, current_segment)
 
     def modify_factors(self):
-        channel_index = self._editor.load_channel_index()
         calibrate_parameter_id = self._editor.load_choosed_calibrate_parameter()
         path = self._editor.load_parameter_node_path()
         current_factors = self._editor.load_current_factors()
         current_interval = self._editor.load_choosed_parameter_interval()
         segment = [current_interval, current_factors]
         modified_factors = self.load_current_entry()
-        self._editor.modify_parameter_factors(channel_index, calibrate_parameter_id, path, segment, modified_factors)
+        self._editor.modify_parameter_factors(calibrate_parameter_id, path, segment, modified_factors)
         print("yes")
 
     def update_modified_factors(self):
