@@ -117,6 +117,8 @@ class EditCalibrateParameter:
         parameter_interval = segment[0]
         upper_num = parameter_interval.upper
         lower_num = parameter_interval.lower
+        if upper_num == float('inf') or lower_num == float('inf'):
+            raise ValueError('参数区间不能为无穷')
         calibrate_factors = segment[1]
         x = np.linspace(lower_num, upper_num, 1000)
         y = calibrate_factors[0] * x**5 + calibrate_factors[1] * x**4 + calibrate_factors[2] * x**3 \
@@ -134,6 +136,8 @@ class EditCalibrateParameter:
         parameter_interval = modified_segment[0]
         upper_num = parameter_interval.upper
         lower_num = parameter_interval.lower
+        if upper_num == float('inf') or lower_num == float('inf'):
+            raise ValueError('参数区间不能为无穷')
         calibrate_factors = modified_segment[1]
         x = np.linspace(lower_num, upper_num, 1000)
         y = calibrate_factors[0] * x ** 5 + calibrate_factors[1] * x ** 4 + calibrate_factors[2] * x ** 3 \

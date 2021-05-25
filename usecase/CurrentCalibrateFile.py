@@ -198,15 +198,15 @@ class CalibrateFileEdit:
         self._calibrate_parameter_editor.show_two_factors_curve(modified_segment, current_segment)
 
     # 依赖编辑
-    def add_depend(self, root_node, depend_id, parent_id):
+    def add_depend(self, root_node, depend_id, pos, new_dependency):
         self._depend_editor.root_node = root_node
-        self._depend_editor.add_depend(parent_id, depend_id)
-        return self._depend_editor.root_node
+        self._depend_editor.add_depend(depend_id, pos, new_dependency)
+        # return self._depend_editor.root_node
 
     def delete_depend(self, root_node, depend_id):
         self._depend_editor.root_node = root_node
         self._depend_editor.delete_depend(depend_id)
-        return self._depend_editor.root_node
+        # return self._depend_editor.root_node
 
     def add_depend_segment_until_leaf(self, root_node, start_depend_node):
         self._depend_editor.root_node = root_node

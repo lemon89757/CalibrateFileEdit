@@ -20,18 +20,33 @@ class EditCalibrateParameterDepends:
             raise ValueError('node type is not CalibrateParameterNode')
         self._root_node = value
 
-    def add_depend(self, parent_id, depend_id):
-        for node in self._root_node.descendants:
-            if parent_id == node.parameter_id:
-                children_nodes = node.children
-                node.children = []
-
-                depend_node = CalibrateDependencyNode()
-                depend_node.parameter_id = depend_id
-                default_segment = FloatInterval.closed(float('-inf'), float('inf'))
-                depend_node.parameter_segment = default_segment
-                depend_node.parent = node
-                depend_node.children = children_nodes
+    def add_depend(self, depend_in, pos, new_dependency):
+        front = 0
+        behind = 1
+        if front == pos:
+            for node in self._root_node.descendants:
+                if depend_in == node.parameter_id:
+                    parent_node = node.parent
+                    parent_children = list(parent_node.children)
+                    parent_children.remove(node)
+                    parent_node.children = parent_children
+                    depend_node = CalibrateDependencyNode()
+                    depend_node.parameter_id = new_dependency
+                    default_segment = FloatInterval.closed(float('-inf'), float('inf'))
+                    depend_node.parameter_segment = default_segment
+                    depend_node.parent = parent_node
+                    node.parent = depend_node
+        elif behind == pos:
+            for node in self._root_node.descendants:
+                if depend_in == node.parameter_id:
+                    children_nodes = node.children
+                    node.children = []
+                    depend_node = CalibrateDependencyNode()
+                    depend_node.parameter_id = new_dependency
+                    default_segment = FloatInterval.closed(float('-inf'), float('inf'))
+                    depend_node.parameter_segment = default_segment
+                    depend_node.parent = node
+                    depend_node.children = children_nodes
 
     def add_depends_segment_nodes_until_leaf(self, start_depend_node):
         self._child_node = None
@@ -76,8 +91,12 @@ class EditCalibrateParameterDepends:
     def delete_depend(self, depend_id):   # 只是将所有该依赖的分段变为从负无穷至正无穷
         for node in self._root_node.descendants:
             if depend_id == node.parameter_id:
-                segment = FloatInterval.closed(float('-inf'), float('inf'))
-                node.parameter_segment = segment
+                parent_node = node.parent
+                parent_children = list(parent_node.children)
+                parent_children.remove(node)
+                parent_children += list(node.children)
+                parent_node.children = parent_children
+
 
     @staticmethod
     def delete_depend_segment(depend_node):
