@@ -52,11 +52,6 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
-  <object class="GtkImage" id="image9">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="stock">gtk-missing-image</property>
-  </object>
   <object class="GtkBox" id="main_box">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -171,15 +166,6 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="image">image8</property>
-                    <property name="use-stock">False</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkImageMenuItem" id="display_two_curves_item">
-                    <property name="label" translatable="yes">显示编辑前后系数曲线</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="image">image9</property>
                     <property name="use-stock">False</property>
                   </object>
                 </child>
