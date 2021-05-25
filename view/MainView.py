@@ -40,6 +40,7 @@ class MainUI:
         self.factors_scrolled_win = None
 
         self._state = False
+        self._is_update_all_dependencies_segment_choose = False
         self._depends_id = None
         self._parameter_segments = None
         self.curve = Image()
@@ -91,10 +92,6 @@ class MainUI:
 
     def minimize(self, widget):          # TODO
         self.main_window.iconify()
-
-    def file_status_monitor(self):  # TODO 文件存在改动，文件名加后缀'*'
-        # connect('chang', func)
-        pass
 
     def init_child_ui_editor(self):
         self._dependencies_segment_ui.presenter.editor = self.presenter
@@ -155,7 +152,7 @@ class MainUI:
     def update_channel_combobox(self):
         self.channel_combobox.clear()
         channels_model = Gtk.ListStore(int, str)
-        channels_model.append([2020, '2020'])    # 默认通道
+        channels_model.append([2020, '--请先选择通道--'])    # 默认通道
         channels = copy.deepcopy(self._presenter.get_channels())
         for channel in channels:
             channels_model.append([channels.index(channel), '通道{}'.format(channels.index(channel)+1)])
@@ -168,17 +165,17 @@ class MainUI:
     def update_calibrate_parameter_choose_combobox(self, widget):
         channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            parameters_model = Gtk.ListStore(int)
-            parameters_model.append([2020])          # 默认参数
+            parameters_model = Gtk.ListStore(int, str)
+            parameters_model.append([2020, '--请先选择校正参数--'])          # 默认参数
             channels = self._presenter.get_channels()
-            choosed_channel = channels[channel_index]
-            for parameter in choosed_channel.keys():
-                parameters_model.append([parameter])
+            chosen_channel = channels[channel_index]
+            for parameter in chosen_channel.keys():
+                parameters_model.append([parameter, '{}'.format(parameter)])
             self.calibrate_parameter_choose_combobox.clear()
             self.calibrate_parameter_choose_combobox.set_model(parameters_model)
             parameter_cell = Gtk.CellRendererText()
             self.calibrate_parameter_choose_combobox.pack_start(parameter_cell, True)
-            self.calibrate_parameter_choose_combobox.add_attribute(parameter_cell, 'text', 0)
+            self.calibrate_parameter_choose_combobox.add_attribute(parameter_cell, 'text', 1)
             self.calibrate_parameter_choose_combobox.set_active(0)
             empty_model = False
         else:
@@ -196,6 +193,7 @@ class MainUI:
         self.calibrate_parameter_choose_combobox.set_model(empty_type_model)
 
     def update_next_about(self, widget):
+        self._is_update_all_dependencies_segment_choose = True
         self.clear_factors_scrolled_win()
         self.clear_calibrate_parameter_interval_combobox()
         self.update_calibrate_model()
@@ -205,18 +203,17 @@ class MainUI:
     def update_calibrate_model(self):
         channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
+            calibrate_parameter = self._presenter.load_chosen_calibrate_parameter()
             if calibrate_parameter == 2020:
                 self.init_calibrate_model()
             else:
-                # print(calibrate_parameter)   # TODO 多次输出同一参数值
-                calibrate_model = self._presenter.get_calibrate_model(calibrate_parameter, channel_index)
+                calibrate_model = self._presenter.get_calibrate_model()
                 self.model_display_label.set_text('校正类型{}'.format(calibrate_model))
         else:
-            self.model_display_label.set_text('校正类型2020')
+            self.model_display_label.set_text('--请先选择校正参数--')
 
     def init_calibrate_model(self):
-        self.model_display_label.set_text('校正类型2020')
+        self.model_display_label.set_text('--请先选择校正参数--')
 
     def update_dependencies_list(self):
         self.dependencies_list_scrolled_win.set_sensitive(True)
@@ -226,9 +223,9 @@ class MainUI:
 
         channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-            if calibrate_parameter != 2020 and channel_index != 2020:
-                dependencies_list = self._presenter.get_dependencies_list(calibrate_parameter, channel_index)
+            calibrate_parameter = self._presenter.load_chosen_calibrate_parameter()
+            if calibrate_parameter != 2020:
+                dependencies_list = self._presenter.get_dependencies_list()
                 dependencies_text_buffer.set_text('{}'.format(dependencies_list))
                 # self.update_dependencies_segment_choose()
 
@@ -238,7 +235,7 @@ class MainUI:
         if child:
             self.dependencies_list_scrolled_win.remove(child)
         self.dependencies_list_scrolled_win.add(dependencies_text_view)
-        self.dependencies_list_scrolled_win.show_all()    # TODO show_all() 才能显示其中内容
+        self.dependencies_list_scrolled_win.show_all()    # show_all() 才能显示其中内容
 
     def clear_dependencies_segment_choose(self):
         viewport = self.dependencies_segment_choose_scrolled_win.get_child()
@@ -256,9 +253,7 @@ class MainUI:
         self.clear_calibrate_parameter_interval_combobox()
         self.clear_factors_scrolled_win()
 
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-        channel_index = self._presenter.load_channel_index()
-
+        calibrate_parameter = self._presenter.load_chosen_calibrate_parameter()
         if calibrate_parameter == 2020:
             self.clear_dependencies_segment_choose()
             self.clear_calibrate_parameter_interval_combobox()
@@ -266,7 +261,7 @@ class MainUI:
             child = self.dependencies_segment_choose_scrolled_win.get_child()
             if child:
                 self.dependencies_segment_choose_scrolled_win.remove(child)
-            depends_id = self._presenter.get_depends_id(channel_index, calibrate_parameter)
+            depends_id = self._presenter.get_depends_id_in_main(calibrate_parameter)
             self._depends_id = depends_id
 
             viewport = Gtk.Viewport()
@@ -289,8 +284,7 @@ class MainUI:
             self.update_first_depend_segments()
 
     def update_first_depend_segments(self):
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-        channel_index = self._presenter.load_channel_index()
+        calibrate_parameter = self._presenter.load_chosen_calibrate_parameter()
 
         viewport = self.dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
@@ -302,23 +296,23 @@ class MainUI:
 
         first_path = [[calibrate_parameter, None]]
         first_depend_id = self._depends_id[0]
-        first_segments = self._presenter.get_depend_segments(channel_index, calibrate_parameter,
-                                                             first_path, first_depend_id)
-        first_model = Gtk.ListStore(str)
-        first_model.append(['[2020, 2020]'])
+        first_segments = self._presenter.get_depend_segments(first_path, first_depend_id)
+        first_model = Gtk.ListStore(str, str)
+        first_model.append(['[2020, 2020]', '--请先选择依赖区间--'])
         for segment in first_segments:
             lower_num = segment.lower
             upper_num = segment.upper
-            first_model.append(['[{}, {}]'.format(lower_num, upper_num)])
+            first_model.append(['[{}, {}]'.format(lower_num, upper_num), '[{}, {}]'.format(lower_num, upper_num)])
         first_combobox.set_model(first_model)
         first_cell = Gtk.CellRendererText()
         first_combobox.pack_start(first_cell, True)
-        first_combobox.add_attribute(first_cell, 'text', 0)
+        first_combobox.add_attribute(first_cell, 'text', 1)
         # first_combobox.set_active(0)
-        if len(self._depends_id) != 1:
-            first_combobox.connect('changed', self.update_next_depend_segment)
-        else:
-            first_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
+        if self._is_update_all_dependencies_segment_choose:
+            if len(self._depends_id) != 1:
+                first_combobox.connect('changed', self.update_next_depend_segment)
+            else:
+                first_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
 
     def update_next_depend_segment(self, widget):
         self.clear_calibrate_parameter_interval_combobox()
@@ -328,25 +322,20 @@ class MainUI:
         main_box = viewport.get_child()
         boxes = main_box.get_children()
 
-        channel_index = self._presenter.load_channel_index()
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
         focus_depend_id, focus_segment = self._presenter.load_focus_depend()
         default_segment = FloatInterval.closed(2020, 2020)
-        # if focus_segment != default_segment:
-        #     depend_path = self.update_depend_path(focus_depend_id)
-        focus_depend_id_index = self._depends_id.index(focus_depend_id)    # TODO 这里也遇到了相同执行多次的问题: set_active的问题？
+        focus_depend_id_index = self._depends_id.index(focus_depend_id)
         if focus_depend_id_index+1 < len(self._depends_id):
             next_parameter_id = self._depends_id[focus_depend_id_index+1]
-            next_model = Gtk.ListStore(str)
+            next_model = Gtk.ListStore(str, str)
             if focus_segment != default_segment:
                 depend_path = self._presenter.load_depend_path(focus_depend_id)
-                next_segments = self._presenter.get_depend_segments(channel_index, calibrate_parameter,
-                                                                    depend_path, next_parameter_id)
-                next_model.append(['[2020, 2020]'])
+                next_segments = self._presenter.get_depend_segments(depend_path, next_parameter_id)
+                next_model.append(['[2020, 2020]', '--请先选择依赖区间--'])
                 for segment in next_segments:
                     lower_num = segment.lower
                     upper_num = segment.upper
-                    next_model.append(['[{}, {}]'.format(lower_num, upper_num)])
+                    next_model.append(['[{}, {}]'.format(lower_num, upper_num), '[{}, {}]'.format(lower_num, upper_num)])
                 next_box = boxes[focus_depend_id_index+1]
                 next_label = next_box.get_children()[0]
                 next_depend_id = int(next_label.get_text())
@@ -355,12 +344,14 @@ class MainUI:
                 next_combobox.set_model(next_model)
                 current_cell = Gtk.CellRendererText()
                 next_combobox.pack_start(current_cell, True)
-                next_combobox.add_attribute(current_cell, 'text', 0)
-                # next_combobox.set_active(0)
-                if next_depend_id == self._depends_id[-1]:
-                    next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
-                else:
-                    next_combobox.connect('changed', self.update_next_depend_segment)
+                next_combobox.add_attribute(current_cell, 'text', 1)
+                # next_combobox.set_active(0)   # TODO 这里的set_active又会跳回去，陷入无限循环，有毒..
+                if self._is_update_all_dependencies_segment_choose:
+                    if next_depend_id == self._depends_id[-1]:
+                        next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
+                        self._is_update_all_dependencies_segment_choose = False
+                    else:
+                        next_combobox.connect('changed', self.update_next_depend_segment)
             else:
                 for box in boxes[focus_depend_id_index+1:]:
                     combobox = box.get_children()[1]
@@ -377,29 +368,29 @@ class MainUI:
         self.clear_factors_scrolled_win()
         self.calibrate_parameter_interval_choose_combobox.clear()
 
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-        channel_index = self._presenter.load_channel_index()
         last_segment = self._presenter.load_last_dependency_segment()
         default_segment = FloatInterval.closed(2020, 2020)
 
         if last_segment == default_segment:
             self.clear_calibrate_parameter_interval_combobox()
         else:
-            parameter_path = self._presenter.load_parameter_node_path()
-            parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
-                                                                                  calibrate_parameter, parameter_path)
+            parameter_segments = self._presenter.get_calibrate_parameter_segments()
             self._parameter_segments = parameter_segments
 
-            interval_model = Gtk.ListStore(str)
-            interval_model.append(['[2020, 2020]'])
-            for interval in parameter_segments.keys():
+            interval_model = Gtk.ListStore(int, str)
+            interval_model.append([2020, '--请先选择校正参数区间--'])
+            count = 0
+            for segment in parameter_segments:
+                interval = segment[0]
                 lower_num = interval.lower
                 upper_num = interval.upper
-                interval_model.append(['[{}, {}]'.format(lower_num, upper_num)])
+                interval_model.append([count, '[{}, {}]'.format(lower_num, upper_num)])
+                count += 1
             self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
             cell = Gtk.CellRendererText()
             self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
-            self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 0)
+            self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 1)
+            self.calibrate_parameter_interval_choose_combobox.set_active(0)
 
     def clear_factors_scrolled_win(self):
         self.factors_scrolled_win.set_sensitive(False)
@@ -413,14 +404,14 @@ class MainUI:
         self.factors_scrolled_win.set_sensitive(True)
         factors_text_buffer = Gtk.TextBuffer()
         factors_text_view = Gtk.TextView()
-        factors_text_view.set_sensitive(False)   # TODO 滚动窗口的显示有较长延迟
+        factors_text_view.set_sensitive(False)   # 滚动窗口的显示有较长延迟
 
-        interval = self._presenter.load_choosed_parameter_interval()
-        default_interval = FloatInterval.closed(2020, 2020)
-        if default_interval == interval:
+        interval_index = self._presenter.load_chosen_parameter_interval_index()
+        default_index = 2020
+        if default_index == interval_index:
             self.clear_factors_scrolled_win()
         else:
-            factors = self._parameter_segments[interval]
+            factors = self._parameter_segments[interval_index][1]
             factors_text_buffer.set_text('{}'.format(factors))
             factors_text_view.set_buffer(factors_text_buffer)
 
@@ -432,7 +423,7 @@ class MainUI:
 
         self.factors_scrolled_win.show_all()
 
-    def init_all(self):     # TODO 没写完
+    def init_all(self):
         if not self._state:
             self.init_all_display_widget()
             self.init_display()
@@ -446,11 +437,7 @@ class MainUI:
             self.update_channel_combobox()
 
     def update_modified_factors_scrolled_win(self, new_factors):
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-        channel_index = self._presenter.load_channel_index()
-        parameter_path = self._presenter.load_parameter_node_path()
-        self._parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
-                                                                                    calibrate_parameter, parameter_path)
+        self._parameter_segments = self._presenter.get_calibrate_parameter_segments()
         # 更新self._parameter_segments
 
         self.factors_scrolled_win.set_sensitive(True)
@@ -471,25 +458,26 @@ class MainUI:
         self.clear_factors_scrolled_win()
         self.calibrate_parameter_interval_choose_combobox.clear()
 
-        calibrate_parameter = self._presenter.load_choosed_calibrate_parameter()
-        channel_index = self._presenter.load_channel_index()
-        parameter_path = self._presenter.load_parameter_node_path()
-        parameter_segments = self._presenter.get_calibrate_parameter_segments(channel_index,
-                                                                              calibrate_parameter, parameter_path)
+        parameter_segments = self._presenter.get_calibrate_parameter_segments()
         self._parameter_segments = parameter_segments
 
-        interval_model = Gtk.ListStore(str)
-        interval_model.append(['[2020, 2020]'])
-        for interval in parameter_segments.keys():
+        interval_model = Gtk.ListStore(int, str)
+        interval_model.append([2020, '--请先选择校正参数区间--'])
+        count = 0
+        for segment in parameter_segments:
+            interval = segment[0]
             lower_num = interval.lower
             upper_num = interval.upper
-            interval_model.append(['[{}, {}]'.format(lower_num, upper_num)])
+            interval_model.append([count, '[{}, {}]'.format(lower_num, upper_num)])
+            count += 1
         self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
         cell = Gtk.CellRendererText()
         self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
-        self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 0)
+        self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 1)
+        self.calibrate_parameter_interval_choose_combobox.set_active(0)
 
     def update_modified_depend_segment(self):
+        self._is_update_all_dependencies_segment_choose = True
         self.update_dependencies_segment_choose()
 
     def update_file_name_state(self):
@@ -627,7 +615,7 @@ class MainUI:
                 self._senior_ui.window.show_all()
                 self._senior_ui.state = True
             else:
-                self._senior_ui.hide_and_update_main_ui()
+                self._senior_ui.hide_()
                 self._senior_ui.state = False
         except Exception as ex:
             print(ex)
@@ -660,7 +648,7 @@ class MainUI:
     def show_parameter_intervals_edit_ui(self, widget):
         try:
             if not self._parameter_interval_ui.state:
-                interval = self._presenter.load_choosed_parameter_interval()
+                interval = self._presenter.load_chosen_parameter_interval()
                 self._parameter_interval_ui.update_current_interval_display(interval)
                 self._parameter_interval_ui.window.show_all()
                 self._parameter_interval_ui.state = True
