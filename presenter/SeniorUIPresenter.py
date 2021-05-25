@@ -1,3 +1,4 @@
+import copy
 from intervals import FloatInterval
 
 
@@ -7,6 +8,8 @@ class SeniorUIPresenter:
         self._segment_view = None
         self._factors_view = None
         self._editor = None
+
+        self._channel = None
 
     @property
     def view(self):
@@ -40,27 +43,31 @@ class SeniorUIPresenter:
     def editor(self, value):
         self._editor = value
 
+    def get_current_channel(self):
+        channel_index = self._editor.load_channel_index()
+        channel = self._editor.get_chosen_channel(channel_index)
+        self._channel = copy.deepcopy(channel)
+
     def get_available_parameters(self):
         available_parameters = self._editor.get_available_parameters()
         return available_parameters
 
-    def load_choosed_parameter(self):
+    def load_chosen_parameter(self):
         combobox = self._view.parameter_choose
         model = combobox.get_model()
         _iter = combobox.get_active_iter()
-        choosed_parameter = model.get_value(_iter, 0)
-        return choosed_parameter
+        chosen_parameter = model.get_value(_iter, 0)
+        return chosen_parameter
 
     def get_root_node(self, parameter_id):
-        root_node = self._editor.get_root_node(parameter_id)
+        root_node = self._editor.get_root_node(self._channel, parameter_id)
         return root_node
 
     def get_depends_id(self, parameter_id):
-        channel_index = self._editor.load_channel_index()
-        depends_id = self._editor.get_depends_id(channel_index, parameter_id)
+        depends_id = self._editor.get_depends_id(self._channel, parameter_id)
         return depends_id
 
-    def load_choosed_segment(self):
+    def load_chosen_segment(self):
         all_msg_tree_view = self._view.all_msg_scrolled_win.get_child()
         focus_segment = all_msg_tree_view.get_selection()
         model, _iter = focus_segment.get_selected()
@@ -69,14 +76,14 @@ class SeniorUIPresenter:
         segment_upper_num = model.get_value(_iter, 2)
         return parameter_id, segment_lower_num, segment_upper_num
 
-    def load_choosed_factors(self):
+    def load_chosen_factors(self):
         all_msg_tree_view = self._view.all_msg_scrolled_win.get_child()
         focus_segment = all_msg_tree_view.get_selection()
         model, _iter = focus_segment.get_selected()
         factors = model.get_value(_iter, 3)
         return factors
 
-    def load_choosed_path(self):
+    def load_chosen_path(self):
         path = []
         all_msg_tree_view = self._view.all_msg_scrolled_win.get_child()
         focus_segment = all_msg_tree_view.get_selection()
@@ -96,7 +103,7 @@ class SeniorUIPresenter:
             parent_segment_upper_num = model.get_value(parent_iter, 2)
             parent_segment = FloatInterval.closed(parent_segment_lower_num, parent_segment_upper_num)
             path.insert(0, [parent_id, parent_segment])
-        calibrate_parameter = self.load_choosed_parameter()
+        calibrate_parameter = self.load_chosen_parameter()
         path.insert(0, [calibrate_parameter, None])
         return path
 
@@ -110,14 +117,14 @@ class SeniorUIPresenter:
         interval = FloatInterval.closed(lower_num, upper_num)
         return interval
 
-    def modify_segment(self):
-        path = self.load_choosed_path()
+    def modify_segment_in_senior(self):
+        path = self.load_chosen_path()
         entry = self.load_segment_entries()
         modified_parameter_id = path[-1][0]
-        current_choosed_calibrate_parameter = self.load_choosed_parameter()
-        current_factors_str = self.load_choosed_factors()
-        self._editor.modify_segment(current_choosed_calibrate_parameter, current_factors_str, modified_parameter_id,
-                                    path, entry)
+        current_chosen_calibrate_parameter = self.load_chosen_parameter()
+        current_factors_str = self.load_chosen_factors()
+        self._editor.modify_segment(self._channel, current_chosen_calibrate_parameter, modified_parameter_id,
+                                    path, current_factors_str, entry)
 
     def update_modified_segment(self):
         segment_entry = self.load_segment_entries()
@@ -133,25 +140,26 @@ class SeniorUIPresenter:
             factors.append(factor)
         return factors
 
-    def modify_factors(self):
-        path = self.load_choosed_path()
+    def modify_factors_in_senior(self):
+        path = self.load_chosen_path()
         path = path[:-1]
-        calibrate_parameter_id, lower_num, upper_num = self.load_choosed_segment()
-        current_factors_str = self.load_choosed_factors()
+        calibrate_parameter_id, lower_num, upper_num = self.load_chosen_segment()
+        current_factors_str = self.load_chosen_factors()
         current_factors = eval(current_factors_str)
         current_interval = FloatInterval.closed(lower_num, upper_num)
         segment = [current_interval, current_factors]
         modified_factors = self.load_factors_entry()
-        self._editor.modify_parameter_factors(calibrate_parameter_id, path, segment, modified_factors)
+        self._editor.modify_parameter_factors_in_senior(self._channel, calibrate_parameter_id,
+                                                        path, segment, modified_factors)
 
-    def update_modified_factors(self):
+    def update_modified_factors_in_senior(self):
         factors_entry = self.load_factors_entry()
         self._view.update_senior_ui_current_factors(factors_entry)
 
-    def show_two_curves(self):
-        _id, lower_num, upper_num = self.load_choosed_segment()
+    def show_two_curves_in_senior(self):
+        _id, lower_num, upper_num = self.load_chosen_segment()
         current_interval = FloatInterval.closed(lower_num, upper_num)
-        current_factors_str = self.load_choosed_factors()
+        current_factors_str = self.load_chosen_factors()
         current_factors = eval(current_factors_str)
         modified_factors = self.load_factors_entry()
         modified_segment = [current_interval, modified_factors]
@@ -159,21 +167,25 @@ class SeniorUIPresenter:
         self._editor.show_two_factors_curve(modified_segment, current_segment)
 
     def add_branch(self):
-        path = self.load_choosed_path()
-        calibrate_parameter_id = self.load_choosed_parameter()
-        self._editor.add_branch(calibrate_parameter_id, path)
+        path = self.load_chosen_path()
+        calibrate_parameter_id = self.load_chosen_parameter()
+        self._editor.add_branch(self._channel, calibrate_parameter_id, path)
         self._view.update_senior_ui_edit_branch()
 
     def delete_branch(self):
-        path = self.load_choosed_path()
-        calibrate_parameter_id = self.load_choosed_parameter()
-        self._editor.delete_branch(calibrate_parameter_id, path)
+        path = self.load_chosen_path()
+        calibrate_parameter_id = self.load_chosen_parameter()
+        self._editor.delete_branch(self._channel, calibrate_parameter_id, path)
         self._view.update_senior_ui_edit_branch()
 
     def add_complete_branch(self):
-        default_parameter_id = 2020
-        calibrate_parameter_id = self.load_choosed_parameter()
-        if calibrate_parameter_id == default_parameter_id:
+        default_parameter = 2020
+        calibrate_parameter_id = self.load_chosen_parameter()
+        if calibrate_parameter_id == default_parameter:
             raise ValueError
-        self._editor.add_complete_branch(calibrate_parameter_id)
+        self._editor.add_complete_branch(self._channel, calibrate_parameter_id)
         self._view.update_senior_ui_edit_branch()
+
+    def confirm_in_senior(self):
+        channel_index = self._editor.load_channel_index()
+        self._editor.confirm_in_senior(self._channel, channel_index)

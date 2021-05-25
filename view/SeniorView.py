@@ -53,9 +53,9 @@ class SeniorUI:
         add_whole_branch_button = builder.get_object('add_whole_branch_button')
         add_whole_branch_button.connect('clicked', self.add_complete_branch)
         edit_segment_button = builder.get_object('edit_segment_button')
-        edit_segment_button.connect('clicked', self.edit_choosed_segment)
+        edit_segment_button.connect('clicked', self.show_edit_chosen_segment_ui)
         edit_factors_button = builder.get_object('edit_factors_button')
-        edit_factors_button.connect('clicked', self.edit_choosed_factors)
+        edit_factors_button.connect('clicked', self.show_edit_chosen_factors_ui)
         delete_branch_button = builder.get_object('delete_branch_button')
         delete_branch_button.connect('clicked', self.delete_branch)
         add_dependency_button = builder.get_object('add_dependency_button')
@@ -97,12 +97,10 @@ class SeniorUI:
         self.window.set_titlebar(header)
 
     def hide(self, widget):
-        self._presenter.update_main_ui_from_senior()
         self.state = False
         self.window.hide()
 
-    def hide_and_update_main_ui(self):
-        self._presenter.update_main_ui_from_senior()
+    def hide_(self):
         self.state = False
         self.window.hide()
 
@@ -116,30 +114,31 @@ class SeniorUI:
         self.window.iconify()
 
     def update_available_parameters(self):
+        self._presenter.get_current_channel()
         self.clear_dependencies_scrolled_win()
         self.clear_all_msg_scrolled_win()
         self.parameter_choose.clear()
 
         available_parameters = self._presenter.get_available_parameters()
-        parameters_model = Gtk.ListStore(int)
-        parameters_model.append([2020])
+        parameters_model = Gtk.ListStore(int, str)
+        parameters_model.append([2020, '请选择校正参数'])
         for parameter in available_parameters:
-            parameters_model.append([parameter])
+            parameters_model.append([parameter, '{}'.format(parameter)])
         self.parameter_choose.set_model(parameters_model)
         parameter_cell = Gtk.CellRendererText()
         self.parameter_choose.pack_start(parameter_cell, True)
-        self.parameter_choose.add_attribute(parameter_cell, 'text', 0)
+        self.parameter_choose.add_attribute(parameter_cell, 'text', 1)
         self.parameter_choose.set_active(0)
 
     def update_two_scrolled_win(self, widget):
-        choosed_parameter = self._presenter.load_choosed_parameter()
+        chosen_parameter = self._presenter.load_chosen_parameter()
         default_parameter = 2020
-        if choosed_parameter == default_parameter:
+        if chosen_parameter == default_parameter:
             self.clear_dependencies_scrolled_win()
             self.clear_all_msg_scrolled_win()
         else:
-            self.update_dependencies_scrolled_win(choosed_parameter)
-            self.update_all_msg_scrolled_win(choosed_parameter)
+            self.update_dependencies_scrolled_win(chosen_parameter)
+            self.update_all_msg_scrolled_win(chosen_parameter)
 
     def clear_dependencies_scrolled_win(self):
         child = self.dependencies_scrolled_win.get_child()
@@ -155,8 +154,8 @@ class SeniorUI:
             tree_store.clear()
             # self.all_msg_scrolled_win.remove(child)  这样后续操作会有Gtk警告和failed，不懂...
 
-    def update_dependencies_scrolled_win(self, choosed_parameter):
-        depends_id = self._presenter.get_depends_id(choosed_parameter)
+    def update_dependencies_scrolled_win(self, chosen_parameter):
+        depends_id = self._presenter.get_depends_id(chosen_parameter)
 
         tree_view = Gtk.TreeView()
         tree_store = Gtk.TreeStore(int)
@@ -204,11 +203,11 @@ class SeniorUI:
         tree_view_column_4.add_attribute(cell_renderer_text, "text", 3)
         return tree_view
 
-    def update_all_msg_scrolled_win(self, choosed_parameter):
+    def update_all_msg_scrolled_win(self, chosen_parameter):
         self._segment_msg = []
         self._all_msg_tree_store.clear()
 
-        root_node = self._presenter.get_root_node(choosed_parameter)
+        root_node = self._presenter.get_root_node(chosen_parameter)
         children = root_node.children
         for child in children:
             segment = child.parameter_segment
@@ -266,7 +265,9 @@ class SeniorUI:
         self._segment_msg = next_time_segment_msg
 
     def confirm(self, widget):
-        pass
+        self._presenter.confirm_in_senior()
+        self._presenter.update_main_ui_from_senior()
+        self.hide_()
 
     def delete_dependency(self, widget):
         pass
@@ -274,10 +275,10 @@ class SeniorUI:
     def add_dependency(self, widget):
         pass
 
-    def edit_choosed_segment(self, widget):
+    def show_edit_chosen_segment_ui(self, widget):
         try:
             if not self._segment_edit_ui.state:
-                _id, lower_num, upper_num = self._presenter.load_choosed_segment()
+                _id, lower_num, upper_num = self._presenter.load_chosen_segment()
                 self._segment_edit_ui.update_current_segment_display(_id, lower_num, upper_num)
                 self._segment_edit_ui.state = True
                 self._segment_edit_ui.window.show_all()
@@ -301,8 +302,8 @@ class SeniorUI:
         model.set_value(_iter, 3, '{}'.format(factors_entry))
 
     def update_senior_ui_edit_branch(self):
-        choosed_parameter = self._presenter.load_choosed_parameter()
-        self.update_all_msg_scrolled_win(choosed_parameter)
+        chosen_parameter = self._presenter.load_chosen_parameter()
+        self.update_all_msg_scrolled_win(chosen_parameter)
 
     def add_branch(self, widget):
         try:
@@ -331,10 +332,10 @@ class SeniorUI:
         except Exception as ex:
             print(ex)
 
-    def edit_choosed_factors(self, widget):
+    def show_edit_chosen_factors_ui(self, widget):
         try:
             if not self._factors_edit_ui.state:
-                factors = self._presenter.load_choosed_factors()
+                factors = self._presenter.load_chosen_factors()
                 if factors:
                     factors = eval(factors)
                     self._factors_edit_ui.update_current_factors(factors)
@@ -484,9 +485,9 @@ class SegmentModifyUI:
 
     def confirm(self, widget):
         try:
-            self._presenter.modify_segment()
+            self._presenter.modify_segment_in_senior()
             self._presenter.update_modified_segment()
-            _id, lower_num, upper_num = self._presenter.load_choosed_segment()
+            _id, lower_num, upper_num = self._presenter.load_chosen_segment()
             self.update_current_segment_display(_id, lower_num, upper_num)
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
@@ -632,8 +633,8 @@ class FactorsModifyUI:
         try:
             factors = self._presenter.load_factors_entry()
             self.update_current_factors(factors)
-            self._presenter.modify_factors()
-            self._presenter.update_modified_factors()
+            self._presenter.modify_factors_in_senior()
+            self._presenter.update_modified_factors_in_senior()
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
             dialog.format_secondary_text("修改成功")
@@ -655,7 +656,7 @@ class FactorsModifyUI:
 
     def check(self, widget):
         try:
-            self._presenter.show_two_curves()
+            self._presenter.show_two_curves_in_senior()
             if not self._curves.is_show:
                 self._curves.update_img()
                 self._curves.window.show_all()
