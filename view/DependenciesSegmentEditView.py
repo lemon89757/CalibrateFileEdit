@@ -135,17 +135,17 @@ class DependenciesSegmentEditView:
 
     def update_dependencies_choose(self):
         dependencies = self._presenter.get_dependencies_id()
-        model = Gtk.ListStore(int)
-        model.append([2020])
+        model = Gtk.ListStore(int, str)
+        model.append([2020, '依赖参数选择'])
         for dependency in dependencies:
-            model.append([dependency])
+            model.append([dependency, '{}'.format(dependency)])
         child = self.dependencies_choose.get_child()
         if child:
             self.dependencies_choose.clear()
         self.dependencies_choose.set_model(model)
         cell = Gtk.CellRendererText()
         self.dependencies_choose.pack_start(cell, True)
-        self.dependencies_choose.add_attribute(cell, 'text', 0)
+        self.dependencies_choose.add_attribute(cell, 'text', 1)
         self.dependencies_choose.set_active(0)
 
     def clear_entries(self):
@@ -154,17 +154,17 @@ class DependenciesSegmentEditView:
 
     def init_current_dependency_segment(self):
         for label in self._current_segment_display:
-            label.set_text('2020')
+            label.set_text('请先选择依赖参数')
 
     def update_current_dependency_segment(self, widget):
-        choosed_dependency = self._presenter.load_choosed_dependency()
+        chosen_dependency = self._presenter.load_chosen_dependency()
         default_dependency = 2020
-        if choosed_dependency == default_dependency:
+        if chosen_dependency == default_dependency:
             self.init_current_dependency_segment()
             self.clear_entries()
         else:
             try:
-                current_segment = self._presenter.get_current_segment(choosed_dependency)
+                current_segment = self._presenter.get_current_segment(chosen_dependency)
                 lower_num = current_segment.lower
                 upper_num = current_segment.upper
                 lower_label = self._current_segment_display[0]
@@ -180,7 +180,7 @@ class DependenciesSegmentEditView:
                 dialog.destroy()
 
     def confirm(self, widget):
-        current_depend = self._presenter.load_choosed_dependency()
+        current_depend = self._presenter.load_chosen_dependency()
         default_depend = 2020
         if current_depend == default_depend:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
