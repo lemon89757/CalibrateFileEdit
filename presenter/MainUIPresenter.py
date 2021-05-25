@@ -23,16 +23,31 @@ class MainUIPresenter:
     def get_channels(self):
         return self._editor.current_channels
 
-    def get_calibrate_model(self, parameter_id, channel_index):
+    def get_chosen_channel(self, channel_index):
+        channels = self.get_channels()
+        chosen_channel = channels[channel_index]
+        return chosen_channel
+
+    def get_calibrate_model(self):
+        parameter_id = self.load_chosen_calibrate_parameter()
+        channel_index = self.load_channel_index()
         calibrate_model = self._editor.get_calibrate_model(parameter_id, channel_index)
         return calibrate_model
 
-    def get_dependencies_list(self, parameter_id, channel_index):
+    def get_dependencies_list(self):
+        parameter_id = self.load_chosen_calibrate_parameter()
+        channel_index = self.load_channel_index()
         dependencies_list = self._editor.get_dependencies_list(parameter_id, channel_index)
         return dependencies_list
 
-    def get_depends_id(self, channel_index, parameter):
-        depends_id = self._editor.get_depends_id(channel_index, parameter)
+    def get_depends_id_in_main(self, parameter):
+        channel_index = self.load_channel_index()
+        chosen_channel = self.get_chosen_channel(channel_index)
+        depends_id = self.get_depends_id(chosen_channel, parameter)
+        return depends_id
+
+    def get_depends_id(self, channel, parameter_id):
+        depends_id = self._editor.get_depends_id(channel, parameter_id)
         return depends_id
 
     def load_depend_path(self, focus_depend_id):
@@ -41,7 +56,7 @@ class MainUIPresenter:
         main_box = viewport.get_child()
         boxes = main_box.get_children()
 
-        calibrate_parameter = self.load_choosed_calibrate_parameter()
+        calibrate_parameter = self.load_chosen_calibrate_parameter()
         depend_path = [[calibrate_parameter, None]]
         for box in boxes:
             children = box.get_children()
@@ -63,7 +78,7 @@ class MainUIPresenter:
         viewport = self._view.dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
         boxes = main_box.get_children()
-        calibrate_parameter = self.load_choosed_calibrate_parameter()
+        calibrate_parameter = self.load_chosen_calibrate_parameter()
         parameter_path = [[calibrate_parameter, None]]
         for box in boxes:
             children = box.get_children()
@@ -78,12 +93,19 @@ class MainUIPresenter:
             parameter_path.append([depend_id, focus_segment])
         return parameter_path
 
-    def get_depend_segments(self, channel_index, calibrate_parameter, path, depend_id):
-        depend_segments = self._editor.get_depend_segments(channel_index, calibrate_parameter, path, depend_id)
+    def get_depend_segments(self, path, depend_id):
+        channel_index = self.load_channel_index()
+        chosen_channel = self.get_chosen_channel(channel_index)
+        calibrate_parameter = self.load_chosen_calibrate_parameter()
+        depend_segments = self._editor.get_depend_segments(chosen_channel, calibrate_parameter, path, depend_id)
         return depend_segments
 
-    def get_calibrate_parameter_segments(self, channel_index, calibrate_parameter, parameter_path):
-        parameter_segments = self._editor.get_calibrate_parameter_segments(channel_index, calibrate_parameter,
+    def get_calibrate_parameter_segments(self):
+        calibrate_parameter = self.load_chosen_calibrate_parameter()
+        parameter_path = self.load_parameter_node_path()
+        channel_index = self.load_channel_index()
+        chosen_channel = self.get_chosen_channel(channel_index)
+        parameter_segments = self._editor.get_calibrate_parameter_segments(chosen_channel, calibrate_parameter,
                                                                            parameter_path)
         return parameter_segments
 
@@ -95,7 +117,7 @@ class MainUIPresenter:
         channel_index = model.get_value(_iter, 0)
         return channel_index
 
-    def load_choosed_calibrate_parameter(self):
+    def load_chosen_calibrate_parameter(self):
         calibrate_parameter_choose_combobox = self._view.calibrate_parameter_choose_combobox
         parameter_activated = calibrate_parameter_choose_combobox.get_active()
         model = calibrate_parameter_choose_combobox.get_model()
@@ -133,13 +155,18 @@ class MainUIPresenter:
         last_segment = FloatInterval.from_string(segment_str)
         return last_segment
 
-    def load_choosed_parameter_interval(self):
+    def load_chosen_parameter_interval_index(self):
         interval_combobox = self._view.calibrate_parameter_interval_choose_combobox
         interval_activated = interval_combobox.get_active()
         model = interval_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(interval_activated))
-        interval_str = model.get_value(_iter, 0)
-        interval = FloatInterval.from_string(interval_str)
+        interval_index = model.get_value(_iter, 0)
+        return interval_index
+
+    def load_chosen_parameter_interval(self):
+        index = self.load_chosen_parameter_interval_index()
+        segments = self.get_calibrate_parameter_segments()
+        interval = segments[index][0]
         return interval
 
     def load_current_factors(self):
@@ -152,14 +179,15 @@ class MainUIPresenter:
         return factors
 
     def show_factors_curve(self):
-        factors = self.load_current_factors()
-        interval = self.load_choosed_parameter_interval()
-        segment = [interval, factors]
+        interval_index = self.load_chosen_parameter_interval_index()
+        parameter_segments = self.get_calibrate_parameter_segments()
+        segment = parameter_segments[interval_index]
         self._editor.show_current_factors_curve(segment)
 
-    def modify_parameter_factors(self, calibrate_parameter_id, path, segment, modified_factors):
+    def modify_parameter_factors_in_main(self, calibrate_parameter_id, path, segment, modified_factors):
         channel_index = self.load_channel_index()
-        self._editor.modify_parameter_factors(channel_index, calibrate_parameter_id, path, segment, modified_factors)
+        channel = self.get_chosen_channel(channel_index)
+        self._editor.modify_parameter_factors(channel, calibrate_parameter_id, path, segment, modified_factors)
 
     def save(self):
         self._editor.save()
@@ -174,16 +202,22 @@ class MainUIPresenter:
     def show_two_factors_curve(self, modified_segment, current_segment):
         self._editor.show_two_factors_curve(modified_segment, current_segment)
 
-    def modify_calibrate_parameter_interval(self, channel_index, choosed_parameter, path, current_segment,
-                                            modified_interval):
-        self._editor.modify_calibrate_parameter_interval(channel_index, choosed_parameter, path, current_segment,
-                                                         modified_interval)
+    def modify_calibrate_parameter_interval_in_main(self, modified_interval):
+        chosen_parameter = self.load_chosen_calibrate_parameter()
+        path = self.load_parameter_node_path()
+        segments = self.get_calibrate_parameter_segments()
+        current_interval_index = self.load_chosen_parameter_interval_index()
+        current_segment = segments[current_interval_index]
+        channel_index = self.load_channel_index()
+        chosen_channel = self.get_chosen_channel(channel_index)
+        self._editor.modify_calibrate_parameter_interval(chosen_channel, chosen_parameter, path,
+                                                         current_segment, modified_interval)
 
     def update_modified_interval(self):
         self._view.update_modified_interval()
         self._view.update_file_name_state()
 
-    def load_choosed_dependency_segment(self, dependency_id):
+    def load_chosen_dependency_segment(self, dependency_id):
         viewport = self._view.dependencies_segment_choose_scrolled_win.get_child()
         main_box = viewport.get_child()
         boxes = main_box.get_children()
@@ -201,12 +235,13 @@ class MainUIPresenter:
                 return segment
 
     def modify_dependency_segment(self, lower_num, upper_num, dependency_id):
-        channel_index = self.load_channel_index()
-        calibrate_parameter = self.load_choosed_calibrate_parameter()
+        chosen_channel_index = self.load_channel_index()
+        chosen_channel = self.get_chosen_channel(chosen_channel_index)
+        calibrate_parameter = self.load_chosen_calibrate_parameter()
         dependency_path = self.load_depend_path(dependency_id)
-        current_segment = self.load_choosed_dependency_segment(dependency_id)
-        self._editor.modify_depend_segment(channel_index, calibrate_parameter, lower_num, upper_num, dependency_path,
-                                           dependency_id, current_segment)
+        current_segment = self.load_chosen_dependency_segment(dependency_id)
+        self._editor.modify_depend_segment(chosen_channel, calibrate_parameter, lower_num, upper_num,
+                                           dependency_path, dependency_id, current_segment)
 
     def update_modified_dependency_segment(self):
         self._view.update_modified_depend_segment()
@@ -217,39 +252,41 @@ class MainUIPresenter:
         available_parameters = self._editor.get_available_parameters(channel_index)
         return available_parameters
 
-    def get_root_node(self, parameter_id):
-        channel_index = self.load_channel_index()
-        root_node = self._editor.get_root_node(channel_index, parameter_id)
+    def get_root_node(self, channel, parameter_id):
+        root_node = self._editor.get_root_node(channel, parameter_id)
         return root_node
 
-    def modify_segment(self, calibrate_parameter_id, current_factors, modified_parameter_id, path, new_segment):
-        channel_index = self.load_channel_index()
+    def modify_segment(self, channel, calibrate_parameter_id, modified_parameter_id, path, current_factors_str,
+                       new_segment):
         if calibrate_parameter_id == modified_parameter_id:
             current_interval = path[-1][1]
             path = path[:-1]
-            current_factors = eval(current_factors)
+            current_factors = eval(current_factors_str)
             current_segment = [current_interval, current_factors]
             new_interval = new_segment
-            self._editor.modify_calibrate_parameter_interval(channel_index, calibrate_parameter_id, path,
+            self._editor.modify_calibrate_parameter_interval(channel, calibrate_parameter_id, path,
                                                              current_segment, new_interval)
         else:
             current_segment = path[-1][1]
             path = path[:-1]
-            self._editor.modify_depend_segment(channel_index, calibrate_parameter_id, new_segment.lower,
+            self._editor.modify_depend_segment(channel, calibrate_parameter_id, new_segment.lower,
                                                new_segment.upper, path, modified_parameter_id, current_segment)
 
     def update_main_ui_from_senior(self):
         self._view.update_file_name_state()
         self._view.update_channel_combobox()
 
-    def add_branch(self, calibrate_parameter_id, path):
-        channel_index = self.load_channel_index()
-        self._editor.add_branch(channel_index, calibrate_parameter_id, path)
+    def add_branch(self, channel, calibrate_parameter_id, path):
+        self._editor.add_branch(channel, calibrate_parameter_id, path)
 
-    def delete_branch(self, calibrate_parameter_id, path):
-        channel_index = self.load_channel_index()
-        self._editor.delete_branch(channel_index, calibrate_parameter_id, path)
+    def delete_branch(self, channel, calibrate_parameter_id, path):
+        self._editor.delete_branch(channel, calibrate_parameter_id, path)
 
-    def add_complete_branch(self, calibrate_parameter_id):
-        channel_index = self.load_channel_index()
-        self._editor.add_complete_branch(channel_index, calibrate_parameter_id)
+    def add_complete_branch(self, channel, calibrate_parameter_id):
+        self._editor.add_complete_branch(channel, calibrate_parameter_id)
+
+    def modify_parameter_factors_in_senior(self, channel, calibrate_parameter_id, path, segment, modified_factors):
+        self._editor.modify_parameter_factors(channel, calibrate_parameter_id, path, segment, modified_factors)
+
+    def confirm_in_senior(self, channel, channel_index):
+        self._editor.confirm_in_senior(channel, channel_index)
