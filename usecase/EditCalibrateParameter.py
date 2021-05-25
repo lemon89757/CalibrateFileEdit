@@ -3,7 +3,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from intervals import FloatInterval
 from entity.CalibrateFile import CalibrateParameterNode
-from anytree import RenderTree
 
 
 # segment = [具体硬件分段，对应校正系数] eg:[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]]
@@ -88,6 +87,7 @@ class EditCalibrateParameter:
         for segment_in in segments:
             if segment == segment_in:
                 segment_in[0] = value
+                break
         self._parameter_node.parameter_segments = segments
 
     def modify_parameter_factors(self, value, segment):

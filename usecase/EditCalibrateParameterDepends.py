@@ -79,9 +79,8 @@ class EditCalibrateParameterDepends:
                 segment = FloatInterval.closed(float('-inf'), float('inf'))
                 node.parameter_segment = segment
 
-    def delete_depend_segment(self, depend_node):
-        # for node in self._root_node.descendants:
-        #     if depend_node == node:
+    @staticmethod
+    def delete_depend_segment(depend_node):
         same_parent_node = depend_node.siblings
         parent_node = depend_node.parent
         parent_node.children = same_parent_node
