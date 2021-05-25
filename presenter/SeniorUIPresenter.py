@@ -7,6 +7,7 @@ class SeniorUIPresenter:
         self._view = None
         self._segment_view = None
         self._factors_view = None
+        self._dependency_view = None
         self._editor = None
 
         self._channel = None
@@ -38,6 +39,14 @@ class SeniorUIPresenter:
     @factors_view.setter
     def factors_view(self, value):
         self._factors_view = value
+
+    @property
+    def dependency_view(self):
+        return self._dependency_view
+
+    @dependency_view.setter
+    def dependency_view(self, value):
+        self._dependency_view = value
 
     @editor.setter
     def editor(self, value):
@@ -189,3 +198,45 @@ class SeniorUIPresenter:
     def confirm_in_senior(self):
         channel_index = self._editor.load_channel_index()
         self._editor.confirm_in_senior(self._channel, channel_index)
+
+    def load_add_dependency_ui_msg(self):
+        pos_combobox = self._dependency_view.chosen_pos
+        pos_active = pos_combobox.get_active()
+        model = pos_combobox.get_model()
+        _iter = model.get_iter_from_string('{}'.format(pos_active))
+        chosen_pos = model.get_value(_iter, 0)  # 0表示前， 1表示后
+
+        dependency_combobox = self._dependency_view.chosen_dependency
+        dependency_active = dependency_combobox.get_active()
+        model = dependency_combobox.get_model()
+        _iter = model.get_iter_from_string('{}'.format(dependency_active))
+        chosen_dependency = model.get_value(_iter, 0)
+
+        entry = self._dependency_view.entry_id
+        entry_id = int(entry.get_text())
+        return chosen_dependency, chosen_pos, entry_id
+
+    def confirm_add_dependency(self):
+        chosen_dependency, chosen_pos, new_dependency = self.load_add_dependency_ui_msg()
+        calibrate_parameter = self.load_chosen_parameter()
+        depends_id = self.get_depends_id(calibrate_parameter)
+        if new_dependency in depends_id:
+            raise ValueError('已存在此依赖')
+        self._editor.add_dependency(self._channel, calibrate_parameter, chosen_dependency, chosen_pos, new_dependency)
+
+    def update_add_or_delete_dependency_in_senior_ui(self):
+        calibrate_parameter_id = self.load_chosen_parameter()
+        self._view.update_dependencies_scrolled_win(calibrate_parameter_id)
+        self._view.update_all_msg_scrolled_win(calibrate_parameter_id)
+
+    def load_dependencies_scrolled_win_chosen(self):
+        dependencies_scrolled_win = self._view.dependencies_scrolled_win.get_child()
+        focus = dependencies_scrolled_win.get_selection()
+        model, _iter = focus.get_selected()
+        depend_id = model.get_value(_iter, 0)
+        return depend_id
+
+    def delete_dependency(self):
+        calibrate_parameter_id = self.load_chosen_parameter()
+        depend_id = self.load_dependencies_scrolled_win_chosen()
+        self._editor.delete_dependency(self._channel, calibrate_parameter_id, depend_id)

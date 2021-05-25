@@ -27,6 +27,7 @@ class SeniorUI:
 
         self._segment_edit_ui = SegmentModifyUI()
         self._factors_edit_ui = FactorsModifyUI()
+        self._add_dependency_ui = AddDependencyUI()
         self.init_child_ui()
 
     @property
@@ -36,9 +37,11 @@ class SeniorUI:
     def init_child_ui(self):
         self._segment_edit_ui.presenter = self._presenter
         self._factors_edit_ui.presenter = self._presenter
+        self._add_dependency_ui.presenter = self._presenter
 
         self._segment_edit_ui.presenter.segment_view = self._segment_edit_ui
         self._factors_edit_ui.presenter.factors_view = self._factors_edit_ui
+        self._add_dependency_ui.presenter.dependency_view = self._add_dependency_ui
 
     def get_all_widget(self):
         builder = Gtk.Builder()
@@ -270,10 +273,26 @@ class SeniorUI:
         self.hide_()
 
     def delete_dependency(self, widget):
-        pass
+        try:
+            self._presenter.delete_dependency()
+            self._presenter.update_add_or_delete_dependency_in_senior_ui()
+        except Exception as ex:
+            print(ex)
 
     def add_dependency(self, widget):
-        pass
+        try:
+            if not self._add_dependency_ui.state:
+                calibrate_parameter = self._presenter.load_chosen_parameter()
+                depends_id = self._presenter.get_depends_id(calibrate_parameter)
+                self._add_dependency_ui.update_dependency_choose(depends_id)
+                self._add_dependency_ui.entry_id.set_text('输入依赖ID')
+                self._add_dependency_ui.state = True
+                self._add_dependency_ui.window.show_all()
+            else:
+                self._add_dependency_ui.state = False
+                self._add_dependency_ui.window.hide()
+        except Exception as ex:
+            print(ex)
 
     def show_edit_chosen_segment_ui(self, widget):
         try:
@@ -675,7 +694,131 @@ class FactorsModifyUI:
 
 class AddDependencyUI:
     def __init__(self):
-        pass
+        self.state = False
+        self.window = Gtk.Window()
+        self.set_window_header()
+        self._presenter = None
+
+        self.ui = Gtk.Box()
+        self.chosen_dependency = None
+        self.entry_id = None
+        self.chosen_pos = None
+        self.init_ui()
+        self.window.add(self.ui)
+
+    @property
+    def presenter(self):
+        return self._presenter
+
+    @presenter.setter
+    def presenter(self, value):
+        self._presenter = value
+
+    def set_window_header(self):
+        header = Gtk.HeaderBar(title='AddDependency')
+        header.props.show_close_button = False
+
+        close_button = Gtk.Button()
+        close_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-close-symbolic", Gtk.IconSize.MENU)
+        close_button.set_image(img)
+        close_button.connect('clicked', self.hide)
+
+        max_button = Gtk.Button()
+        max_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-maximize-symbolic", Gtk.IconSize.MENU)
+        max_button.set_image(img)
+        max_button.connect("clicked", self.maximize)
+
+        min_button = Gtk.Button()
+        min_button.set_relief(Gtk.ReliefStyle.NONE)
+        img = Gtk.Image.new_from_icon_name("window-minimize-symbolic", Gtk.IconSize.MENU)
+        min_button.set_image(img)
+        min_button.connect("clicked", self.minimize)
+
+        header.pack_end(close_button)
+        header.pack_end(max_button)
+        header.pack_end(min_button)
+
+        self.window.set_titlebar(header)
+
+    def hide(self, widget):
+        self.state = False
+        self.entry_id.set_text('输入依赖ID')
+        self.window.hide()
+
+    def hide_(self):
+        self.state = False
+        self.entry_id.set_text('输入依赖ID')
+        self.window.hide()
+
+    def maximize(self, widget):
+        if self.window.is_maximized():
+            self.window.unmaximize()
+        else:
+            self.window.maximize()
+
+    def minimize(self, widget):
+        self.window.iconify()
+
+    def init_ui(self):
+        self.ui.set_orientation(Gtk.Orientation.VERTICAL)
+
+        self.chosen_dependency = Gtk.ComboBox()
+        self.chosen_pos = Gtk.ComboBox()
+        pos_model = Gtk.ListStore(int, str)
+        pos_model.append([0, '选择依赖前'])
+        pos_model.append([1, '选择依赖后'])
+        self.chosen_pos.set_model(pos_model)
+        cell = Gtk.CellRendererText()
+        self.chosen_pos.pack_start(cell, True)
+        self.chosen_pos.add_attribute(cell, 'text', 1)
+        self.chosen_pos.set_active(0)
+        self.entry_id = Gtk.Entry()
+        self.entry_id.set_text('输入依赖ID')
+        msg_box = Gtk.Box()
+        msg_box.set_homogeneous(True)
+        msg_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        msg_box.pack_start(self.chosen_dependency, True, True, 0)
+        msg_box.pack_start(self.chosen_pos, True, True, 10)
+        msg_box.pack_start(self.entry_id, True, True, 0)
+        self.ui.add(msg_box)
+
+        buttons_box = Gtk.Box()
+        buttons_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        confirm_button = Gtk.Button(label='确定')
+        confirm_button.connect('clicked', self.confirm)
+        cancel_button = Gtk.Button(label='取消')
+        cancel_button.connect('clicked', self.hide)
+        buttons_box.pack_start(confirm_button, True, True, 0)
+        buttons_box.pack_end(cancel_button, True, True, 0)
+        self.ui.add(buttons_box)
+
+    def confirm(self, widget):
+        try:
+            self._presenter.confirm_add_dependency()
+            self._presenter.update_add_or_delete_dependency_in_senior_ui()
+            self.hide_()
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("输入依赖不符要求")
+            dialog.run()
+            dialog.destroy()
+
+    def update_dependency_choose(self, depends_id):
+        dependencies_model = Gtk.ListStore(int)
+        for depend in depends_id:
+            dependencies_model.append([depend])
+        child = self.chosen_dependency.get_child()
+        if child:
+            self.chosen_dependency.clear()
+        self.chosen_dependency.set_model(dependencies_model)
+        cell = Gtk.CellRendererText()
+        self.chosen_dependency.pack_start(cell, True)
+        self.chosen_dependency.add_attribute(cell, 'text', 0)
+        self.chosen_dependency.set_active(0)
 
 
 class Image:

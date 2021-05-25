@@ -290,3 +290,11 @@ class MainUIPresenter:
 
     def confirm_in_senior(self, channel, channel_index):
         self._editor.confirm_in_senior(channel, channel_index)
+
+    def add_dependency(self, channel, calibrate_parameter_id, dependency_in, pos, new_dependency):
+        root_node = self.get_root_node(channel, calibrate_parameter_id)
+        self._editor.add_depend(root_node, dependency_in, pos, new_dependency)
+
+    def delete_dependency(self, channel, calibrate_parameter_id, dependency_id):
+        root_node = self.get_root_node(channel, calibrate_parameter_id)
+        self._editor.delete_depend(root_node, dependency_id)
