@@ -374,23 +374,31 @@ class MainUI:
         if last_segment == default_segment:
             self.clear_calibrate_parameter_interval_combobox()
         else:
-            parameter_segments = self._presenter.get_calibrate_parameter_segments()
-            self._parameter_segments = parameter_segments
+            try:
+                parameter_segments = self._presenter.get_calibrate_parameter_segments()
+            except ValueError:
+                dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                           buttons=Gtk.ButtonsType.OK, text="提示")
+                dialog.format_secondary_text("请先选择好各个依赖分段")
+                dialog.run()
+                dialog.destroy()
+            else:
+                self._parameter_segments = parameter_segments
 
-            interval_model = Gtk.ListStore(int, str)
-            interval_model.append([2020, '--请先选择校正参数区间--'])
-            count = 0
-            for segment in parameter_segments:
-                interval = segment[0]
-                lower_num = interval.lower
-                upper_num = interval.upper
-                interval_model.append([count, '[{}, {}]'.format(lower_num, upper_num)])
-                count += 1
-            self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
-            cell = Gtk.CellRendererText()
-            self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
-            self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 1)
-            self.calibrate_parameter_interval_choose_combobox.set_active(0)
+                interval_model = Gtk.ListStore(int, str)
+                interval_model.append([2020, '--请先选择校正参数区间--'])
+                count = 0
+                for segment in parameter_segments:
+                    interval = segment[0]
+                    lower_num = interval.lower
+                    upper_num = interval.upper
+                    interval_model.append([count, '[{}, {}]'.format(lower_num, upper_num)])
+                    count += 1
+                self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
+                cell = Gtk.CellRendererText()
+                self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
+                self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 1)
+                self.calibrate_parameter_interval_choose_combobox.set_active(0)
 
     def clear_factors_scrolled_win(self):
         self.factors_scrolled_win.set_sensitive(False)
