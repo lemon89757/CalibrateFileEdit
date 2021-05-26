@@ -298,3 +298,18 @@ class MainUIPresenter:
     def delete_dependency(self, channel, calibrate_parameter_id, dependency_id):
         root_node = self.get_root_node(channel, calibrate_parameter_id)
         self._editor.delete_depend(root_node, dependency_id)
+
+    def load_other_file(self, file_path):
+        self._editor.another_file_path = file_path
+
+    def get_other_file_channels(self):
+        channels = self._editor.get_other_file_channels()
+        self._editor.another_channels = channels
+        return channels
+
+    def merge(self, merged_channel_index, other_channel_index, other_calibrate_parameter):
+        self._editor.merge_calibrate_file_by_method_two(merged_channel_index, other_channel_index,
+                                                        other_calibrate_parameter)
+
+    def update_main_ui_from_merge(self):
+        self._view.update_channel_combobox()
