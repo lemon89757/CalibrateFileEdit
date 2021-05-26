@@ -313,3 +313,4 @@ class MainUIPresenter:
 
     def update_main_ui_from_merge(self):
         self._view.update_channel_combobox()
+        self._view.update_file_name_state()
