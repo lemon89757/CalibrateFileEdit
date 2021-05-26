@@ -9,6 +9,7 @@ from view.FactorsEditView import FactorsEditView
 from view.ParameterIntervalEditView import ParameterIntervalEditView
 from view.DependenciesSegmentEditView import DependenciesSegmentEditView
 from view.SeniorView import SeniorUI
+from view.MergeView import MergeView
 
 
 class MainUI:
@@ -17,6 +18,7 @@ class MainUI:
         self._parameter_interval_ui = ParameterIntervalEditView()
         self._dependencies_segment_ui = DependenciesSegmentEditView()
         self._senior_ui = SeniorUI()
+        self._merge_ui = MergeView()
         self._presenter = MainUIPresenter()
         self._presenter.view = self
 
@@ -98,6 +100,7 @@ class MainUI:
         self._factors_edit_ui.presenter.editor = self.presenter
         self._parameter_interval_ui.presenter.editor = self.presenter
         self._senior_ui.presenter.editor = self._presenter
+        self._merge_ui.presenter.editor = self._presenter
 
     def init_file_operate(self):
         open_menu_item = self.builder.get_object('open_item')
@@ -634,7 +637,14 @@ class MainUI:
             dialog.destroy()
 
     def show_merge_file_ui(self, widget):
-        pass
+        if not self._merge_ui.state:
+            self._merge_ui.update_merged_file_channel_choose()
+            self._merge_ui.clear_all_other_file_widget()
+            self._merge_ui.window.show_all()
+            self._merge_ui.state = True
+        else:
+            self._merge_ui.window.hide()
+            self._merge_ui.state = False
 
     def show_dependencies_edit_ui(self, widget):
         try:
