@@ -32,18 +32,18 @@ class MergeCalibrateFile:
     def get_calibrate_msg(self, channel_index, parameter_id):
         file_handler = FileRW()
         file_handler.get_calibrate_file(self._another_file)
-        calibrate_msg = file_handler.load_calibrate_msg_from_file(channel_index, parameter_id)
+        calibrate_msg = file_handler.load_calibrate_msg_from_file(channel_index+1, parameter_id)  # 不包括0通道，因此加一
         return calibrate_msg
 
-    def merge_by_method_two(self, choose_merge_channel, another_file_channel_index, another_file_parameter_id):
+    @staticmethod
+    def merge_by_method_two(choose_merge_channel, another_calibrate_msg):
         # 选择另一文件的某个校正信息放入合并文件的被选择通道中
-        calibrate_msg = self.get_calibrate_msg(another_file_channel_index, another_file_parameter_id)
         exit_calibrate_parameter = []
         for key in choose_merge_channel.keys():
             exit_calibrate_parameter.append(key)
-        if calibrate_msg.parameter_id in exit_calibrate_parameter:
+        if another_calibrate_msg.parameter_id in exit_calibrate_parameter:
             raise ValueError('该通道中已经存在此校正参数')
-        choose_merge_channel[calibrate_msg.parameter_id] = calibrate_msg
+        choose_merge_channel[another_calibrate_msg.parameter_id] = another_calibrate_msg
         return choose_merge_channel
 
     def merge_by_method_three(self, choose_merge_channel, another_file_channel_index):

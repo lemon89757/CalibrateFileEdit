@@ -14,6 +14,7 @@ class CalibrateFileEdit:
         self._current_file_path = 'file_path'
         self._another_file_path = 'file_path'
         self._current_channels = None   # 当前文件的channels
+        self._another_channels = None
 
     @property
     def current_file_path(self):
@@ -42,6 +43,14 @@ class CalibrateFileEdit:
     @current_channels.setter
     def current_channels(self, value):
         self._current_channels = value
+
+    @property
+    def another_channels(self):
+        return self._another_channels
+
+    @another_channels.setter
+    def another_channels(self, value):
+        self._another_channels = value
 
     # 获取校正信息
     def get_file_channels(self):
@@ -141,8 +150,9 @@ class CalibrateFileEdit:
     # 文件合并
     def merge_calibrate_file_by_method_two(self, merge_channel_index, another_channel_index, another_parameter_id):
         merge_channel = self._current_channels[merge_channel_index]
-        self._merge.another_file = self._another_file_path
-        new_channel = self._merge.merge_by_method_two(merge_channel, another_channel_index, another_parameter_id)
+        another_channel = self._another_channels[another_channel_index]
+        another_parameter_calibrate_msg = another_channel[another_parameter_id]
+        new_channel = self._merge.merge_by_method_two(merge_channel, another_parameter_calibrate_msg)
         self._current_channels[merge_channel_index] = new_channel
 
     def merge_calibrate_file_by_method_three(self, merge_channel_index, another_channel_index):
@@ -270,3 +280,9 @@ class CalibrateFileEdit:
 
     def confirm_in_senior(self, channel, channel_index):
         self._current_channels[channel_index] = channel
+
+    def get_other_file_channels(self):
+        file_handler = FileRW()
+        file_handler.get_calibrate_file(self._another_file_path)
+        channels = file_handler.load_all_calibrate_msg_from_file()
+        return channels
