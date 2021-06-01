@@ -27,8 +27,8 @@ class MainUI:
         self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'MainUI.glade'))
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
-        self.main_window.set_default_size(500, 450)
-        self.ui = self.builder.get_object('main_box')
+        self.main_window.set_default_size(500, 350)
+        self.ui = self.builder.get_object('main_container')
         self.set_window_header()
         self.main_window.add(self.ui)
         self.main_window.show_all()
@@ -46,6 +46,7 @@ class MainUI:
         self._depends_id = None
         self._parameter_segments = None
         self.curve = Image()
+        self._parameter_dict = self._presenter.get_parameter_dict()
 
         self.init_child_ui_editor()
 
@@ -106,8 +107,8 @@ class MainUI:
         open_menu_item = self.builder.get_object('open_item')
         open_menu_item.connect('activate', self.open_file)
 
-        new_menu_item = self.builder.get_object('new_item')
-        new_menu_item.connect('activate', self.new_file)
+        # new_menu_item = self.builder.get_object('new_item')
+        # new_menu_item.connect('activate', self.new_file)
 
         save_menu_item = self.builder.get_object('save_item')
         save_menu_item.connect('activate', self.save)
@@ -116,18 +117,18 @@ class MainUI:
         save_as_menu_item.connect('activate', self.save_as)
 
     def init_edit_operate(self):
-        edit_dependencies_menu_item = self.builder.get_object('edit_depend_segment_item')
-        edit_dependencies_menu_item.connect('activate', self.show_dependencies_edit_ui)
+        edit_dependencies_menu_item = self.builder.get_object('edit_depend_segment_button')
+        edit_dependencies_menu_item.connect('clicked', self.show_dependencies_edit_ui)
 
-        edit_parameter_intervals_menu_item = self.builder.get_object('edit_parameter_item')
-        edit_parameter_intervals_menu_item.connect('activate', self.show_parameter_intervals_edit_ui)
+        edit_parameter_intervals_menu_item = self.builder.get_object('edit_parameter_button')
+        edit_parameter_intervals_menu_item.connect('clicked', self.show_parameter_intervals_edit_ui)
 
-        edit_factors_menu_item = self.builder.get_object('edit_factors_item')
-        edit_factors_menu_item.connect('activate', self.show_factors_edit_ui)
+        edit_factors_menu_item = self.builder.get_object('edit_factors_button')
+        edit_factors_menu_item.connect('clicked', self.show_factors_edit_ui)
 
     def init_display(self):
-        show_factors_curve_menu_item = self.builder.get_object('display_factors_curve_item')
-        show_factors_curve_menu_item.connect('activate', self.show_factors_curve)
+        show_factors_curve_menu_item = self.builder.get_object('display_factors_curve_button')
+        show_factors_curve_menu_item.connect('clicked', self.show_factors_curve)
 
         # show_two_curves_menu_item = self.builder.get_object('display_two_curves_item')
         # show_two_curves_menu_item.connect('activate', self.show_two_curves)
@@ -168,12 +169,7 @@ class MainUI:
     def update_calibrate_parameter_choose_combobox(self, widget):
         channel_index = self._presenter.load_channel_index()
         if channel_index != 2020:
-            parameters_model = Gtk.ListStore(int, str)
-            parameters_model.append([2020, '--请先选择校正参数--'])          # 默认参数
-            channels = self._presenter.get_channels()
-            chosen_channel = channels[channel_index]
-            for parameter in chosen_channel.keys():
-                parameters_model.append([parameter, '{}'.format(parameter)])
+            parameters_model = self.get_parameters_model(channel_index)
             self.calibrate_parameter_choose_combobox.clear()
             self.calibrate_parameter_choose_combobox.set_model(parameters_model)
             parameter_cell = Gtk.CellRendererText()
@@ -190,6 +186,22 @@ class MainUI:
             self.clear_dependencies_segment_choose()
             self.clear_calibrate_parameter_interval_combobox()
             self.clear_factors_scrolled_win()
+
+    def get_parameters_model(self, channel_index):
+        parameters_model = Gtk.ListStore(int, str)
+        parameters_model.append([2020, '--请先选择校正参数--'])  # 默认参数
+        channels = self._presenter.get_channels()
+        chosen_channel = channels[channel_index]
+        for parameter in chosen_channel.keys():
+            try:
+                parameters_model.append([parameter, '{}--{}'.format(parameter, self._parameter_dict[parameter])])
+            except KeyError:
+                dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
+                                           buttons=Gtk.ButtonsType.OK, text="提示")
+                dialog.format_secondary_text("不存在参数{}的属性名".format(parameter))
+                dialog.run()
+                dialog.destroy()
+        return parameters_model
 
     def clear_calibrate_parameter_choose_combobox(self):
         empty_type_model = Gtk.ListStore()
@@ -247,7 +259,7 @@ class MainUI:
             boxes = main_box.get_children()
             for box in boxes:
                 children = box.get_children()
-                combobox = children[1]
+                combobox = children[2]
                 combobox.clear()
                 model = Gtk.ListStore()
                 combobox.set_model(model)
@@ -269,16 +281,20 @@ class MainUI:
 
             viewport = Gtk.Viewport()
             main_box = Gtk.Box()
+            main_box.set_orientation(Gtk.Orientation.VERTICAL)
             for value in depends_id:
                 child_box = Gtk.Box()
-                child_box.set_orientation(Gtk.Orientation.VERTICAL)
-                label = Gtk.Label()
-                label.set_text('{}'.format(value))
-                child_box.pack_start(label, True, True, 2)
+                child_box.set_orientation(Gtk.Orientation.HORIZONTAL)   # TODO 列表指的是哪个,怎么在列表后面加控件（下拉框）？
+                label_id = Gtk.Label()
+                label_id.set_text('{}'.format(value))
+                child_box.pack_start(label_id, True, True, 0)
+                label_name = Gtk.Label()
+                label_name.set_text('{}'.format(self._parameter_dict[value]))
+                child_box.pack_start(label_name, True, True, 2)
                 child_combobox = Gtk.ComboBox()
                 child_model = Gtk.ListStore()
                 child_combobox.set_model(child_model)
-                child_box.pack_start(child_combobox, True, True, 2)
+                child_box.pack_start(child_combobox, True, True, 0)
                 main_box.add(child_box)
 
             viewport.add(main_box)
@@ -294,7 +310,7 @@ class MainUI:
         boxes = main_box.get_children()
         first_box = boxes[0]
         first_box_children = first_box.get_children()
-        first_combobox = first_box_children[1]
+        first_combobox = first_box_children[2]
         first_combobox.clear()
 
         first_path = [[calibrate_parameter, None]]
@@ -342,7 +358,7 @@ class MainUI:
                 next_box = boxes[focus_depend_id_index+1]
                 next_label = next_box.get_children()[0]
                 next_depend_id = int(next_label.get_text())
-                next_combobox = next_box.get_children()[1]
+                next_combobox = next_box.get_children()[2]
                 next_combobox.clear()
                 next_combobox.set_model(next_model)
                 current_cell = Gtk.CellRendererText()
@@ -357,7 +373,7 @@ class MainUI:
                         next_combobox.connect('changed', self.update_next_depend_segment)
             else:
                 for box in boxes[focus_depend_id_index+1:]:
-                    combobox = box.get_children()[1]
+                    combobox = box.get_children()[2]
                     combobox.clear()
                     empty_model = Gtk.ListStore()
                     combobox.set_model(empty_model)
@@ -465,31 +481,27 @@ class MainUI:
         self.factors_scrolled_win.add(factors_text_view)
         self.factors_scrolled_win.show_all()
 
-    def update_modified_interval(self):
-        self.clear_factors_scrolled_win()
-        self.calibrate_parameter_interval_choose_combobox.clear()
+    def update_modified_interval(self, interval):
+        model = self.calibrate_parameter_interval_choose_combobox.get_model()
+        interval_activated = self.calibrate_parameter_interval_choose_combobox.get_active()
+        _iter = model.get_iter_from_string('{}'.format(interval_activated))
+        model.set_value(_iter, 1, '[{}, {}]'.format(interval.lower, interval.upper))
 
-        parameter_segments = self._presenter.get_calibrate_parameter_segments()
-        self._parameter_segments = parameter_segments
-
-        interval_model = Gtk.ListStore(int, str)
-        interval_model.append([2020, '--请先选择校正参数区间--'])
-        count = 0
-        for segment in parameter_segments:
-            interval = segment[0]
-            lower_num = interval.lower
-            upper_num = interval.upper
-            interval_model.append([count, '[{}, {}]'.format(lower_num, upper_num)])
-            count += 1
-        self.calibrate_parameter_interval_choose_combobox.set_model(interval_model)
-        cell = Gtk.CellRendererText()
-        self.calibrate_parameter_interval_choose_combobox.pack_start(cell, True)
-        self.calibrate_parameter_interval_choose_combobox.add_attribute(cell, 'text', 1)
-        self.calibrate_parameter_interval_choose_combobox.set_active(0)
-
-    def update_modified_depend_segment(self):
-        self._is_update_all_dependencies_segment_choose = True
-        self.update_dependencies_segment_choose()
+    def update_modified_depend_segment(self, dependency_id, lower_num, upper_num):
+        viewport = self.dependencies_segment_choose_scrolled_win.get_child()
+        main_box = viewport.get_child()
+        boxes = main_box.get_children()
+        for box in boxes:
+            children = box.get_children()
+            label = children[0]
+            depend = int(label.get_text())
+            if dependency_id == depend:
+                combobox = children[2]
+                segment_activated = combobox.get_active()
+                model = combobox.get_model()
+                _iter = model.get_iter_from_string('{}'.format(segment_activated))
+                model.set_value(_iter, 0, '[{}, {}]'.format(lower_num, upper_num))
+                model.set_value(_iter, 1, '[{}, {}]'.format(lower_num, upper_num))
 
     def update_file_name_state(self):
         title_bar = self.main_window.get_titlebar()
