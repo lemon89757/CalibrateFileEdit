@@ -122,6 +122,12 @@ class ParameterIntervalEditView:
         self.state = False
         self.window.hide()
 
+    def hide_(self):
+        for entry in self.entries:
+            entry.delete_text(0, -1)
+        self.state = False
+        self.window.hide()
+
     def maximize(self, widget):
         if self.window.is_maximized():
             self.window.unmaximize()
@@ -140,6 +146,7 @@ class ParameterIntervalEditView:
             dialog.format_secondary_text("修改成功")
             dialog.run()
             dialog.destroy()
+            self.hide_()
         except Exception as ex:
             print(ex)
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,

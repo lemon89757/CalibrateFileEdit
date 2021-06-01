@@ -53,4 +53,6 @@ class DependenciesEditUIPresenter:
         self._editor.modify_dependency_segment(lower_num, upper_num, chosen_dependency)
 
     def update_modified_dependency_segment(self):
-        self._editor.update_modified_dependency_segment()
+        chosen_dependency = self.load_chosen_dependency()
+        lower_num, upper_num = self.load_current_entry()
+        self._editor.update_modified_dependency_segment(chosen_dependency, lower_num, upper_num)

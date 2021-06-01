@@ -39,4 +39,5 @@ class ParameterIntervalEditPresenter:
         self._editor.modify_calibrate_parameter_interval_in_main(modified_interval)
 
     def update_modified_parameter_interval(self):
-        self._editor.update_modified_interval()
+        input_interval = self.load_current_entry()
+        self._editor.update_modified_interval(input_interval)
