@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import pandas as pd
 import entity.CalibrateFile
 from intervals import FloatInterval
 
@@ -45,6 +46,15 @@ class FileRW:
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
             self._json_handler.save(file_path, calibrate_file)
+
+    @staticmethod
+    def get_parameter_dict():
+        sheet_in_file = pd.read_excel(r'ParameterName_ID.xlsx', sheet_name='Sheet1', dtype={'属性ID': 'Int64'})
+        sheet_in_file = sheet_in_file.dropna(axis=0, how='all')
+        parameter_dict = dict()
+        for index_ in sheet_in_file.index:
+            parameter_dict[sheet_in_file.loc[index_].values[1]] = sheet_in_file.loc[index_].values[0]
+        return parameter_dict
 
     # 校正文件生成部分
     def calibrate_msg_to_file_form(self, all_channel_msg):
