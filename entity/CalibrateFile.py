@@ -144,24 +144,3 @@ class CalibrateMsg:
         if type(value) != list:
             raise ValueError
         self._join_parameters_list = value
-
-    def add_dependency(self, value):
-        if isinstance(value, list):
-            if not all([isinstance(x, CalibrateDependencyNode) for x in value]):
-                raise ValueError
-            else:
-                self._calibrate_tree += value
-        elif isinstance(value, CalibrateDependencyNode):
-            self._calibrate_tree.append(value)
-        else:
-            raise ValueError
-
-    def delete_dependency(self, value):
-        if type(value) != CalibrateDependencyNode:
-            raise ValueError
-        for node in self._calibrate_tree:
-            if value.parameter_id == node.parameter_id and value.parent == node.parent and value.parameter_segment == node.parameter_segment:
-                self._calibrate_tree.remove(node)
-
-    def get_dependency_list(self):
-        pass
