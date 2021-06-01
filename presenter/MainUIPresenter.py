@@ -62,7 +62,7 @@ class MainUIPresenter:
             children = box.get_children()
             label = children[0]
             depend_id = int(label.get_text())
-            combobox = children[1]
+            combobox = children[2]
             segment_activated = combobox.get_active()
             model = combobox.get_model()
             _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -84,7 +84,7 @@ class MainUIPresenter:
             children = box.get_children()
             label = children[0]
             depend_id = int(label.get_text())
-            combobox = children[1]
+            combobox = children[2]
             segment_activated = combobox.get_active()
             model = combobox.get_model()
             _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -134,7 +134,7 @@ class MainUIPresenter:
         focus_box_children = focus_box.get_children()
         focus_label = focus_box_children[0]
         focus_depend_id = int(focus_label.get_text())
-        focus_combobox = focus_box_children[1]
+        focus_combobox = focus_box_children[2]
         segment_activated = focus_combobox.get_active()
         model = focus_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -147,7 +147,7 @@ class MainUIPresenter:
         main_box = viewport.get_child()
         boxes = main_box.get_children()
         last_box = boxes[-1]
-        last_combobox = last_box.get_children()[1]
+        last_combobox = last_box.get_children()[2]
         segment_activated = last_combobox.get_active()
         model = last_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -213,8 +213,8 @@ class MainUIPresenter:
         self._editor.modify_calibrate_parameter_interval(chosen_channel, chosen_parameter, path,
                                                          current_segment, modified_interval)
 
-    def update_modified_interval(self):
-        self._view.update_modified_interval()
+    def update_modified_interval(self, interval):
+        self._view.update_modified_interval(interval)
         self._view.update_file_name_state()
 
     def load_chosen_dependency_segment(self, dependency_id):
@@ -226,7 +226,7 @@ class MainUIPresenter:
             label = children[0]
             depend = int(label.get_text())
             if dependency_id == depend:
-                combobox = children[1]
+                combobox = children[2]
                 segment_activated = combobox.get_active()
                 model = combobox.get_model()
                 _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -243,8 +243,8 @@ class MainUIPresenter:
         self._editor.modify_depend_segment(chosen_channel, calibrate_parameter, lower_num, upper_num,
                                            dependency_path, dependency_id, current_segment)
 
-    def update_modified_dependency_segment(self):
-        self._view.update_modified_depend_segment()
+    def update_modified_dependency_segment(self, dependency_id, lower_num, upper_num):
+        self._view.update_modified_depend_segment(dependency_id, lower_num, upper_num)
         self._view.update_file_name_state()
 
     def get_available_parameters(self):
@@ -314,3 +314,7 @@ class MainUIPresenter:
     def update_main_ui_from_merge(self):
         self._view.update_channel_combobox()
         self._view.update_file_name_state()
+
+    def get_parameter_dict(self):
+        parameter_dict = self._editor.get_parameter_dict()
+        return parameter_dict

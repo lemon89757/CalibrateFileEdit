@@ -286,3 +286,9 @@ class CalibrateFileEdit:
         file_handler.get_calibrate_file(self._another_file_path)
         channels = file_handler.load_all_calibrate_msg_from_file()
         return channels
+
+    @staticmethod
+    def get_parameter_dict():
+        file_handler = FileRW()
+        parameter_dict = file_handler.get_parameter_dict()
+        return parameter_dict
