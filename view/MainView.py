@@ -24,7 +24,7 @@ class MainUI:
 
         # 方式一
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'MainUI.glade'))
+        self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/MainUI.glade'))
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
         self.main_window.set_default_size(500, 350)
@@ -201,6 +201,7 @@ class MainUI:
                 dialog.format_secondary_text("不存在参数{}的属性名".format(parameter))
                 dialog.run()
                 dialog.destroy()
+                parameters_model.append([parameter, '{}--None'.format(parameter)])
         return parameters_model
 
     def clear_calibrate_parameter_choose_combobox(self):
@@ -289,7 +290,10 @@ class MainUI:
                 label_id.set_text('{}'.format(value))
                 child_box.pack_start(label_id, True, True, 0)
                 label_name = Gtk.Label()
-                label_name.set_text('{}'.format(self._parameter_dict[value]))
+                try:
+                    label_name.set_text('{}'.format(self._parameter_dict[value]))
+                except KeyError:
+                    label_name.set_text('None')
                 child_box.pack_start(label_name, True, True, 2)
                 child_combobox = Gtk.ComboBox()
                 child_model = Gtk.ListStore()
@@ -634,6 +638,7 @@ class MainUI:
     def show_calibrate_tree_edit_ui(self, widget):
         try:
             if not self._senior_ui.state:
+                self._senior_ui.parameter_dict = self._parameter_dict
                 self._senior_ui.update_available_parameters()
                 self._senior_ui.window.show_all()
                 self._senior_ui.state = True
@@ -811,4 +816,4 @@ def main():
 # if __name__ == '__main__':
 #     main()
 
-# TODO 设置控件比例、get_path
+#  设置控件比例(grid)、get_path
