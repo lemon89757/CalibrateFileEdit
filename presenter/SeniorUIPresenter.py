@@ -179,13 +179,13 @@ class SeniorUIPresenter:
         path = self.load_chosen_path()
         calibrate_parameter_id = self.load_chosen_parameter()
         self._editor.add_branch(self._channel, calibrate_parameter_id, path)
-        self._view.update_senior_ui_edit_branch()
+        self._view.update_senior_ui_add_branch()
 
     def delete_branch(self):
         path = self.load_chosen_path()
         calibrate_parameter_id = self.load_chosen_parameter()
         self._editor.delete_branch(self._channel, calibrate_parameter_id, path)
-        self._view.update_senior_ui_edit_branch()
+        self._view.update_senior_ui_delete_branch()
 
     def add_complete_branch(self):
         default_parameter = 2020
@@ -206,11 +206,13 @@ class SeniorUIPresenter:
         _iter = model.get_iter_from_string('{}'.format(pos_active))
         chosen_pos = model.get_value(_iter, 0)  # 0表示前， 1表示后
 
-        dependency_combobox = self._dependency_view.chosen_dependency
-        dependency_active = dependency_combobox.get_active()
-        model = dependency_combobox.get_model()
-        _iter = model.get_iter_from_string('{}'.format(dependency_active))
-        chosen_dependency = model.get_value(_iter, 0)
+        # dependency_combobox = self._dependency_view.chosen_dependency
+        # dependency_active = dependency_combobox.get_active()
+        # model = dependency_combobox.get_model()
+        # _iter = model.get_iter_from_string('{}'.format(dependency_active))
+        # chosen_dependency = model.get_value(_iter, 0)
+        dependency_label = self._dependency_view.chosen_dependency
+        chosen_dependency = int(dependency_label.get_text())
 
         entry = self._dependency_view.entry_id
         entry_id = int(entry.get_text())
@@ -240,3 +242,6 @@ class SeniorUIPresenter:
         calibrate_parameter_id = self.load_chosen_parameter()
         depend_id = self.load_dependencies_scrolled_win_chosen()
         self._editor.delete_dependency(self._channel, calibrate_parameter_id, depend_id)
+
+    def check_same_segment(self):
+        pass
