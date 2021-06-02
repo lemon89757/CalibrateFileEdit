@@ -155,11 +155,9 @@ class CalibrateFileEdit:
         new_channel = self._merge.merge_by_method_two(merge_channel, another_parameter_calibrate_msg)
         self._current_channels[merge_channel_index] = new_channel
 
-    def merge_calibrate_file_by_method_three(self, merge_channel_index, another_channel_index):
-        merge_channel = self._current_channels[merge_channel_index]
-        self._merge.another_file = self._another_file_path
-        new_channel = self._merge.merge_by_method_three(merge_channel, another_channel_index)
-        self._current_channels[merge_channel_index] = new_channel
+    def merge_calibrate_file_by_method_three(self, another_channel_index):
+        another_channel = self._another_channels[another_channel_index]
+        self._current_channels.append(another_channel)
 
     # 参数信息编辑
     def modify_parameter_factors(self, channel, calibrate_parameter_id, path, segment, new_factors):

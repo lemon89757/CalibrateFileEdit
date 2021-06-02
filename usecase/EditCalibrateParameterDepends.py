@@ -24,18 +24,21 @@ class EditCalibrateParameterDepends:
         front = 0
         behind = 1
         if front == pos:
+            parent_nodes = []
             for node in self._root_node.descendants:
                 if depend_in == node.parameter_id:
                     parent_node = node.parent
-                    parent_children = list(parent_node.children)
-                    parent_children.remove(node)
-                    parent_node.children = parent_children
-                    depend_node = CalibrateDependencyNode()
-                    depend_node.parameter_id = new_dependency
-                    default_segment = FloatInterval.closed(float('-inf'), float('inf'))
-                    depend_node.parameter_segment = default_segment
-                    depend_node.parent = parent_node
-                    node.parent = depend_node
+                    if parent_node not in parent_nodes:
+                        parent_nodes.append(parent_node)
+            for node_p in parent_nodes:
+                parent_children = list(node_p.children)
+                node_p.children = []
+                depend_node = CalibrateDependencyNode()
+                depend_node.parameter_id = new_dependency
+                default_segment = FloatInterval.closed(float('-inf'), float('inf'))
+                depend_node.parameter_segment = default_segment
+                depend_node.parent = node_p
+                depend_node.children = parent_children
         elif behind == pos:
             for node in self._root_node.descendants:
                 if depend_in == node.parameter_id:
