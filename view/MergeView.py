@@ -113,11 +113,16 @@ class MergeView:
         button_choose_box = Gtk.Box()
         button_choose_box.set_orientation(Gtk.Orientation.HORIZONTAL)
         # interval_input_box.set_homogeneous(True)
-        confirm_button = Gtk.Button(label='确定')
-        confirm_button.connect('clicked', self.confirm)
-        confirm_button.set_margin_top(10)
-        confirm_button.set_margin_bottom(10)
-        button_choose_box.pack_start(confirm_button, False, True, 0)
+        merge_channel_button = Gtk.Button(label='合并通道')
+        merge_channel_button.connect('clicked', self.confirm_channel)
+        merge_channel_button.set_margin_top(10)
+        merge_channel_button.set_margin_bottom(10)
+        button_choose_box.pack_start(merge_channel_button, False, True, 0)
+        merge_parameter_button = Gtk.Button(label='合并参数')
+        merge_parameter_button.connect('clicked', self.confirm_parameter)
+        merge_parameter_button.set_margin_top(10)
+        merge_parameter_button.set_margin_bottom(10)
+        button_choose_box.pack_start(merge_parameter_button, False, True, 120)
         cancel_button = Gtk.Button(label='取消')
         cancel_button.connect('clicked', self.hide)
         cancel_button.set_margin_top(10)
@@ -167,15 +172,39 @@ class MergeView:
         self.chosen_other_channel_index.clear()
         self.chosen_other_channel_index.set_model(empty_model)
 
-    def confirm(self, widget):
+    def confirm_parameter(self, widget):
         try:
-            self._presenter.confirm()
+            self._presenter.confirm_parameter()
             self._presenter.update_main_ui()
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("操作成功")
+            dialog.run()
+            dialog.destroy()
         except Exception as ex:
             print(ex)
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
             dialog.format_secondary_text("所选参数不符要求，请检查通道中是否已存在此参数")
+            dialog.run()
+            dialog.destroy()
+        self.clear_all_other_file_widget()
+        self.hide_()
+
+    def confirm_channel(self, widget):
+        try:
+            self._presenter.confirm_channel()
+            self._presenter.update_main_ui()
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("操作成功")
+            dialog.run()
+            dialog.destroy()
+        except Exception as ex:
+            print(ex)
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请检查是否选择有效通道")
             dialog.run()
             dialog.destroy()
         self.clear_all_other_file_widget()

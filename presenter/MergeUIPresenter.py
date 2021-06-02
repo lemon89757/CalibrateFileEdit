@@ -54,7 +54,7 @@ class MergeUIPresenter:
         parameter_id = model.get_value(_iter, 0)
         return parameter_id
 
-    def confirm(self):
+    def confirm_parameter(self):
         other_calibrate_parameter = self.load_other_chosen_calibrate_parameter()
         other_channel_index = self.load_other_channel_index()
         merged_channel_index = self.load_merged_channel_index()
@@ -62,7 +62,14 @@ class MergeUIPresenter:
         default_other_channel_index = 2020
         if other_calibrate_parameter == default_parameter or other_channel_index == default_other_channel_index:
             raise ValueError
-        self._editor.merge(merged_channel_index, other_channel_index, other_calibrate_parameter)
+        self._editor.merge_parameter(merged_channel_index, other_channel_index, other_calibrate_parameter)
 
     def update_main_ui(self):
         self._editor.update_main_ui_from_merge()
+
+    def confirm_channel(self):
+        other_channel_index = self.load_other_channel_index()
+        default_other_channel_index = 2020
+        if other_channel_index == default_other_channel_index:
+            raise ValueError('请先选择有效通道')
+        self._editor.merge_channel(other_channel_index)
