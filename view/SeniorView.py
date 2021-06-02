@@ -24,6 +24,7 @@ class SeniorUI:
 
         self._all_msg_tree_store = Gtk.TreeStore(int, float, float, str)
         self._segment_msg = []
+        self._parameter_dict = None
 
         self._segment_edit_ui = SegmentModifyUI()
         self._factors_edit_ui = FactorsModifyUI()
@@ -33,6 +34,14 @@ class SeniorUI:
     @property
     def presenter(self):
         return self._presenter
+
+    @property
+    def parameter_dict(self):
+        return self._parameter_dict
+
+    @parameter_dict.setter
+    def parameter_dict(self, value):
+        self._parameter_dict = value
 
     def init_child_ui(self):
         self._segment_edit_ui.presenter = self._presenter
@@ -45,8 +54,8 @@ class SeniorUI:
 
     def get_all_widget(self):
         builder = Gtk.Builder()
-        builder.add_from_file(os.path.join(os.path.dirname(__file__), 'SeniorUI.glade'))
-        self.ui = builder.get_object('senior_box')
+        builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/SeniorUI.glade'))
+        self.ui = builder.get_object('senior_grid')
         self.parameter_choose = builder.get_object('parameter_choose_combo')
         self.parameter_choose.connect('changed', self.update_two_scrolled_win)
         self.all_msg_scrolled_win = builder.get_object('calibrate_msg_info_scrolled_win')
@@ -126,7 +135,10 @@ class SeniorUI:
         parameters_model = Gtk.ListStore(int, str)
         parameters_model.append([2020, '请选择校正参数'])
         for parameter in available_parameters:
-            parameters_model.append([parameter, '{}'.format(parameter)])
+            try:
+                parameters_model.append([parameter, '{}--{}'.format(parameter, self._parameter_dict[parameter])])
+            except KeyError:
+                parameters_model.append([parameter, '{}--None'.format(parameter)])
         self.parameter_choose.set_model(parameters_model)
         parameter_cell = Gtk.CellRendererText()
         self.parameter_choose.pack_start(parameter_cell, True)
@@ -161,10 +173,13 @@ class SeniorUI:
         depends_id = self._presenter.get_depends_id(chosen_parameter)
 
         tree_view = Gtk.TreeView()
-        tree_store = Gtk.TreeStore(int)
+        tree_store = Gtk.TreeStore(int, str)
         parent = None
         for depend in depends_id:
-            parent = tree_store.append(parent, [depend])
+            try:
+                parent = tree_store.append(parent, [depend, self._parameter_dict[depend]])
+            except KeyError:
+                parent = tree_store.append(parent, [depend, 'None'])
         tree_view.set_model(tree_store)
 
         cell_renderer_text = Gtk.CellRendererText()
@@ -172,6 +187,11 @@ class SeniorUI:
         tree_view.append_column(tree_view_column_1)
         tree_view_column_1.pack_start(cell_renderer_text, True)
         tree_view_column_1.add_attribute(cell_renderer_text, "text", 0)
+
+        tree_view_column_2 = Gtk.TreeViewColumn("依赖名")
+        tree_view.append_column(tree_view_column_2)
+        tree_view_column_2.pack_start(cell_renderer_text, True)
+        tree_view_column_2.add_attribute(cell_renderer_text, "text", 1)
 
         child = self.dependencies_scrolled_win.get_child()
         if child:
@@ -240,25 +260,31 @@ class SeniorUI:
         next_time_segment_msg = []
         for parent in parents:
             children = parent.children
-            if isinstance(children[0], CalibrateParameterNode):
-                # 因为叶结点没有子结点，因此应该也可以捕获children[0]处的错误，来结束更新函数的循环
-                for child in children:
+            # if isinstance(children[0], CalibrateParameterNode):
+            # 因为叶结点没有子结点，因此应该也可以捕获children[0]处的错误，来结束更新函数的循环
+            for child in children:
+                if isinstance(child, CalibrateParameterNode):
                     count = 0
-                    for segment in child.parameter_segments:
-                        interval = segment[0]
-                        factors_str = '{}'.format(segment[1])
-                        current_parent_store = self._segment_msg[parents.index(parent)]
-                        self._all_msg_tree_store.append(current_parent_store, [child.parameter_id,
-                                                                               interval.lower,
-                                                                               interval.upper, factors_str])
-                        count += 1
-                        is_last_segment = \
-                            count == len(child.parameter_segments) and children.index(child) == len(children)-1 \
-                            and parents.index(parent) == len(parents)-1
-                        if is_last_segment:
+                    if not child.parameter_segments:
+                        is_last_child = children.index(child) == len(children)-1 and \
+                                        parents.index(parent) == len(parents)-1
+                        if is_last_child:
                             raise StopIteration
-            else:
-                for child in children:
+                    else:
+                        for segment in child.parameter_segments:
+                            interval = segment[0]
+                            factors_str = '{}'.format(segment[1])
+                            current_parent_store = self._segment_msg[parents.index(parent)]
+                            self._all_msg_tree_store.append(current_parent_store, [child.parameter_id,
+                                                                                   interval.lower,
+                                                                                   interval.upper, factors_str])
+                            count += 1
+                            is_last_segment = \
+                                count == len(child.parameter_segments) and children.index(child) == len(children)-1 \
+                                and parents.index(parent) == len(parents)-1
+                            if is_last_segment:
+                                raise StopIteration
+                else:
                     segment = child.parameter_segment
                     current_parent_store = self._segment_msg[parents.index(parent)]
                     segment_msg = self._all_msg_tree_store.append(current_parent_store, [child.parameter_id,
@@ -282,17 +308,23 @@ class SeniorUI:
     def add_dependency(self, widget):
         try:
             if not self._add_dependency_ui.state:
-                calibrate_parameter = self._presenter.load_chosen_parameter()
-                depends_id = self._presenter.get_depends_id(calibrate_parameter)
-                self._add_dependency_ui.update_dependency_choose(depends_id)
-                self._add_dependency_ui.entry_id.set_text('输入依赖ID')
+                self._add_dependency_ui.show_chosen_dependency()
+                # calibrate_parameter = self._presenter.load_chosen_parameter()
+                # depends_id = self._presenter.get_depends_id(calibrate_parameter)
+                # self._add_dependency_ui.update_dependency_choose(depends_id)
+                # self._add_dependency_ui.entry_id.set_text('输入依赖ID')
                 self._add_dependency_ui.state = True
                 self._add_dependency_ui.window.show_all()
             else:
                 self._add_dependency_ui.state = False
-                self._add_dependency_ui.window.hide()
+                self._add_dependency_ui.hide_()
         except Exception as ex:
             print(ex)
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择依赖")
+            dialog.run()
+            dialog.destroy()
 
     def show_edit_chosen_segment_ui(self, widget):
         try:
@@ -324,6 +356,28 @@ class SeniorUI:
         chosen_parameter = self._presenter.load_chosen_parameter()
         self.update_all_msg_scrolled_win(chosen_parameter)
 
+    def update_senior_ui_add_branch(self):
+        all_msg_tree_view = self.all_msg_scrolled_win.get_child()
+        focus_segment = all_msg_tree_view.get_selection()
+        model, _iter = focus_segment.get_selected()
+        _id = model.get_value(_iter, 0)
+
+        calibrate_parameter_id = self._presenter.load_chosen_parameter()
+        depends_id = self._presenter.get_depends_id(calibrate_parameter_id)
+        parameters_id = depends_id + [calibrate_parameter_id]
+        id_index = parameters_id.index(_id)
+        for depend_id in parameters_id[id_index+1:]:
+            if depend_id != calibrate_parameter_id:
+                _iter = model.append(_iter, [depend_id, float('-inf'), float('inf'), None])
+            else:
+                model.append(_iter, [depend_id, float('-inf'), float('inf'), '[0, 0, 0, 0, 0 , 0]'])
+
+    def update_senior_ui_delete_branch(self):
+        all_msg_tree_view = self.all_msg_scrolled_win.get_child()
+        focus_segment = all_msg_tree_view.get_selection()
+        model, _iter = focus_segment.get_selected()
+        model.remove(_iter)
+
     def add_branch(self, widget):
         try:
             self._presenter.add_branch()
@@ -347,9 +401,11 @@ class SeniorUI:
 
     def delete_branch(self, widget):
         try:
-            self._presenter.delete_branch()
+            self._presenter.check_same_segment()
         except Exception as ex:
             print(ex)
+        else:
+            self._presenter.delete_branch()
 
     def show_edit_chosen_factors_ui(self, widget):
         try:
@@ -744,12 +800,14 @@ class AddDependencyUI:
 
     def hide(self, widget):
         self.state = False
-        self.entry_id.set_text('输入依赖ID')
+        self.entry_id.delete_text(0, -1)
+        # self.entry_id.set_text('输入依赖ID')
         self.window.hide()
 
     def hide_(self):
         self.state = False
-        self.entry_id.set_text('输入依赖ID')
+        self.entry_id.delete_text(0, -1)
+        # self.entry_id.set_text('输入依赖ID')
         self.window.hide()
 
     def maximize(self, widget):
@@ -764,7 +822,8 @@ class AddDependencyUI:
     def init_ui(self):
         self.ui.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.chosen_dependency = Gtk.ComboBox()
+        # self.chosen_dependency = Gtk.ComboBox()
+        self.chosen_dependency = Gtk.Label()
         self.chosen_pos = Gtk.ComboBox()
         pos_model = Gtk.ListStore(int, str)
         pos_model.append([0, '选择依赖前'])
@@ -775,7 +834,7 @@ class AddDependencyUI:
         self.chosen_pos.add_attribute(cell, 'text', 1)
         self.chosen_pos.set_active(0)
         self.entry_id = Gtk.Entry()
-        self.entry_id.set_text('输入依赖ID')
+        # self.entry_id.set_placeholder_text('输入依赖ID')  # TODO
         msg_box = Gtk.Box()
         msg_box.set_homogeneous(True)
         msg_box.set_orientation(Gtk.Orientation.HORIZONTAL)
@@ -819,6 +878,10 @@ class AddDependencyUI:
         self.chosen_dependency.pack_start(cell, True)
         self.chosen_dependency.add_attribute(cell, 'text', 0)
         self.chosen_dependency.set_active(0)
+
+    def show_chosen_dependency(self):
+        dependency = self._presenter.load_dependencies_scrolled_win_chosen()
+        self.chosen_dependency.set_text('{}'.format(dependency))
 
 
 class Image:
