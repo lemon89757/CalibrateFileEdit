@@ -307,9 +307,12 @@ class MainUIPresenter:
         self._editor.another_channels = channels
         return channels
 
-    def merge(self, merged_channel_index, other_channel_index, other_calibrate_parameter):
+    def merge_parameter(self, merged_channel_index, other_channel_index, other_calibrate_parameter):
         self._editor.merge_calibrate_file_by_method_two(merged_channel_index, other_channel_index,
                                                         other_calibrate_parameter)
+
+    def merge_channel(self, other_channel_index):
+        self._editor.merge_calibrate_file_by_method_three(other_channel_index)
 
     def update_main_ui_from_merge(self):
         self._view.update_channel_combobox()
