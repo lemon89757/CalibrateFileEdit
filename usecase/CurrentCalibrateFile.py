@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import copy
+from entity.CalibrateFile import CalibrateParameterNode, CalibrateDependencyNode
 from entity.FileReadAndWrite import FileRW
 from usecase.EditCalibrateParameter import EditCalibrateParameter
 from usecase.EditCalibrateParameterDepends import EditCalibrateParameterDepends
@@ -161,12 +163,14 @@ class CalibrateFileEdit:
 
     # 参数信息编辑
     def modify_parameter_factors(self, channel, calibrate_parameter_id, path, segment, new_factors):
+        # self.check_the_same_branch_path(channel, calibrate_parameter_id, path)
         dependency_leaf_node = self.get_parameter_parent_node(channel, calibrate_parameter_id, path)
         parameter_node = dependency_leaf_node.children[0]
         self._calibrate_parameter_editor.parameter_node = parameter_node
         self._calibrate_parameter_editor.modify_parameter_factors(new_factors, segment)
 
     def modify_calibrate_parameter_interval(self, channel, calibrate_parameter_id, path, segment, new_interval):
+        # self.check_the_same_branch_path(channel, calibrate_parameter_id, path)
         dependency_leaf_node = self.get_parameter_parent_node(channel, calibrate_parameter_id, path)
         parameter_node = dependency_leaf_node.children[0]
         self._calibrate_parameter_editor.parameter_node = parameter_node
@@ -188,9 +192,9 @@ class CalibrateFileEdit:
     #     root_node = self._calibrate_parameter_editor.add_parameter_node(parameter_id, root_node, parent_node)
     #     return root_node
 
-    def delete_parameter_node(self, root_node, parameter_node):
-        root_node = self._calibrate_parameter_editor.delete_parameter_node(root_node, parameter_node)
-        return root_node
+    # def delete_parameter_node(self, root_node, parameter_node):
+    #     root_node = self._calibrate_parameter_editor.delete_parameter_node(root_node, parameter_node)
+    #     return root_node
 
     # 参数分段转化成dict形式便于查找(但存在重复校正系数区间，不同校正系数间相互覆盖的问题)
     # def get_segments_dict(self, parameter_node):
@@ -225,13 +229,14 @@ class CalibrateFileEdit:
         self._depend_editor.delete_depend_segment(depend_node)
         # return self._depend_editor.root_node
 
-    def modify_depend_segment(self, channel, calibrate_parameter, lower_num, upper_num, depend_path, depend_id,
-                              current_segment):
-        depend_parent_node = self.get_depend_parent_node(channel, calibrate_parameter, depend_path, depend_id)
-        for child in depend_parent_node.children:
-            if current_segment == child.parameter_segment:
-                self._depend_editor.modify_depend_segment(lower_num, upper_num, child)
-                break
+    def modify_depend_segment(self, channel, calibrate_parameter, lower_num, upper_num, depend_path):
+        # self.check_the_same_branch_path(channel, calibrate_parameter, depend_path)
+        depend_node = self.get_current_node(channel, calibrate_parameter, depend_path)
+        # depend_parent_node = self.get_depend_parent_node(channel, calibrate_parameter, depend_path, depend_id)
+        # for child in depend_parent_node.children:
+        #     if current_segment == child.parameter_segment:
+        self._depend_editor.modify_depend_segment(lower_num, upper_num, depend_node)
+                # break
 
     # 保存
     def save(self):
@@ -246,31 +251,61 @@ class CalibrateFileEdit:
         file_handler.save_as(calibrate_file, file_path)
 
     def get_current_node(self, channel, calibrate_parameter_id, path):
-        current_chosen_id = path[-1][0]
-        current_chosen_segment = path[-1][1]
-        if current_chosen_id != calibrate_parameter_id:
-            current_parent_node = self.get_depend_parent_node(channel, calibrate_parameter_id, path[:-1],
-                                                              current_chosen_id)
-            for node in current_parent_node.children:
-                if node.parameter_id == current_chosen_id and node.parameter_segment == current_chosen_segment:
-                    return node
+        # current_chosen_id = path[-1][0]
+        # current_chosen_segment = path[-1][1]
+        # if current_chosen_id != calibrate_parameter_id:
+        #     current_parent_node = self.get_depend_parent_node(channel, calibrate_parameter_id, path[:-1],
+        #                                                       current_chosen_id)
+        #     for node in current_parent_node.children:
+        #         if node.parameter_id == current_chosen_id and node.parameter_segment == current_chosen_segment:
+        #             return node
+        new_path = copy.deepcopy(path)
+        chosen_parameter_id = new_path[-1][0]
+        if chosen_parameter_id == calibrate_parameter_id:
+            new_path.pop()
+        chosen_parameter_id = new_path[-1][0]
+        root_node = self.get_root_node(channel, calibrate_parameter_id)
+        the_same_id_nodes = []
+        for node in root_node.descendants:
+            if chosen_parameter_id == node.parameter_id:
+                the_same_id_nodes.append(node)
+        for node_i in the_same_id_nodes:
+            path_i = node_i.path
+            count = 0
+            for node_j in path_i:
+                if node_j.parameter_id != new_path[count][0] or node_j.parameter_segment != new_path[count][1]:
+                    break
+                count += 1
+                if count == len(path_i):
+                    return node_j
 
     def add_branch(self, channel, calibrate_parameter_id, path):
+        self.check_the_same_branch_path(channel, calibrate_parameter_id, path)
         node = self.get_current_node(channel, calibrate_parameter_id, path)
         root_node = self.get_root_node(channel, calibrate_parameter_id)
         self.add_depend_segment_until_leaf(root_node, node)
 
     def delete_branch(self, channel, calibrate_parameter_id, path):
+        self.check_the_same_branch_path(channel, calibrate_parameter_id, path)
         current_chosen_id = path[-1][0]
         if current_chosen_id == calibrate_parameter_id:
             calibrate_parameter_parent_node = self.get_parameter_parent_node(channel, calibrate_parameter_id,
                                                                              path[:-1])
             current_node = calibrate_parameter_parent_node.children[0]
             current_chosen_interval = path[-1][1]
-            self.delete_parameter_segment(current_node, current_chosen_interval)
+            self.check_the_same_interval(current_node, current_chosen_interval)
+            if self.check_is_only_one_segment(current_node):
+                node = self.check_whole_branch(channel, calibrate_parameter_id, path)
+                self.delete_depend_segment(node)
+            else:
+                self.delete_parameter_segment(current_node, current_chosen_interval)
         else:
             current_node = self.get_current_node(channel, calibrate_parameter_id, path)
-            self.delete_depend_segment(current_node)
+            if self.check_is_only_one_segment(current_node):
+                node = self.check_whole_branch(channel, calibrate_parameter_id, path)
+                self.delete_depend_segment(node)
+            else:
+                self.delete_depend_segment(current_node)
 
     def add_complete_branch(self, channel, calibrate_parameter_id):
         root_node = self.get_root_node(channel, calibrate_parameter_id)
@@ -290,3 +325,73 @@ class CalibrateFileEdit:
         file_handler = FileRW()
         parameter_dict = file_handler.get_parameter_dict()
         return parameter_dict
+
+    # @staticmethod
+    # def check_the_same_segment(depend_node):
+    #     siblings = depend_node.siblings
+    #     for sibling in siblings:
+    #         if depend_node.parameter_segment == sibling.parameter_segment:
+    #             raise ValueError('在同一父结点下存在相同分段的结点')
+
+    @staticmethod
+    def check_the_same_interval(parameter_node, interval):
+        segments = parameter_node.parameter_segments
+        intervals = []
+        for segment in segments:
+            if interval == segment[0]:
+                intervals.append(segment[0])
+        if len(intervals) > 1:
+            raise ValueError('在同一父结点下存在相同区间的叶节点')
+
+    def check_the_same_branch_path(self, channel, calibrate_parameter_id, path):
+        new_path = copy.deepcopy(path)
+        chosen_parameter_id = new_path[-1][0]
+        if chosen_parameter_id == calibrate_parameter_id:
+            new_path.pop()
+        the_same_branch_path = 0
+        chosen_parameter_id = new_path[-1][0]
+        root_node = self.get_root_node(channel, calibrate_parameter_id)
+        the_same_id_nodes = []
+        for node in root_node.descendants:
+            if chosen_parameter_id == node.parameter_id:
+                the_same_id_nodes.append(node)
+        for node_i in the_same_id_nodes:
+            path_i = node_i.path
+            count = 0
+            for node_j in path_i:
+                if node_j.parameter_id != new_path[count][0] or node_j.parameter_segment != new_path[count][1]:
+                    break
+                count += 1
+                if count == len(path_i):
+                    the_same_branch_path += 1
+        if the_same_branch_path > 1:
+            raise ValueError('存在相同的分支路径')
+
+    @staticmethod
+    def check_is_only_one_segment(node):
+        if isinstance(node, CalibrateParameterNode):
+            if len(node.parameter_segments) == 1:
+                return True
+            else:
+                return False
+        elif isinstance(node, CalibrateDependencyNode):
+            if node.siblings:
+                return False
+            else:
+                return True
+
+    def check_whole_branch(self, channel, calibrate_parameter_id, path):
+        new_path = copy.deepcopy(path)
+        chosen_parameter_id = new_path[-1][0]
+        if chosen_parameter_id == calibrate_parameter_id:
+            new_path.pop()
+        while True:
+            depend_node = self.get_current_node(channel, calibrate_parameter_id, new_path)
+            if self.check_is_only_one_segment(depend_node):
+                if len(new_path) <= 2:
+                    break
+                new_path.pop()
+                continue
+            else:
+                break
+        return depend_node
