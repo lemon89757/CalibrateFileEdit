@@ -29,8 +29,6 @@ class ParameterIntervalEditPresenter:
             interval_list.append(num)
         lower_num = interval_list[0]
         upper_num = interval_list[1]
-        if lower_num > upper_num:
-            raise ValueError('输入区间不正确，上界比下界小')
         interval = FloatInterval.closed(lower_num, upper_num)
         return interval
 
