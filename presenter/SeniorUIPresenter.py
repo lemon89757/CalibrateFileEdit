@@ -200,7 +200,7 @@ class SeniorUIPresenter:
         self._editor.confirm_in_senior(self._channel, channel_index)
 
     def load_add_dependency_ui_msg(self):
-        pos_combobox = self._dependency_view.chosen_pos
+        pos_combobox = self._dependency_view.pos_combo
         pos_active = pos_combobox.get_active()
         model = pos_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(pos_active))
@@ -211,7 +211,7 @@ class SeniorUIPresenter:
         # model = dependency_combobox.get_model()
         # _iter = model.get_iter_from_string('{}'.format(dependency_active))
         # chosen_dependency = model.get_value(_iter, 0)
-        dependency_label = self._dependency_view.chosen_dependency
+        dependency_label = self._dependency_view.chosen_dependency_label
         chosen_dependency = int(dependency_label.get_text())
 
         entry = self._dependency_view.entry_id

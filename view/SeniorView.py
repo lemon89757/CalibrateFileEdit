@@ -9,6 +9,7 @@ from presenter.SeniorUIPresenter import SeniorUIPresenter
 class SeniorUI:
     def __init__(self):
         self.state = False
+        self.has_chosen_calibrate_parameter = False
         self._presenter = SeniorUIPresenter()
         self._presenter.view = self
         self.window = Gtk.Window()
@@ -110,10 +111,12 @@ class SeniorUI:
 
     def hide(self, widget):
         self.state = False
+        self.has_chosen_calibrate_parameter = False
         self.window.hide()
 
     def hide_(self):
         self.state = False
+        self.has_chosen_calibrate_parameter = False
         self.window.hide()
 
     def maximize(self, widget):
@@ -152,6 +155,7 @@ class SeniorUI:
             self.clear_dependencies_scrolled_win()
             self.clear_all_msg_scrolled_win()
         else:
+            self.has_chosen_calibrate_parameter = True
             self.update_dependencies_scrolled_win(chosen_parameter)
             self.update_all_msg_scrolled_win(chosen_parameter)
 
@@ -294,9 +298,12 @@ class SeniorUI:
         self._segment_msg = next_time_segment_msg
 
     def confirm(self, widget):
-        self._presenter.confirm_in_senior()
-        self._presenter.update_main_ui_from_senior()
-        self.hide_()
+        if self.has_chosen_calibrate_parameter:
+            self._presenter.confirm_in_senior()
+            self._presenter.update_main_ui_from_senior()
+            self.hide_()
+        else:
+            self.hide_()
 
     def delete_dependency(self, widget):
         try:
@@ -797,11 +804,16 @@ class AddDependencyUI:
         self.set_window_header()
         self._presenter = None
 
-        self.ui = Gtk.Box()
-        self.chosen_dependency = None
+        self.ui = None
+        self.chosen_dependency_label = None
         self.entry_id = None
-        self.chosen_pos = None
-        self.init_ui()
+        self.pos_combo = None
+        self.get_all_widget()
+
+        # self.chosen_dependency = None
+        # self.entry_id = None
+        # self.chosen_pos = None
+        # self.init_ui()
         self.window.add(self.ui)
 
     @property
@@ -813,7 +825,7 @@ class AddDependencyUI:
         self._presenter = value
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='AddDependency')
+        header = Gtk.HeaderBar(title='添加新依赖')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
@@ -861,69 +873,88 @@ class AddDependencyUI:
     def minimize(self, widget):
         self.window.iconify()
 
-    def init_ui(self):
-        self.ui.set_orientation(Gtk.Orientation.VERTICAL)
+    # def init_ui(self):
+    #     self.ui.set_orientation(Gtk.Orientation.VERTICAL)
+    #
+    #     # self.chosen_dependency = Gtk.ComboBox()
+    #     self.chosen_dependency = Gtk.Label()
+    #     self.chosen_pos = Gtk.ComboBox()
+    #     pos_model = Gtk.ListStore(int, str)
+    #     pos_model.append([0, '选择依赖前'])
+    #     pos_model.append([1, '选择依赖后'])
+    #     self.chosen_pos.set_model(pos_model)
+    #     cell = Gtk.CellRendererText()
+    #     self.chosen_pos.pack_start(cell, True)
+    #     self.chosen_pos.add_attribute(cell, 'text', 1)
+    #     self.chosen_pos.set_active(0)
+    #     self.entry_id = Gtk.Entry()
+    #     self.entry_id.set_placeholder_text('输入依赖ID')  # TODO
+    #     msg_box = Gtk.Box()
+    #     msg_box.set_homogeneous(True)
+    #     msg_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     msg_box.pack_start(self.chosen_dependency, True, True, 0)
+    #     msg_box.pack_start(self.chosen_pos, True, True, 10)
+    #     msg_box.pack_start(self.entry_id, True, True, 0)
+    #     self.ui.add(msg_box)
+    #
+    #     buttons_box = Gtk.Box()
+    #     buttons_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     confirm_button = Gtk.Button(label='确定')
+    #     confirm_button.connect('clicked', self.confirm)
+    #     cancel_button = Gtk.Button(label='取消')
+    #     cancel_button.connect('clicked', self.hide)
+    #     buttons_box.pack_start(confirm_button, True, True, 0)
+    #     buttons_box.pack_end(cancel_button, True, True, 0)
+    #     self.ui.add(buttons_box)
+    def get_all_widget(self):
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/AddDependencyUI.glade'))
+        self.ui = builder.get_object('add_depend_grid')
+        self.chosen_dependency_label = builder.get_object('current_chosen_dependency_label')
+        confirm_button = builder.get_object('confirm_button')
+        confirm_button.connect('clicked', self.confirm)
+        cancel_button = builder.get_object('cancel_button')
+        cancel_button.connect('clicked', self.hide)
+        self.entry_id = builder.get_object('new_dependency_entry')
 
-        # self.chosen_dependency = Gtk.ComboBox()
-        self.chosen_dependency = Gtk.Label()
-        self.chosen_pos = Gtk.ComboBox()
+        self.pos_combo = builder.get_object('pos_combo')
         pos_model = Gtk.ListStore(int, str)
         pos_model.append([0, '选择依赖前'])
         pos_model.append([1, '选择依赖后'])
-        self.chosen_pos.set_model(pos_model)
+        self.pos_combo.set_model(pos_model)
         cell = Gtk.CellRendererText()
-        self.chosen_pos.pack_start(cell, True)
-        self.chosen_pos.add_attribute(cell, 'text', 1)
-        self.chosen_pos.set_active(0)
-        self.entry_id = Gtk.Entry()
-        # self.entry_id.set_placeholder_text('输入依赖ID')  # TODO
-        msg_box = Gtk.Box()
-        msg_box.set_homogeneous(True)
-        msg_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        msg_box.pack_start(self.chosen_dependency, True, True, 0)
-        msg_box.pack_start(self.chosen_pos, True, True, 10)
-        msg_box.pack_start(self.entry_id, True, True, 0)
-        self.ui.add(msg_box)
-
-        buttons_box = Gtk.Box()
-        buttons_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        confirm_button = Gtk.Button(label='确定')
-        confirm_button.connect('clicked', self.confirm)
-        cancel_button = Gtk.Button(label='取消')
-        cancel_button.connect('clicked', self.hide)
-        buttons_box.pack_start(confirm_button, True, True, 0)
-        buttons_box.pack_end(cancel_button, True, True, 0)
-        self.ui.add(buttons_box)
+        self.pos_combo.pack_start(cell, True)
+        self.pos_combo.add_attribute(cell, 'text', 1)
+        self.pos_combo.set_active(0)
 
     def confirm(self, widget):
         try:
             self._presenter.confirm_add_dependency()
             self._presenter.update_add_or_delete_dependency_in_senior_ui()
             self.hide_()
-        except Exception as ex:
-            print(ex)
+        except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("输入依赖不符要求")
+            dialog.format_secondary_text("请输入依赖ID")
             dialog.run()
             dialog.destroy()
 
-    def update_dependency_choose(self, depends_id):
-        dependencies_model = Gtk.ListStore(int)
-        for depend in depends_id:
-            dependencies_model.append([depend])
-        child = self.chosen_dependency.get_child()
-        if child:
-            self.chosen_dependency.clear()
-        self.chosen_dependency.set_model(dependencies_model)
-        cell = Gtk.CellRendererText()
-        self.chosen_dependency.pack_start(cell, True)
-        self.chosen_dependency.add_attribute(cell, 'text', 0)
-        self.chosen_dependency.set_active(0)
+    # def update_dependency_choose(self, depends_id):
+    #     dependencies_model = Gtk.ListStore(int)
+    #     for depend in depends_id:
+    #         dependencies_model.append([depend])
+    #     child = self.chosen_dependency.get_child()
+    #     if child:
+    #         self.chosen_dependency.clear()
+    #     self.chosen_dependency.set_model(dependencies_model)
+    #     cell = Gtk.CellRendererText()
+    #     self.chosen_dependency.pack_start(cell, True)
+    #     self.chosen_dependency.add_attribute(cell, 'text', 0)
+    #     # self.chosen_dependency.set_active(0)
 
     def show_chosen_dependency(self):
         dependency = self._presenter.load_dependencies_scrolled_win_chosen()
-        self.chosen_dependency.set_text('{}'.format(dependency))
+        self.chosen_dependency_label.set_text('{}'.format(dependency))
 
 
 class Image:
