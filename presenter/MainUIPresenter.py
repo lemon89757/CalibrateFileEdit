@@ -240,8 +240,9 @@ class MainUIPresenter:
         calibrate_parameter = self.load_chosen_calibrate_parameter()
         dependency_path = self.load_depend_path(dependency_id)
         current_segment = self.load_chosen_dependency_segment(dependency_id)
+        dependency_path.append([dependency_id, current_segment])
         self._editor.modify_depend_segment(chosen_channel, calibrate_parameter, lower_num, upper_num,
-                                           dependency_path, dependency_id, current_segment)
+                                           dependency_path)
 
     def update_modified_dependency_segment(self, dependency_id, lower_num, upper_num):
         self._view.update_modified_depend_segment(dependency_id, lower_num, upper_num)
@@ -267,10 +268,10 @@ class MainUIPresenter:
             self._editor.modify_calibrate_parameter_interval(channel, calibrate_parameter_id, path,
                                                              current_segment, new_interval)
         else:
-            current_segment = path[-1][1]
-            path = path[:-1]
+            # current_segment = path[-1][1]
+            # path = path[:-1]
             self._editor.modify_depend_segment(channel, calibrate_parameter_id, new_segment.lower,
-                                               new_segment.upper, path, modified_parameter_id, current_segment)
+                                               new_segment.upper, path)
 
     def update_main_ui_from_senior(self):
         self._view.update_file_name_state()
