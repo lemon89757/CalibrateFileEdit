@@ -1,5 +1,6 @@
 import gi
 import os
+import intervals
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from entity.CalibrateFile import CalibrateParameterNode
@@ -82,7 +83,7 @@ class SeniorUI:
         self.window.add(self.ui)
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='SeniorUI')
+        header = Gtk.HeaderBar(title='参数详细信息')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
@@ -487,12 +488,17 @@ class SegmentModifyUI:
         self.window = Gtk.Window()
         self.window.set_border_width(10)
         self.window.set_default_size(500, 150)
-        self.ui = Gtk.Box()
-        self.ui.set_orientation(Gtk.Orientation.VERTICAL)
-        self.current_lower_label = Gtk.Label()
-        self.current_upper_label = Gtk.Label()
-        self.id_label = Gtk.Label()
-        self.init_ui()
+        # self.ui = Gtk.Box()
+        # self.ui.set_orientation(Gtk.Orientation.VERTICAL)
+        # self.current_lower_label = Gtk.Label()
+        # self.current_upper_label = Gtk.Label()
+        # self.id_label = Gtk.Label()
+        # self.init_ui()
+        self.ui = None
+        self.current_lower_label = None
+        self.current_upper_label = None
+        self.id_label = None
+        self.get_all_widget()
         self.set_window_header()
         self.window.add(self.ui)
 
@@ -505,7 +511,7 @@ class SegmentModifyUI:
         self._presenter = value
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='SegmentModify')
+        header = Gtk.HeaderBar(title='分段（区间）编辑')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
@@ -550,57 +556,71 @@ class SegmentModifyUI:
         for entry in self.entries:
             entry.delete_text(0, -1)
 
-    def init_ui(self):
-        children = self.ui.get_children()
-        if children:
-            for child in children:
-                self.ui.remove(child)
-
-        info_box = Gtk.Box()
-        info_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        info_box.set_homogeneous(True)
-        info_box.pack_start(self.id_label, True, True, 0)
-        upper_num_label = Gtk.Label(label="上界")
-        lower_num_label = Gtk.Label(label="下界")
-        info_box.pack_start(lower_num_label, True, True, 0)
-        info_box.pack_start(upper_num_label, True, True, 0)
-        self.ui.add(info_box)
-
-        current_interval_box = Gtk.Box()
-        current_interval_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        current_interval_box.set_homogeneous(True)
-        current_label = Gtk.Label(label='当前区间')
-        current_interval_box.pack_start(current_label, True, True, 0)
-        current_interval_box.pack_start(self.current_lower_label, True, True, 0)
-        current_interval_box.pack_start(self.current_upper_label, True, True, 0)
-        self.ui.add(current_interval_box)
-
-        interval_input_box = Gtk.Box()
-        interval_input_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        interval_input_box.set_homogeneous(True)
-        label = Gtk.Label(label='新区间')
-        interval_input_box.pack_start(label, True, True, 0)
-        lower_num_entry = Gtk.Entry()
-        self.entries.append(lower_num_entry)
-        upper_num_entry = Gtk.Entry()
-        self.entries.append(upper_num_entry)
-        interval_input_box.pack_start(lower_num_entry, True, True, 0)
-        interval_input_box.pack_start(upper_num_entry, True, True, 0)
-        self.ui.add(interval_input_box)
-
-        button_box = Gtk.Box()
-        button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        confirm_button = Gtk.Button(label='确定修改')
-        confirm_button.set_margin_top(5)
-        confirm_button.set_margin_bottom(5)
+    # def init_ui(self):
+    #     children = self.ui.get_children()
+    #     if children:
+    #         for child in children:
+    #             self.ui.remove(child)
+    #
+    #     info_box = Gtk.Box()
+    #     info_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     info_box.set_homogeneous(True)
+    #     info_box.pack_start(self.id_label, True, True, 0)
+    #     upper_num_label = Gtk.Label(label="上界")
+    #     lower_num_label = Gtk.Label(label="下界")
+    #     info_box.pack_start(lower_num_label, True, True, 0)
+    #     info_box.pack_start(upper_num_label, True, True, 0)
+    #     self.ui.add(info_box)
+    #
+    #     current_interval_box = Gtk.Box()
+    #     current_interval_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     current_interval_box.set_homogeneous(True)
+    #     current_label = Gtk.Label(label='当前区间')
+    #     current_interval_box.pack_start(current_label, True, True, 0)
+    #     current_interval_box.pack_start(self.current_lower_label, True, True, 0)
+    #     current_interval_box.pack_start(self.current_upper_label, True, True, 0)
+    #     self.ui.add(current_interval_box)
+    #
+    #     interval_input_box = Gtk.Box()
+    #     interval_input_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     interval_input_box.set_homogeneous(True)
+    #     label = Gtk.Label(label='新区间')
+    #     interval_input_box.pack_start(label, True, True, 0)
+    #     lower_num_entry = Gtk.Entry()
+    #     self.entries.append(lower_num_entry)
+    #     upper_num_entry = Gtk.Entry()
+    #     self.entries.append(upper_num_entry)
+    #     interval_input_box.pack_start(lower_num_entry, True, True, 0)
+    #     interval_input_box.pack_start(upper_num_entry, True, True, 0)
+    #     self.ui.add(interval_input_box)
+    #
+    #     button_box = Gtk.Box()
+    #     button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     confirm_button = Gtk.Button(label='确定修改')
+    #     confirm_button.set_margin_top(5)
+    #     confirm_button.set_margin_bottom(5)
+    #     confirm_button.connect('clicked', self.confirm)
+    #     button_box.pack_start(confirm_button, True, True, 50)
+    #     cancel_button = Gtk.Button(label='取消')
+    #     cancel_button.connect('clicked', self.cancel)
+    #     cancel_button.set_margin_top(5)
+    #     cancel_button.set_margin_bottom(5)
+    #     button_box.pack_start(cancel_button, True, True, 50)
+    #     self.ui.add(button_box)
+    def get_all_widget(self):
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/EditSegmentUI.glade'))
+        self.ui = builder.get_object('edit_segment_in_senior_grid')
+        self.id_label = builder.get_object('current_chosen_parameter_id_label')
+        self.current_lower_label = builder.get_object('current_segment_lower_label')
+        self.current_upper_label = builder.get_object('current_segment_upper_label')
+        lower_num_entry = builder.get_object('new_segment_lower_entry')
+        upper_num_entry = builder.get_object('new_segment_upper_entry')
+        self.entries = [lower_num_entry, upper_num_entry]
+        confirm_button = builder.get_object('confirm_button')
         confirm_button.connect('clicked', self.confirm)
-        button_box.pack_start(confirm_button, True, True, 50)
-        cancel_button = Gtk.Button(label='取消')
+        cancel_button = builder.get_object('cancel_button')
         cancel_button.connect('clicked', self.cancel)
-        cancel_button.set_margin_top(5)
-        cancel_button.set_margin_bottom(5)
-        button_box.pack_start(cancel_button, True, True, 50)
-        self.ui.add(button_box)
 
     def update_current_segment_display(self, _id, lower_num, upper_num):
         self.current_lower_label.set_text('{}'.format(lower_num))
@@ -621,8 +641,15 @@ class SegmentModifyUI:
         except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("输入格式不正确，"
+            dialog.format_secondary_text("输入格式不正确："
                                          "请输入整数或浮点数")
+            dialog.run()
+            dialog.destroy()
+        except intervals.exc.RangeBoundsException:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("输入格式不正确："
+                                         "上界比下界小")
             dialog.run()
             dialog.destroy()
 
@@ -1008,7 +1035,7 @@ class Image:
         self.window.add(self.image)
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='factors curves')
+        header = Gtk.HeaderBar(title='校正系数曲线')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
