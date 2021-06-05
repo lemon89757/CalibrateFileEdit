@@ -302,8 +302,14 @@ class SeniorUI:
         try:
             self._presenter.delete_dependency()
             self._presenter.update_add_or_delete_dependency_in_senior_ui()
-        except Exception as ex:
-            print(ex)
+        except AttributeError:
+            pass
+        except TypeError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
 
     def add_dependency(self, widget):
         try:
@@ -318,13 +324,14 @@ class SeniorUI:
             else:
                 self._add_dependency_ui.state = False
                 self._add_dependency_ui.hide_()
-        except Exception as ex:
-            print(ex)
+        except TypeError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("请先选择依赖")
+            dialog.format_secondary_text("请先选择已存在依赖")
             dialog.run()
             dialog.destroy()
+        except AttributeError:
+            pass
 
     def show_edit_chosen_segment_ui(self, widget):
         try:
@@ -336,8 +343,14 @@ class SeniorUI:
             else:
                 self._segment_edit_ui.state = False
                 self._segment_edit_ui.window.hide()
-        except Exception as ex:
-            print('error:', ex)
+        except TypeError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
+        except AttributeError:
+            pass
 
     def update_senior_ui_current_segment(self, segment_entry):
         all_msg_tree_view = self.all_msg_scrolled_win.get_child()
@@ -366,28 +379,41 @@ class SeniorUI:
         depends_id = self._presenter.get_depends_id(calibrate_parameter_id)
         parameters_id = depends_id + [calibrate_parameter_id]
         id_index = parameters_id.index(_id)
-        for depend_id in parameters_id[id_index+1:]:
-            if depend_id != calibrate_parameter_id:
-                _iter = model.append(_iter, [depend_id, float('-inf'), float('inf'), None])
-            else:
-                model.append(_iter, [depend_id, float('-inf'), float('inf'), '[0, 0, 0, 0, 0 , 0]'])
+        if id_index != len(parameters_id)-1:
+            for parameter_id in parameters_id[id_index+1:]:
+                if parameter_id != calibrate_parameter_id:
+                    _iter = model.append(_iter, [parameter_id, float('-inf'), float('inf'), None])
+                else:
+                    model.append(_iter, [parameter_id, float('-inf'), float('inf'), '[0, 0, 0, 0, 0 , 0]'])
+        else:
+            _iter = model.iter_parent(_iter)
+            model.append(_iter, [calibrate_parameter_id, float('-inf'), float('inf'), '[0, 0, 0, 0, 0 , 0]'])
 
     def update_senior_ui_delete_branch(self):
         all_msg_tree_view = self.all_msg_scrolled_win.get_child()
         focus_segment = all_msg_tree_view.get_selection()
         model, _iter = focus_segment.get_selected()
+        if self._presenter.check_is_unique_child(model, _iter):
+            _iter = self._presenter.find_has_siblings_node(model, _iter)
         model.remove(_iter)
 
-    def add_branch(self, widget):
+    def add_branch(self, widget):  # 当选择结点是叶结点时，添加结果与选中该结点的父结点结果一样
         try:
             self._presenter.add_branch()
-        except Exception as ex:
-            print(ex)
+        except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("结点选择有误，不能添加")
+            dialog.format_secondary_text("存在相同的分支路径，无法执行此操作")
             dialog.run()
             dialog.destroy()
+        except TypeError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
+        except AttributeError:
+            pass
 
     def add_complete_branch(self, widget):
         try:
@@ -401,11 +427,21 @@ class SeniorUI:
 
     def delete_branch(self, widget):
         try:
-            self._presenter.check_same_segment()
-        except Exception as ex:
-            print(ex)
-        else:
             self._presenter.delete_branch()
+        except ValueError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("存在相同的分支路径，无法执行此操作")
+            dialog.run()
+            dialog.destroy()
+        except TypeError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
+        except AttributeError:
+            pass
 
     def show_edit_chosen_factors_ui(self, widget):
         try:
@@ -425,8 +461,14 @@ class SeniorUI:
             else:
                 self._factors_edit_ui.state = False
                 self._factors_edit_ui.window.hide()
-        except Exception as ex:
-            print('error:', ex)
+        except AttributeError:
+            pass
+        except TypeError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
 
 
 class SegmentModifyUI:
@@ -569,11 +611,11 @@ class SegmentModifyUI:
             dialog.format_secondary_text("修改成功")
             dialog.run()
             dialog.destroy()
-        except Exception as ex:
-            print(ex)
+        except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("输入格式不正确")
+            dialog.format_secondary_text("输入格式不正确，"
+                                         "请输入整数或浮点数")
             dialog.run()
             dialog.destroy()
 
@@ -715,11 +757,11 @@ class FactorsModifyUI:
             dialog.format_secondary_text("修改成功")
             dialog.run()
             dialog.destroy()
-        except Exception as ex:
-            print(ex)
+        except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("输入格式不正确")
+            dialog.format_secondary_text("输入格式不正确，"
+                                         "请输入整数或浮点数")
             dialog.run()
             dialog.destroy()
 
@@ -739,11 +781,11 @@ class FactorsModifyUI:
             else:
                 self._curves.window.hide()
                 self._curves.is_show = False
-        except Exception as ex:
-            print(ex)
+        except ValueError:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
-            dialog.format_secondary_text("输入格式不正确")
+            dialog.format_secondary_text("无法显示校正曲线，"
+                                         "请检查系数区间或输入参数")
             dialog.run()
             dialog.destroy()
 
