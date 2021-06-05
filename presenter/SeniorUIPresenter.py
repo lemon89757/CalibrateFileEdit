@@ -243,5 +243,23 @@ class SeniorUIPresenter:
         depend_id = self.load_dependencies_scrolled_win_chosen()
         self._editor.delete_dependency(self._channel, calibrate_parameter_id, depend_id)
 
-    def check_same_segment(self):
-        pass
+    @staticmethod
+    def check_is_unique_child(model, _iter):
+        parent_iter = model.iter_parent(_iter)
+        if model.iter_n_children(parent_iter) > 1:
+            return False
+        elif model.iter_n_children(parent_iter) == 1:
+            return True
+
+    def find_has_siblings_node(self, model, _iter):
+        while True:
+            if self.check_is_unique_child(model, _iter):
+                _iter = model.iter_parent(_iter)
+                parameter_id = model.get_value(_iter, 0)
+                calibrate_parameter_id = self.load_chosen_parameter()
+                depends_id = self.get_depends_id(calibrate_parameter_id)
+                if parameter_id == depends_id[0]:
+                    break
+            else:
+                break
+        return _iter
