@@ -3,9 +3,11 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <!-- n-columns=2 n-rows=8 -->
-  <object class="GtkGrid" id="edit_factors_grid">
+  <object class="GtkGrid" id="edit_factors_in_senior_grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="row-spacing">2</property>
+    <property name="column-spacing">5</property>
     <property name="column-homogeneous">True</property>
     <child>
       <object class="GtkLabel">
@@ -15,17 +17,6 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
-        <property name="top-attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">新系数</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
         <property name="top-attach">0</property>
       </packing>
     </child>
@@ -96,6 +87,89 @@
       </packing>
     </child>
     <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">新系数</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_5_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">五次</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_4_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">四次</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_3_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">三次</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_2_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">二次</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_1_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">一次</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">5</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEntry" id="factor_0_entry">
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="text" translatable="yes">常数项</property>
+        <property name="overwrite-mode">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">6</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -143,72 +217,6 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">7</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_5_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">五次</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_4_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">四次</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_3_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">三次</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_2_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">二次</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_1_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">一次</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkEntry" id="factor_0_entry">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="placeholder-text" translatable="yes">常数项</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
-        <property name="top-attach">6</property>
       </packing>
     </child>
     <child>

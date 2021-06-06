@@ -3,10 +3,10 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <!-- n-columns=4 n-rows=5 -->
-  <object class="GtkGrid">
+  <object class="GtkGrid" id="edit_dependency_segment_grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="row-spacing">2</property>
+    <property name="row-spacing">5</property>
     <property name="column-spacing">10</property>
     <child>
       <object class="GtkLabel">
@@ -20,7 +20,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkComboBox">
+      <object class="GtkComboBox" id="dependency_choose_combo">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
       </object>
@@ -30,7 +30,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="confirm_button">
         <property name="label" translatable="yes">确定修改</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
@@ -42,7 +42,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="cancel_button">
         <property name="label" translatable="yes">取消</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
@@ -98,7 +98,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkLabel" id="current_segment_lower_label">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">请先选择依赖参数</property>
@@ -109,7 +109,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkLabel" id="current_segment_upper_label">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">请先选择依赖参数</property>
@@ -120,7 +120,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkEntry">
+      <object class="GtkEntry" id="segment_lower_num_entry">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="text" translatable="yes">新分段下界</property>
@@ -132,7 +132,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkEntry">
+      <object class="GtkEntry" id="segment_upper_num_entry">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="text" translatable="yes">新分段上界</property>

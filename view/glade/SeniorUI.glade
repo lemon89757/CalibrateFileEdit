@@ -2,11 +2,10 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=5 n-rows=10 -->
+  <!-- n-columns=5 n-rows=12 -->
   <object class="GtkGrid" id="senior_grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="row-spacing">2</property>
     <property name="column-spacing">5</property>
     <property name="column-homogeneous">True</property>
     <child>
@@ -109,20 +108,15 @@
       </packing>
     </child>
     <child>
-      <object class="GtkScrolledWindow" id="dependencies_scrolled_win">
+      <object class="GtkButton" id="confirm_button">
+        <property name="label" translatable="yes">确定</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
-        <property name="vexpand">True</property>
-        <property name="shadow-type">in</property>
-        <child>
-          <placeholder/>
-        </child>
+        <property name="receives-default">True</property>
       </object>
       <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">5</property>
-        <property name="width">5</property>
-        <property name="height">3</property>
+        <property name="left-attach">3</property>
+        <property name="top-attach">11</property>
       </packing>
     </child>
     <child>
@@ -134,7 +128,18 @@
       </object>
       <packing>
         <property name="left-attach">4</property>
-        <property name="top-attach">9</property>
+        <property name="top-attach">11</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">10</property>
+        <property name="width">5</property>
       </packing>
     </child>
     <child>
@@ -146,7 +151,7 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
-        <property name="top-attach">8</property>
+        <property name="top-attach">9</property>
       </packing>
     </child>
     <child>
@@ -158,19 +163,35 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">8</property>
+        <property name="top-attach">9</property>
       </packing>
     </child>
     <child>
-      <object class="GtkButton" id="confirm_button">
-        <property name="label" translatable="yes">确定</property>
+      <object class="GtkScrolledWindow" id="dependencies_scrolled_win">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="vexpand">True</property>
+        <property name="shadow-type">in</property>
+        <child>
+          <placeholder/>
+        </child>
       </object>
       <packing>
-        <property name="left-attach">3</property>
-        <property name="top-attach">9</property>
+        <property name="left-attach">0</property>
+        <property name="top-attach">6</property>
+        <property name="width">5</property>
+        <property name="height">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
+        <property name="top-attach">5</property>
+        <property name="width">5</property>
       </packing>
     </child>
     <child>

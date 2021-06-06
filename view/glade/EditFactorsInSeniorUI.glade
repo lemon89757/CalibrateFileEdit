@@ -3,9 +3,11 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <!-- n-columns=2 n-rows=8 -->
-  <object class="GtkGrid" id="edit_factors_grid">
+  <object class="GtkGrid" id="edit_factors_in_senior_grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="row-spacing">2</property>
+    <property name="column-spacing">5</property>
     <property name="column-homogeneous">True</property>
     <child>
       <object class="GtkLabel">
@@ -15,17 +17,6 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
-        <property name="top-attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">新系数</property>
-      </object>
-      <packing>
-        <property name="left-attach">1</property>
         <property name="top-attach">0</property>
       </packing>
     </child>
@@ -96,53 +87,14 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <child>
-          <object class="GtkButton" id="confirm_button">
-            <property name="label" translatable="yes">确定</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="cancel_button">
-            <property name="label" translatable="yes">取消</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="padding">5</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="curves_button">
-            <property name="label" translatable="yes">曲线对比</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
+        <property name="label" translatable="yes">新系数</property>
       </object>
       <packing>
         <property name="left-attach">1</property>
-        <property name="top-attach">7</property>
+        <property name="top-attach">0</property>
       </packing>
     </child>
     <child>
@@ -209,6 +161,56 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkButton" id="confirm_button">
+            <property name="label" translatable="yes">确定</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="cancel_button">
+            <property name="label" translatable="yes">取消</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">5</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="curves_button">
+            <property name="label" translatable="yes">曲线对比</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="left-attach">1</property>
+        <property name="top-attach">7</property>
       </packing>
     </child>
     <child>

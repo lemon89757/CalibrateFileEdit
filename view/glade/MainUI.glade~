@@ -27,7 +27,7 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
-  <!-- n-columns=5 n-rows=12 -->
+  <!-- n-columns=4 n-rows=12 -->
   <object class="GtkGrid" id="main_container">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -114,7 +114,7 @@
       <packing>
         <property name="left-attach">0</property>
         <property name="top-attach">0</property>
-        <property name="width">5</property>
+        <property name="width">4</property>
       </packing>
     </child>
     <child>
@@ -126,7 +126,7 @@
       <packing>
         <property name="left-attach">0</property>
         <property name="top-attach">1</property>
-        <property name="width">5</property>
+        <property name="width">4</property>
       </packing>
     </child>
     <child>
@@ -181,7 +181,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">2</property>
-        <property name="width">4</property>
+        <property name="width">3</property>
       </packing>
     </child>
     <child>
@@ -192,7 +192,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">3</property>
-        <property name="width">4</property>
+        <property name="width">3</property>
       </packing>
     </child>
     <child>
@@ -204,7 +204,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">4</property>
-        <property name="width">4</property>
+        <property name="width">3</property>
       </packing>
     </child>
     <child>
@@ -219,7 +219,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">5</property>
-        <property name="width">4</property>
+        <property name="width">3</property>
       </packing>
     </child>
     <child>
@@ -235,7 +235,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">6</property>
-        <property name="width">3</property>
+        <property name="width">2</property>
         <property name="height">4</property>
       </packing>
     </child>
@@ -249,30 +249,6 @@
         <property name="left-attach">0</property>
         <property name="top-attach">6</property>
         <property name="height">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="edit_depend_segment_button">
-        <property name="label" translatable="yes">编辑当前依赖分段</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">4</property>
-        <property name="top-attach">6</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="edit_parameter_button">
-        <property name="label" translatable="yes">编辑当前参数分段</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">4</property>
-        <property name="top-attach">10</property>
       </packing>
     </child>
     <child>
@@ -294,7 +270,7 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">10</property>
-        <property name="width">3</property>
+        <property name="width">2</property>
       </packing>
     </child>
     <child>
@@ -321,7 +297,31 @@
       <packing>
         <property name="left-attach">1</property>
         <property name="top-attach">11</property>
-        <property name="width">3</property>
+        <property name="width">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="edit_depend_segment_button">
+        <property name="label" translatable="yes">编辑当前依赖分段</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">3</property>
+        <property name="top-attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="edit_parameter_button">
+        <property name="label" translatable="yes">编辑当前参数分段</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">3</property>
+        <property name="top-attach">10</property>
       </packing>
     </child>
     <child>
@@ -359,7 +359,7 @@
         </child>
       </object>
       <packing>
-        <property name="left-attach">4</property>
+        <property name="left-attach">3</property>
         <property name="top-attach">11</property>
       </packing>
     </child>

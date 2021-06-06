@@ -126,6 +126,18 @@
       </packing>
     </child>
     <child>
+      <object class="GtkButton" id="cancel_button">
+        <property name="label" translatable="yes">取消</property>
+        <property name="visible">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+      </object>
+      <packing>
+        <property name="left-attach">4</property>
+        <property name="top-attach">9</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkButton" id="add_dependency_button">
         <property name="label" translatable="yes">添加依赖</property>
         <property name="visible">True</property>
@@ -133,7 +145,7 @@
         <property name="receives-default">True</property>
       </object>
       <packing>
-        <property name="left-attach">1</property>
+        <property name="left-attach">0</property>
         <property name="top-attach">8</property>
       </packing>
     </child>
@@ -145,7 +157,7 @@
         <property name="receives-default">True</property>
       </object>
       <packing>
-        <property name="left-attach">3</property>
+        <property name="left-attach">1</property>
         <property name="top-attach">8</property>
       </packing>
     </child>
@@ -157,19 +169,7 @@
         <property name="receives-default">True</property>
       </object>
       <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">9</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="cancel_button">
-        <property name="label" translatable="yes">取消</property>
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-      </object>
-      <packing>
-        <property name="left-attach">4</property>
+        <property name="left-attach">3</property>
         <property name="top-attach">9</property>
       </packing>
     </child>

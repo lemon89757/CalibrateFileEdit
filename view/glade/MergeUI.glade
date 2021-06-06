@@ -2,33 +2,23 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <!-- n-columns=5 n-rows=5 -->
-  <object class="GtkGrid">
+  <!-- n-columns=5 n-rows=4 -->
+  <object class="GtkGrid" id="merge_grid">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="row-spacing">5</property>
     <property name="column-spacing">5</property>
+    <property name="row-homogeneous">True</property>
     <child>
-      <object class="GtkButton">
-        <property name="label" translatable="yes">文件选择</property>
+      <object class="GtkFileChooserButton" id="file_chooser_button">
         <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
+        <property name="can-focus">False</property>
+        <property name="hexpand">True</property>
+        <property name="title" translatable="yes"/>
       </object>
       <packing>
         <property name="left-attach">0</property>
         <property name="top-attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">当前文件参数选择</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">3</property>
         <property name="width">2</property>
       </packing>
     </child>
@@ -40,12 +30,55 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
+        <property name="top-attach">1</property>
+        <property name="width">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkComboBox" id="into_file_ channel_choose_combo">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">当前文件参数选择</property>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
         <property name="top-attach">2</property>
         <property name="width">2</property>
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkComboBox" id="current_file_channel_choose_combo">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+      </object>
+      <packing>
+        <property name="left-attach">2</property>
+        <property name="top-attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkComboBox" id="calibrate_parameter_choose_combo">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+      </object>
+      <packing>
+        <property name="left-attach">3</property>
+        <property name="top-attach">2</property>
+        <property name="width">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton" id="into_channel_button">
         <property name="label" translatable="yes">导入通道</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
@@ -53,11 +86,11 @@
       </object>
       <packing>
         <property name="left-attach">0</property>
-        <property name="top-attach">4</property>
+        <property name="top-attach">3</property>
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="into_parameter_button">
         <property name="label" translatable="yes">导入参数</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
@@ -65,11 +98,11 @@
       </object>
       <packing>
         <property name="left-attach">2</property>
-        <property name="top-attach">4</property>
+        <property name="top-attach">3</property>
       </packing>
     </child>
     <child>
-      <object class="GtkButton">
+      <object class="GtkButton" id="cancel_button">
         <property name="label" translatable="yes">取消</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
@@ -77,66 +110,8 @@
       </object>
       <packing>
         <property name="left-attach">4</property>
-        <property name="top-attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">导入文件名：</property>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">1</property>
-        <property name="width">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">label</property>
-      </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">1</property>
-        <property name="width">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkComboBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-      </object>
-      <packing>
-        <property name="left-attach">2</property>
         <property name="top-attach">3</property>
       </packing>
-    </child>
-    <child>
-      <object class="GtkComboBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-      </object>
-      <packing>
-        <property name="left-attach">3</property>
-        <property name="top-attach">3</property>
-        <property name="width">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkComboBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-      </object>
-      <packing>
-        <property name="left-attach">2</property>
-        <property name="top-attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <placeholder/>
     </child>
     <child>
       <placeholder/>

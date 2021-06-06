@@ -77,7 +77,7 @@
     </child>
     <child>
       <object class="GtkButton">
-        <property name="label" translatable="yes">button</property>
+        <property name="label" translatable="yes">确定修改</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
@@ -89,7 +89,7 @@
     </child>
     <child>
       <object class="GtkButton">
-        <property name="label" translatable="yes">button</property>
+        <property name="label" translatable="yes">取消</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
@@ -101,7 +101,7 @@
     </child>
     <child>
       <object class="GtkButton">
-        <property name="label" translatable="yes">button</property>
+        <property name="label" translatable="yes">系数曲线</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
