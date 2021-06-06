@@ -133,7 +133,6 @@ class CalibrateFileEdit:
         # segments中包含全部待校参数分段，以及对应的校正系数
         depend_leaf_node = self.get_parameter_parent_node(channel, calibrate_parameter_id, path)
         parameter_node = depend_leaf_node.children[0]
-        # parameter_segments = self.get_segments_dict(parameter_node)
         return parameter_node.parameter_segments
 
     def get_available_parameters(self, channel_index):
@@ -176,31 +175,9 @@ class CalibrateFileEdit:
         self._calibrate_parameter_editor.parameter_node = parameter_node
         self._calibrate_parameter_editor.modify_parameter_interval(new_interval, segment)
 
-    # def add_parameter_segment(self, parameter_node, segment):
-    #     self._calibrate_parameter_editor.parameter_node = parameter_node
-    #     self._calibrate_parameter_editor.add_parameter_segment(segment)
-    #     return self._calibrate_parameter_editor.parameter_node
-
     def delete_parameter_segment(self, parameter_node, interval):
         self._calibrate_parameter_editor.parameter_node = parameter_node
         self._calibrate_parameter_editor.delete_parameter_segment(interval)
-        # return self._calibrate_parameter_editor.parameter_node
-
-    # def add_parameter_node(self, root_node, parent_node):
-    #     leaf_nodes = root_node.leaves
-    #     parameter_id = leaf_nodes[0].parameter_id
-    #     root_node = self._calibrate_parameter_editor.add_parameter_node(parameter_id, root_node, parent_node)
-    #     return root_node
-
-    # def delete_parameter_node(self, root_node, parameter_node):
-    #     root_node = self._calibrate_parameter_editor.delete_parameter_node(root_node, parameter_node)
-    #     return root_node
-
-    # 参数分段转化成dict形式便于查找(但存在重复校正系数区间，不同校正系数间相互覆盖的问题)
-    # def get_segments_dict(self, parameter_node):
-    #     self._calibrate_parameter_editor.parameter_node = parameter_node
-    #     segments_dict = self._calibrate_parameter_editor.get_segments_dict()
-    #     return segments_dict
 
     # 显示系数曲线
     def show_current_factors_curve(self, segment):
@@ -213,30 +190,22 @@ class CalibrateFileEdit:
     def add_depend(self, root_node, depend_id, pos, new_dependency):
         self._depend_editor.root_node = root_node
         self._depend_editor.add_depend(depend_id, pos, new_dependency)
-        # return self._depend_editor.root_node
 
     def delete_depend(self, root_node, depend_id):
         self._depend_editor.root_node = root_node
         self._depend_editor.delete_depend(depend_id)
-        # return self._depend_editor.root_node
 
     def add_depend_segment_until_leaf(self, root_node, start_depend_node):
         self._depend_editor.root_node = root_node
         self._depend_editor.add_depends_segment_nodes_until_leaf(start_depend_node)
-        # return self._depend_editor.root_node
 
     def delete_depend_segment(self, depend_node):
         self._depend_editor.delete_depend_segment(depend_node)
-        # return self._depend_editor.root_node
 
     def modify_depend_segment(self, channel, calibrate_parameter, lower_num, upper_num, depend_path):
         # self.check_the_same_branch_path(channel, calibrate_parameter, depend_path)
         depend_node = self.get_current_node(channel, calibrate_parameter, depend_path)
-        # depend_parent_node = self.get_depend_parent_node(channel, calibrate_parameter, depend_path, depend_id)
-        # for child in depend_parent_node.children:
-        #     if current_segment == child.parameter_segment:
         self._depend_editor.modify_depend_segment(lower_num, upper_num, depend_node)
-                # break
 
     # 保存
     def save(self):
@@ -251,14 +220,6 @@ class CalibrateFileEdit:
         file_handler.save_as(calibrate_file, file_path)
 
     def get_current_node(self, channel, calibrate_parameter_id, path):
-        # current_chosen_id = path[-1][0]
-        # current_chosen_segment = path[-1][1]
-        # if current_chosen_id != calibrate_parameter_id:
-        #     current_parent_node = self.get_depend_parent_node(channel, calibrate_parameter_id, path[:-1],
-        #                                                       current_chosen_id)
-        #     for node in current_parent_node.children:
-        #         if node.parameter_id == current_chosen_id and node.parameter_segment == current_chosen_segment:
-        #             return node
         new_path = copy.deepcopy(path)
         chosen_parameter_id = new_path[-1][0]
         if chosen_parameter_id == calibrate_parameter_id:
@@ -325,13 +286,6 @@ class CalibrateFileEdit:
         file_handler = FileRW()
         parameter_dict = file_handler.get_parameter_dict()
         return parameter_dict
-
-    # @staticmethod
-    # def check_the_same_segment(depend_node):
-    #     siblings = depend_node.siblings
-    #     for sibling in siblings:
-    #         if depend_node.parameter_segment == sibling.parameter_segment:
-    #             raise ValueError('在同一父结点下存在相同分段的结点')
 
     @staticmethod
     def check_the_same_interval(parameter_node, interval):

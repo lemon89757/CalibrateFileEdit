@@ -30,7 +30,6 @@ class EditCalibrateParameter:
         parameter_node.parameter_segments = []
         parameter_node.parameter_segments.append(default_segment)
         parameter_node.parent = parent_node
-        # return root_node
 
     @staticmethod
     def delete_parameter_node(root_node, parameter_node):
@@ -58,7 +57,6 @@ class EditCalibrateParameter:
         new_segment[1] = value
         segments[-1] = new_segment
         parameter_node.parameter_segments = segments
-        # return parameter_node
 
     @staticmethod
     def add_parameter_interval(value, parameter_node):
@@ -69,7 +67,6 @@ class EditCalibrateParameter:
         new_segment = [value, factors]
         segments.append(new_segment)
         parameter_node.parameter_segments = segments
-        # return parameter_node
 
     def delete_parameter_segment(self, interval):
         segments = self._parameter_node.parameter_segments
@@ -102,16 +99,6 @@ class EditCalibrateParameter:
         self._parameter_node.parameter_segments = segments
         # segment = [具体硬件分段，对应校正系数] eg:[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]]
 
-    def get_segments_dict(self):
-        # 数据处理时的segment形式应该为[FloatInterval('[0.0, 2.0]'), [0, 0, 0, 0, 0, 0.9570842738562383]，此处理为方便显示时查找。
-        segments = self._parameter_node.parameter_segments
-        segments_dict = dict()
-        for segment in segments:
-            interval = segment[0]
-            factors = segment[1]
-            segments_dict[interval] = factors
-        return segments_dict
-
     @staticmethod
     def show_current_factors_curve(segment):
         parameter_interval = segment[0]
@@ -129,7 +116,6 @@ class EditCalibrateParameter:
         plt.plot(x, y)
         plt.savefig(r"image\factors_curve.png")
         plt.cla()
-        # plt.show()
 
     @staticmethod
     def show_two_factors_curve(modified_segment, current_segment):
@@ -154,4 +140,3 @@ class EditCalibrateParameter:
         plt.legend(loc='upper right')
         plt.savefig(r"image\two_factors_curves.png")
         plt.cla()
-        # plt.show()
