@@ -233,25 +233,54 @@ class MainUI:
 
     def update_dependencies_list(self):
         self.dependencies_list_scrolled_win.set_sensitive(True)
-        dependencies_text_buffer = Gtk.TextBuffer()
-        dependencies_text_view = Gtk.TextView()
-        dependencies_text_view.set_sensitive(False)
+        # dependencies_text_buffer = Gtk.TextBuffer()
+        # dependencies_text_view = Gtk.TextView()
+        # dependencies_text_view.set_sensitive(False)
 
         channel_index = self._presenter.load_channel_index()
+        tree_view = Gtk.TreeView()
         if channel_index != 2020:
             calibrate_parameter = self._presenter.load_chosen_calibrate_parameter()
             if calibrate_parameter != 2020:
                 dependencies_list = self._presenter.get_dependencies_list()
-                dependencies_text_buffer.set_text('{}'.format(dependencies_list))
+                model = self.create_dependencies_list_model(dependencies_list)
+                tree_view = self.create_dependencies_list_tree_view(model)
+                # dependencies_text_buffer.set_text('{}'.format(dependencies_list))
                 # self.update_dependencies_segment_choose()
-
-        dependencies_text_view.set_buffer(dependencies_text_buffer)
+        tree_view.set_sensitive(False)
+        # dependencies_text_view.set_buffer(dependencies_text_buffer)
         self.dependencies_list_scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         child = self.dependencies_list_scrolled_win.get_child()
         if child:
             self.dependencies_list_scrolled_win.remove(child)
-        self.dependencies_list_scrolled_win.add(dependencies_text_view)
+        # self.dependencies_list_scrolled_win.add(dependencies_text_view)
+        self.dependencies_list_scrolled_win.add(tree_view)
         self.dependencies_list_scrolled_win.show_all()    # show_all() 才能显示其中内容
+
+    def create_dependencies_list_model(self, depends_list):
+        dependencies_list_model = Gtk.ListStore(int, str)
+        for depend in depends_list:
+            try:
+                depend_name = self._parameter_dict[depend]
+            except KeyError:
+                depend_name = 'None'
+            dependencies_list_model.append([depend, depend_name])
+        return dependencies_list_model
+
+    @staticmethod
+    def create_dependencies_list_tree_view(model):
+        tree_view = Gtk.TreeView()
+        cell_renderer_text = Gtk.CellRendererText()
+        tree_view_column_1 = Gtk.TreeViewColumn('依赖ID')
+        tree_view_column_2 = Gtk.TreeViewColumn('依赖名')
+        tree_view.append_column(tree_view_column_1)
+        tree_view_column_1.pack_start(cell_renderer_text, True)
+        tree_view_column_1.add_attribute(cell_renderer_text, 'text', 0)
+        tree_view.append_column(tree_view_column_2)
+        tree_view_column_2.pack_start(cell_renderer_text, True)
+        tree_view_column_2.add_attribute(cell_renderer_text, 'text', 1)
+        tree_view.set_model(model)
+        return tree_view
 
     def clear_dependencies_segment_choose(self):
         viewport = self.dependencies_segment_choose_scrolled_win.get_child()
@@ -260,7 +289,7 @@ class MainUI:
             boxes = main_box.get_children()
             for box in boxes:
                 children = box.get_children()
-                combobox = children[2]
+                combobox = children[1]
                 combobox.clear()
                 model = Gtk.ListStore()
                 combobox.set_model(model)
@@ -285,16 +314,10 @@ class MainUI:
             main_box.set_orientation(Gtk.Orientation.VERTICAL)
             for value in depends_id:
                 child_box = Gtk.Box()
-                child_box.set_orientation(Gtk.Orientation.HORIZONTAL)   # TODO 列表指的是哪个,怎么在列表后面加控件（下拉框）？
+                child_box.set_orientation(Gtk.Orientation.HORIZONTAL)
                 label_id = Gtk.Label()
                 label_id.set_text('{}'.format(value))
                 child_box.pack_start(label_id, True, True, 0)
-                label_name = Gtk.Label()
-                try:
-                    label_name.set_text('{}'.format(self._parameter_dict[value]))
-                except KeyError:
-                    label_name.set_text('None')
-                child_box.pack_start(label_name, True, True, 2)
                 child_combobox = Gtk.ComboBox()
                 child_model = Gtk.ListStore()
                 child_combobox.set_model(child_model)
@@ -314,7 +337,7 @@ class MainUI:
         boxes = main_box.get_children()
         first_box = boxes[0]
         first_box_children = first_box.get_children()
-        first_combobox = first_box_children[2]
+        first_combobox = first_box_children[1]
         first_combobox.clear()
 
         first_path = [[calibrate_parameter, None]]
@@ -362,7 +385,7 @@ class MainUI:
                 next_box = boxes[focus_depend_id_index+1]
                 next_label = next_box.get_children()[0]
                 next_depend_id = int(next_label.get_text())
-                next_combobox = next_box.get_children()[2]
+                next_combobox = next_box.get_children()[1]
                 next_combobox.clear()
                 next_combobox.set_model(next_model)
                 current_cell = Gtk.CellRendererText()
@@ -377,7 +400,7 @@ class MainUI:
                         next_combobox.connect('changed', self.update_next_depend_segment)
             else:
                 for box in boxes[focus_depend_id_index+1:]:
-                    combobox = box.get_children()[2]
+                    combobox = box.get_children()[1]
                     combobox.clear()
                     empty_model = Gtk.ListStore()
                     combobox.set_model(empty_model)
@@ -500,7 +523,7 @@ class MainUI:
             label = children[0]
             depend = int(label.get_text())
             if dependency_id == depend:
-                combobox = children[2]
+                combobox = children[1]
                 segment_activated = combobox.get_active()
                 model = combobox.get_model()
                 _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -660,7 +683,7 @@ class MainUI:
             self._merge_ui.window.show_all()
             self._merge_ui.state = True
         else:
-            self._merge_ui.window.hide()
+            self._merge_ui.hide_()
             self._merge_ui.state = False
 
     def show_dependencies_edit_ui(self, widget):
@@ -766,7 +789,7 @@ class Image:
         self.window.add(self.image)
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='factors curve')
+        header = Gtk.HeaderBar(title='校正系数曲线')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()

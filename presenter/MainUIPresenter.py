@@ -62,7 +62,7 @@ class MainUIPresenter:
             children = box.get_children()
             label = children[0]
             depend_id = int(label.get_text())
-            combobox = children[2]
+            combobox = children[1]
             segment_activated = combobox.get_active()
             model = combobox.get_model()
             _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -84,7 +84,7 @@ class MainUIPresenter:
             children = box.get_children()
             label = children[0]
             depend_id = int(label.get_text())
-            combobox = children[2]
+            combobox = children[1]
             segment_activated = combobox.get_active()
             model = combobox.get_model()
             _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -134,7 +134,7 @@ class MainUIPresenter:
         focus_box_children = focus_box.get_children()
         focus_label = focus_box_children[0]
         focus_depend_id = int(focus_label.get_text())
-        focus_combobox = focus_box_children[2]
+        focus_combobox = focus_box_children[1]
         segment_activated = focus_combobox.get_active()
         model = focus_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -147,7 +147,7 @@ class MainUIPresenter:
         main_box = viewport.get_child()
         boxes = main_box.get_children()
         last_box = boxes[-1]
-        last_combobox = last_box.get_children()[2]
+        last_combobox = last_box.get_children()[1]
         segment_activated = last_combobox.get_active()
         model = last_combobox.get_model()
         _iter = model.get_iter_from_string('{}'.format(segment_activated))
@@ -226,7 +226,7 @@ class MainUIPresenter:
             label = children[0]
             depend = int(label.get_text())
             if dependency_id == depend:
-                combobox = children[2]
+                combobox = children[1]
                 segment_activated = combobox.get_active()
                 model = combobox.get_model()
                 _iter = model.get_iter_from_string('{}'.format(segment_activated))
