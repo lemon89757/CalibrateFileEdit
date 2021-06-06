@@ -17,8 +17,6 @@ class FactorsEditView:
         self.window = Gtk.Window()
         self.window.set_border_width(10)
         self.window.set_default_size(300, 150)
-        # self.ui = Gtk.Box()
-        # self.init_ui()
         self.ui = None
         self.get_all_widget()
         self.set_window_header()
@@ -32,49 +30,6 @@ class FactorsEditView:
     def presenter(self, value):
         self._presenter = value
 
-    # def init_ui(self):
-    #     self.ui.set_orientation(Gtk.Orientation.VERTICAL)
-    #
-    #     label_box = Gtk.Box()
-    #     label_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     label_box.set_homogeneous(True)
-    #     current_factors_label = Gtk.Label()
-    #     modified_factors_label = Gtk.Label()
-    #     current_factors_label.set_text('当前校正系数')
-    #     modified_factors_label.set_text('输入新系数')
-    #     label_box.pack_start(current_factors_label, True, True, 0)
-    #     label_box.pack_start(modified_factors_label, True, True, 0)
-    #     self.ui.add(label_box)
-    #
-    #     for i in range(6):
-    #         child_box = Gtk.Box()
-    #         child_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #         child_box.set_homogeneous(True)
-    #         current_factor_show = Gtk.Label()
-    #         # current_factor_show.set_text('{}'.format(self._current_factors[i]))
-    #         modified_factor_entry = Gtk.Entry()
-    #         child_box.pack_start(current_factor_show, True, True, 0)
-    #         child_box.pack_start(modified_factor_entry, True, True, 0)
-    #         self.entries.append(modified_factor_entry)
-    #         self.ui.add(child_box)
-    #
-    #     buttons_box = Gtk.Box()
-    #     confirm_button = Gtk.Button(label='确定')
-    #     confirm_button.set_margin_top(5)
-    #     confirm_button.set_margin_bottom(5)
-    #     confirm_button.connect('clicked', self.confirm)
-    #     buttons_box.pack_start(confirm_button, True, True, 10)
-    #     cancel_button = Gtk.Button(label='取消')
-    #     cancel_button.connect('clicked', self.cancel)
-    #     cancel_button.set_margin_top(5)
-    #     cancel_button.set_margin_bottom(5)
-    #     buttons_box.pack_start(cancel_button, True, True, 10)
-    #     check_button = Gtk.Button(label='曲线')
-    #     check_button.connect('clicked', self.check)
-    #     check_button.set_margin_top(5)
-    #     check_button.set_margin_bottom(5)
-    #     buttons_box.pack_start(check_button, True, True, 10)
-    #     self.ui.add(buttons_box)
     def get_all_widget(self):
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/EditFactorsUI.glade'))
@@ -103,11 +58,6 @@ class FactorsEditView:
                         factor_0_entry]
 
     def update_current_factors(self, current_factors):
-        # factors_show_boxes = self.ui.get_children()[1:-1]
-        # for box in factors_show_boxes:
-        #     current_factor_label = box.get_children()[0]
-        #     current_index = factors_show_boxes.index(box)
-        #     current_factor_label.set_text('{}'.format(current_factors[current_index]))
         count = 0
         for factor in current_factors:
             current_factor = self.current_factors[count]
@@ -162,11 +112,6 @@ class FactorsEditView:
 
     def minimize(self, widget):
         self.window.iconify()
-
-    # def clear(self):
-    #     children = self.ui.get_children()
-    #     for child in children:
-    #         self.ui.remove(child)
 
     def confirm(self, widget):
         try:
@@ -225,7 +170,7 @@ class Image:
         self.window.add(self.image)
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='factors curves')
+        header = Gtk.HeaderBar(title='校正系数曲线')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
@@ -265,7 +210,3 @@ class Image:
     def minimize(self, widget):
         self.window.iconify()
 
-
-# if __name__ == '__main__':
-#     window = FactorsEditView()
-#     Gtk.main()

@@ -18,13 +18,10 @@ class MergeView:
         self.window = Gtk.Window()
         self.window.set_border_width(10)
         self.window.set_default_size(400, 150)
-        # self.ui = Gtk.Box()
         self.ui = None
         self.get_all_widget()
         self.set_window_header()
         self.window.add(self.ui)
-
-        # self.init_ui()
 
     @property
     def presenter(self):
@@ -77,64 +74,6 @@ class MergeView:
     def minimize(self, widget):
         self.window.iconify()
 
-    # def init_ui(self):
-    #     self.ui.set_orientation(Gtk.Orientation.VERTICAL)
-    #
-    #     open_file_box = Gtk.Box()
-    #     open_file_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     open_file_button = Gtk.Button(label='文件选择')
-    #     open_file_button.connect('clicked', self.open_file)
-    #     open_file_button.set_margin_top(10)
-    #     open_file_button.set_margin_bottom(10)
-    #     open_file_box.pack_start(open_file_button, False, True, 10)
-    #     self.ui.add(open_file_box)
-    #
-    #     merged_file_box = Gtk.Box()
-    #     merged_file_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     # current_file_box.set_homogeneous(True)
-    #     merged_file_label = Gtk.Label(label='导入文件通道选择')
-    #     merged_file_box.pack_start(merged_file_label, False, True, 10)
-    #     self.chosen_merged_channel_index = Gtk.ComboBox()
-    #     self.chosen_merged_channel_index.set_margin_top(10)
-    #     self.chosen_merged_channel_index.set_margin_bottom(10)
-    #     merged_file_box.pack_end(self.chosen_merged_channel_index, True, True, 10)
-    #     self.ui.add(merged_file_box)
-    #
-    #     other_file_box = Gtk.Box()
-    #     other_file_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     # other_file_box.set_homogeneous(True)
-    #     other_file_label = Gtk.Label(label='当前文件参数选择')
-    #     other_file_box.pack_start(other_file_label, False, True, 10)
-    #     self.chosen_other_channel_index = Gtk.ComboBox()
-    #     self.chosen_other_channel_index.set_margin_top(10)
-    #     self.chosen_other_channel_index.set_margin_bottom(10)
-    #     self.chosen_other_channel_index.connect('changed', self.update_other_available_calibrate_parameter)
-    #     other_file_box.pack_start(self.chosen_other_channel_index, True, True, 10)
-    #     self.chosen_other_calibrate_parameter = Gtk.ComboBox()
-    #     self.chosen_other_calibrate_parameter.set_margin_top(10)
-    #     self.chosen_other_calibrate_parameter.set_margin_bottom(10)
-    #     other_file_box.pack_end(self.chosen_other_calibrate_parameter, True, True, 10)
-    #     self.ui.add(other_file_box)
-    #
-    #     button_choose_box = Gtk.Box()
-    #     button_choose_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     # interval_input_box.set_homogeneous(True)
-    #     merge_channel_button = Gtk.Button(label='合并通道')
-    #     merge_channel_button.connect('clicked', self.confirm_channel)
-    #     merge_channel_button.set_margin_top(10)
-    #     merge_channel_button.set_margin_bottom(10)
-    #     button_choose_box.pack_start(merge_channel_button, False, True, 0)
-    #     merge_parameter_button = Gtk.Button(label='合并参数')
-    #     merge_parameter_button.connect('clicked', self.confirm_parameter)
-    #     merge_parameter_button.set_margin_top(10)
-    #     merge_parameter_button.set_margin_bottom(10)
-    #     button_choose_box.pack_start(merge_parameter_button, False, True, 120)
-    #     cancel_button = Gtk.Button(label='取消')
-    #     cancel_button.connect('clicked', self.hide)
-    #     cancel_button.set_margin_top(10)
-    #     cancel_button.set_margin_bottom(10)
-    #     button_choose_box.pack_end(cancel_button, False, True, 0)
-    #     self.ui.add(button_choose_box)
     def get_all_widget(self):
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/MergeUI.glade'))
@@ -257,30 +196,4 @@ class MergeView:
             error_dialog.format_secondary_text("文件选择有误，无法载入!")
             error_dialog.run()
             error_dialog.destroy()
-        # dialog = Gtk.FileChooserDialog(title="文件选择", parent=self.window,
-        #                                action=Gtk.FileChooserAction.OPEN,
-        #                                buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-        #                                         Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        # response = dialog.run()
-        # if response == Gtk.ResponseType.OK:
-        #     try:
-        #         filename = dialog.get_filename()
-        #         self._presenter.load_other_file(filename)
-        #         self.update_other_file_channel_choose()
-        #         dialog.destroy()
-        #     except Exception as ex:
-        #         print(ex)
-        #         error_dialog = Gtk.MessageDialog(self.window, 0, Gtk.MessageType.ERROR,
-        #                                          Gtk.ButtonsType.CANCEL, "ERROR")
-        #         error_dialog.format_secondary_text("文件选择有误，无法载入!")
-        #         error_dialog.run()
-        #         error_dialog.destroy()
-        #         dialog.destroy()
-        # elif response == Gtk.ResponseType.CANCEL:
-        #     dialog.destroy()
 
-
-# if __name__ == '__main__':
-#     win = MergeView()
-#     win.window.show_all()
-#     Gtk.main()

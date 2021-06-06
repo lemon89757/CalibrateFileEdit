@@ -18,8 +18,6 @@ class ParameterIntervalEditView:
         self.window = Gtk.Window()
         self.window.set_border_width(10)
         self.window.set_default_size(200, 100)
-        # self.ui = Gtk.Box()
-        # self.init_ui()
         self.ui = None
         self.get_all_widget()
         self.set_window_header()
@@ -32,58 +30,6 @@ class ParameterIntervalEditView:
     @presenter.setter
     def presenter(self, value):
         self._presenter = value
-
-    # def init_ui(self):
-    #     self.ui.set_orientation(Gtk.Orientation.VERTICAL)
-    #
-    #     info_box = Gtk.Box()
-    #     info_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     info_box.set_homogeneous(True)
-    #     empty_label = Gtk.Label()
-    #     info_box.pack_start(empty_label, True, True, 0)
-    #     upper_num_label = Gtk.Label(label="上界")
-    #     lower_num_label = Gtk.Label(label="下界")
-    #     info_box.pack_start(lower_num_label, True, True, 0)
-    #     info_box.pack_start(upper_num_label, True, True, 0)
-    #     self.ui.add(info_box)
-    #
-    #     current_interval_box = Gtk.Box()
-    #     current_interval_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     current_interval_box.set_homogeneous(True)
-    #     current_label = Gtk.Label(label='当前区间')
-    #     current_interval_box.pack_start(current_label, True, True, 0)
-    #     current_lower_label = Gtk.Label(label='2020')
-    #     current_upper_label = Gtk.Label(label='2020')
-    #     current_interval_box.pack_start(current_lower_label, True, True, 0)
-    #     current_interval_box.pack_start(current_upper_label, True, True, 0)
-    #     self.ui.add(current_interval_box)
-    #
-    #     interval_input_box = Gtk.Box()
-    #     interval_input_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     interval_input_box.set_homogeneous(True)
-    #     label = Gtk.Label(label='新区间')
-    #     interval_input_box.pack_start(label, True, True, 0)
-    #     lower_num_entry = Gtk.Entry()
-    #     self.entries.append(lower_num_entry)
-    #     upper_num_entry = Gtk.Entry()
-    #     self.entries.append(upper_num_entry)
-    #     interval_input_box.pack_start(lower_num_entry, True, True, 0)
-    #     interval_input_box.pack_start(upper_num_entry, True, True, 0)
-    #     self.ui.add(interval_input_box)
-    #
-    #     button_box = Gtk.Box()
-    #     button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-    #     confirm_button = Gtk.Button(label='确定修改')
-    #     confirm_button.set_margin_top(5)
-    #     confirm_button.set_margin_bottom(5)
-    #     confirm_button.connect('clicked', self.confirm)
-    #     button_box.pack_start(confirm_button, True, True, 50)
-    #     cancel_button = Gtk.Button(label='取消')
-    #     cancel_button.connect('clicked', self.cancel)
-    #     cancel_button.set_margin_top(5)
-    #     cancel_button.set_margin_bottom(5)
-    #     button_box.pack_start(cancel_button, True, True, 50)
-    #     self.ui.add(button_box)
 
     def get_all_widget(self):
         builder = Gtk.Builder()
@@ -102,9 +48,6 @@ class ParameterIntervalEditView:
     def update_current_interval_display(self, current_interval):
         lower_num = current_interval.lower
         upper_num = current_interval.upper
-        # current_interval_box = self.ui.get_children()[1]
-        # lower_label = current_interval_box.get_children()[1]
-        # upper_label = current_interval_box.get_children()[2]
         self.current_lower_label.set_text('{}'.format(lower_num))
         self.current_upper_label.set_text('{}'.format(upper_num))
 
@@ -133,7 +76,6 @@ class ParameterIntervalEditView:
         header.pack_end(close_button)
         header.pack_end(max_button)
         header.pack_end(min_button)
-
         self.window.set_titlebar(header)
 
     def hide(self, widget):
@@ -188,7 +130,3 @@ class ParameterIntervalEditView:
         self.state = False
         self.window.hide()
 
-
-# if __name__ == '__main__':
-#     window = ParameterIntervalEditView()
-#     Gtk.main()

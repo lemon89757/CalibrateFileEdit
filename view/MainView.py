@@ -27,7 +27,7 @@ class MainUI:
         self.builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/MainUI.glade'))
         self.main_window = Gtk.Window()
         self.main_window.set_border_width(10)
-        self.main_window.set_default_size(500, 350)
+        self.main_window.set_default_size(500, 450)
         self.ui = self.builder.get_object('main_container')
         self.set_window_header()
         self.main_window.add(self.ui)
@@ -59,13 +59,13 @@ class MainUI:
         self._presenter = value
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='CalibrateFileEdit')
+        header = Gtk.HeaderBar(title='校正文件编辑')
         header.props.show_close_button = False  # TODO
 
         # 方式一 上述状态改为False
         close_button = Gtk.Button()
         close_button.set_relief(Gtk.ReliefStyle.NONE)
-        img = Gtk.Image.new_from_icon_name("window-close-symbolic", Gtk.IconSize.MENU)  # TODO"window-close-symbolic"???
+        img = Gtk.Image.new_from_icon_name("window-close-symbolic", Gtk.IconSize.MENU)
         close_button.set_image(img)
         close_button.connect('clicked', Gtk.main_quit)
 
@@ -87,13 +87,13 @@ class MainUI:
 
         self.main_window.set_titlebar(header)
 
-    def maximize(self, widget):  # TODO
+    def maximize(self, widget):
         if self.main_window.is_maximized():
             self.main_window.unmaximize()
         else:
             self.main_window.maximize()
 
-    def minimize(self, widget):          # TODO
+    def minimize(self, widget):
         self.main_window.iconify()
 
     def init_child_ui_editor(self):
@@ -106,9 +106,6 @@ class MainUI:
     def init_file_operate(self):
         open_menu_item = self.builder.get_object('open_item')
         open_menu_item.connect('activate', self.open_file)
-
-        # new_menu_item = self.builder.get_object('new_item')
-        # new_menu_item.connect('activate', self.new_file)
 
         save_menu_item = self.builder.get_object('save_item')
         save_menu_item.connect('activate', self.save)
@@ -129,9 +126,6 @@ class MainUI:
     def init_display(self):
         show_factors_curve_menu_item = self.builder.get_object('display_factors_curve_button')
         show_factors_curve_menu_item.connect('clicked', self.show_factors_curve)
-
-        # show_two_curves_menu_item = self.builder.get_object('display_two_curves_item')
-        # show_two_curves_menu_item.connect('activate', self.show_two_curves)
 
     def init_others(self):
         senior_menu_item = self.builder.get_object('senior_item')
@@ -233,10 +227,6 @@ class MainUI:
 
     def update_dependencies_list(self):
         self.dependencies_list_scrolled_win.set_sensitive(True)
-        # dependencies_text_buffer = Gtk.TextBuffer()
-        # dependencies_text_view = Gtk.TextView()
-        # dependencies_text_view.set_sensitive(False)
-
         channel_index = self._presenter.load_channel_index()
         tree_view = Gtk.TreeView()
         if channel_index != 2020:
@@ -245,15 +235,11 @@ class MainUI:
                 dependencies_list = self._presenter.get_dependencies_list()
                 model = self.create_dependencies_list_model(dependencies_list)
                 tree_view = self.create_dependencies_list_tree_view(model)
-                # dependencies_text_buffer.set_text('{}'.format(dependencies_list))
-                # self.update_dependencies_segment_choose()
         tree_view.set_sensitive(False)
-        # dependencies_text_view.set_buffer(dependencies_text_buffer)
         self.dependencies_list_scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         child = self.dependencies_list_scrolled_win.get_child()
         if child:
             self.dependencies_list_scrolled_win.remove(child)
-        # self.dependencies_list_scrolled_win.add(dependencies_text_view)
         self.dependencies_list_scrolled_win.add(tree_view)
         self.dependencies_list_scrolled_win.show_all()    # show_all() 才能显示其中内容
 
@@ -308,7 +294,6 @@ class MainUI:
                 self.dependencies_segment_choose_scrolled_win.remove(child)
             depends_id = self._presenter.get_depends_id_in_main(calibrate_parameter)
             self._depends_id = depends_id
-
             viewport = Gtk.Viewport()
             main_box = Gtk.Box()
             main_box.set_orientation(Gtk.Orientation.VERTICAL)
@@ -323,7 +308,6 @@ class MainUI:
                 child_combobox.set_model(child_model)
                 child_box.pack_start(child_combobox, True, True, 0)
                 main_box.add(child_box)
-
             viewport.add(main_box)
             self.dependencies_segment_choose_scrolled_win.add(viewport)
             self.dependencies_segment_choose_scrolled_win.show_all()
@@ -353,7 +337,6 @@ class MainUI:
         first_cell = Gtk.CellRendererText()
         first_combobox.pack_start(first_cell, True)
         first_combobox.add_attribute(first_cell, 'text', 1)
-        # first_combobox.set_active(0)
         if self._is_update_all_dependencies_segment_choose:
             if len(self._depends_id) != 1:
                 first_combobox.connect('changed', self.update_next_depend_segment)
@@ -391,7 +374,7 @@ class MainUI:
                 current_cell = Gtk.CellRendererText()
                 next_combobox.pack_start(current_cell, True)
                 next_combobox.add_attribute(current_cell, 'text', 1)
-                # next_combobox.set_active(0)   # TODO 这里的set_active又会跳回去，陷入无限循环，有毒..
+                # next_combobox.set_active(0)   # 这里的set_active又会跳回去，陷入无限循环，有毒..
                 if self._is_update_all_dependencies_segment_choose:
                     if next_depend_id == self._depends_id[-1]:
                         next_combobox.connect('changed', self.update_calibrate_parameter_interval_combobox)
@@ -416,7 +399,6 @@ class MainUI:
 
         last_segment = self._presenter.load_last_dependency_segment()
         default_segment = FloatInterval.closed(2020, 2020)
-
         if last_segment == default_segment:
             self.clear_calibrate_parameter_interval_combobox()
         else:
@@ -430,7 +412,6 @@ class MainUI:
                 dialog.destroy()
             else:
                 self._parameter_segments = parameter_segments
-
                 interval_model = Gtk.ListStore(int, str)
                 interval_model.append([2020, '--请先选择校正参数区间--'])
                 count = 0
@@ -468,7 +449,6 @@ class MainUI:
             factors = self._parameter_segments[interval_index][1]
             factors_text_buffer.set_text('{}'.format(factors))
             factors_text_view.set_buffer(factors_text_buffer)
-
             self.factors_scrolled_win.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             child = self.factors_scrolled_win.get_child()
             if child:
@@ -477,7 +457,7 @@ class MainUI:
 
         self.factors_scrolled_win.show_all()
 
-    def init_all(self):
+    def init_all(self, filename):
         if not self._state:
             self.init_all_display_widget()
             self.init_display()
@@ -485,23 +465,23 @@ class MainUI:
             self.update_channel_combobox()
             self.init_others()
             self._state = True
+            title_bar = self.main_window.get_titlebar()
+            title_bar.set_subtitle('{}'.format(filename))
         else:
             title_bar = self.main_window.get_titlebar()
-            title_bar.set_title('CalibrateFileEdit')
+            title_bar.set_title('校正文件编辑')
+            title_bar.set_subtitle('{}'.format(filename))
             self.update_channel_combobox()
 
     def update_modified_factors_scrolled_win(self, new_factors):
         self._parameter_segments = self._presenter.get_calibrate_parameter_segments()
         # 更新self._parameter_segments
-
         self.factors_scrolled_win.set_sensitive(True)
         factors_text_buffer = Gtk.TextBuffer()
         factors_text_view = Gtk.TextView()
         factors_text_view.set_sensitive(False)
-
         factors_text_buffer.set_text('{}'.format(new_factors))
         factors_text_view.set_buffer(factors_text_buffer)
-
         child = self.factors_scrolled_win.get_child()
         if child:
             self.factors_scrolled_win.remove(child)
@@ -532,9 +512,9 @@ class MainUI:
 
     def update_file_name_state(self):
         title_bar = self.main_window.get_titlebar()
-        title_bar.set_title('CalibrateFileEdit*')
+        title_bar.set_title('校正文件编辑*')
 
-    def open_file(self, widget):  # TODO
+    def open_file(self, widget):
         dialog = Gtk.FileChooserDialog(title="文件选择", parent=self.main_window,
                                        action=Gtk.FileChooserAction.OPEN,
                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -544,7 +524,7 @@ class MainUI:
             try:
                 filename = dialog.get_filename()
                 self._presenter.load_channels(filename)
-                self.init_all()
+                self.init_all(filename)
                 dialog.destroy()
             except Exception as ex:
                 print(ex)
@@ -557,16 +537,13 @@ class MainUI:
         elif response == Gtk.ResponseType.CANCEL:
             dialog.destroy()
 
-    def new_file(self, widget):
-        pass
-
     def save(self, widget):
         title = self.main_window.get_title()
-        has_already_modified = 'CalibrateFileEdit*'
+        has_already_modified = '校正文件编辑*'
         if title == has_already_modified:
             self._presenter.save()
             title_bar = self.main_window.get_titlebar()
-            title_bar.set_title('CalibrateFileEdit')
+            title_bar.set_title('校正文件编辑')
             dialog = Gtk.MessageDialog(parent=self.main_window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
             dialog.format_secondary_text("保存成功")
@@ -725,8 +702,6 @@ class MainUI:
         try:
             if not self._factors_edit_ui.state:
                 factors = self._presenter.load_current_factors()
-                # self._factors_edit_ui.clear()
-                # self._factors_edit_ui.init_ui()
                 self._factors_edit_ui.update_current_factors(factors)
                 self._factors_edit_ui.window.show_all()
                 self._factors_edit_ui.state = True
@@ -743,22 +718,13 @@ class MainUI:
 
     def show_factors_curve(self, widget):
         try:
-            # text_view = self.factors_scrolled_win.get_child()
-            # buffer = text_view.get_buffer()
-            # start_iter = buffer.get_start_iter()
-            # end_iter = buffer.get_end_iter()
-            # text = buffer.get_text(start_iter, end_iter, False)
-            # if len(text) == 0:
-            #     raise ValueError
-            # factors = eval(text)
-            # print(type(text), eval(text))   # TODO 换文件（或通道）后同样的会执行多次，即输出多次，（后面图片显示也出现多个）；还未第一次更新系数滚动窗口却已经有text_view
-            self._presenter.show_factors_curve()  # TODO 关闭matplotlib画出的图像，程序结束运行；将图像保存再显示，但同次运行程序多次画图结果会叠加在一起（直接显示也是如此）
+            self._presenter.show_factors_curve()
             if not self.curve.is_show:
                 self.curve.update_img()
                 self.curve.window.show_all()
                 self.curve.is_show = True
             else:
-                self.curve.window.hide()     # TODO 还是存在之前可以打开多个的问题， 或者不能重复打开
+                self.curve.window.hide()
                 self.curve.is_show = False
         except Exception as ex:
             print(ex)
@@ -768,9 +734,6 @@ class MainUI:
             dialog.run()
             dialog.destroy()
         # self._presenter.show_factors_curve()  # 先检查系数是否为空 AttributeError
-
-    def show_two_curves(self, widget):
-        pass
 
 
 class Image:
@@ -835,8 +798,6 @@ def main():
     main_window.init_file_operate()
     Gtk.main()
 
-
 # if __name__ == '__main__':
 #     main()
-
 #  设置控件比例(grid)、get_path
