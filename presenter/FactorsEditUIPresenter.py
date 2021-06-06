@@ -1,7 +1,4 @@
 class FactorsEditUIPresenter:
-    # TODO 可将MainUIPresenter作为editor(只作为转递信息的作用)传进来？
-    #  将currentCalibrateFile中CalibrateFileEdit作为各个presenter的共同属性（同一个，只实例化一次）会不会好一点？（结构改变，需要大修改）
-    #  （应该不可以，因为系数编辑界面会要影响到主界面，这个信号需要MainUIPresenter来传递给MainView）
     def __init__(self):
         self._editor = None
         self._view = None

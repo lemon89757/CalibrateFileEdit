@@ -68,7 +68,6 @@ class MainUIPresenter:
             _iter = model.get_iter_from_string('{}'.format(segment_activated))
             segment_str = model.get_value(_iter, 0)
             segment = FloatInterval.from_string(segment_str)
-            # print(label.get_text()) print(segment)
             depend_path.append([depend_id, segment])
             if depend_id == focus_depend_id:
                 break
@@ -268,8 +267,6 @@ class MainUIPresenter:
             self._editor.modify_calibrate_parameter_interval(channel, calibrate_parameter_id, path,
                                                              current_segment, new_interval)
         else:
-            # current_segment = path[-1][1]
-            # path = path[:-1]
             self._editor.modify_depend_segment(channel, calibrate_parameter_id, new_segment.lower,
                                                new_segment.upper, path)
 

@@ -206,11 +206,6 @@ class SeniorUIPresenter:
         _iter = model.get_iter_from_string('{}'.format(pos_active))
         chosen_pos = model.get_value(_iter, 0)  # 0表示前， 1表示后
 
-        # dependency_combobox = self._dependency_view.chosen_dependency
-        # dependency_active = dependency_combobox.get_active()
-        # model = dependency_combobox.get_model()
-        # _iter = model.get_iter_from_string('{}'.format(dependency_active))
-        # chosen_dependency = model.get_value(_iter, 0)
         dependency_label = self._dependency_view.chosen_dependency_label
         chosen_dependency = int(dependency_label.get_text())
 
