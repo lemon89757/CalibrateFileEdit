@@ -1,4 +1,6 @@
 import gi
+import os
+import intervals
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from presenter.DepdendciesEditUIPresenter import DependenciesEditUIPresenter
@@ -16,8 +18,10 @@ class DependenciesSegmentEditView:
         self.window = Gtk.Window()
         self.window.set_border_width(10)
         self.window.set_default_size(500, 150)
-        self.ui = Gtk.Box()
-        self.init_ui()
+        # self.ui = Gtk.Box()
+        # self.init_ui()
+        self.ui = None
+        self.get_all_widget()
         self.set_window_header()
         self.window.add(self.ui)
 
@@ -26,7 +30,7 @@ class DependenciesSegmentEditView:
         return self._presenter
 
     def set_window_header(self):
-        header = Gtk.HeaderBar(title='DependenciesSegmentEdit')
+        header = Gtk.HeaderBar(title='依赖分段编辑')
         header.props.show_close_button = False
 
         close_button = Gtk.Button()
@@ -72,71 +76,88 @@ class DependenciesSegmentEditView:
     def minimize(self, widget):
         self.window.iconify()
 
-    def init_ui(self):
-        self.ui.set_orientation(Gtk.Orientation.VERTICAL)
-
-        dependencies_choose_box = Gtk.Box()
-        dependencies_choose_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        choose_label = Gtk.Label(label='依赖选择')
-        dependencies_choose_box.pack_start(choose_label, False, True, 10)
-        self.dependencies_choose = Gtk.ComboBox()
-        self.dependencies_choose.set_margin_top(10)
-        self.dependencies_choose.set_margin_bottom(10)
-        self.dependencies_choose.connect('changed', self.update_current_dependency_segment)
-        # 一种信号的连接，在初始时连接好（只连接了一次）；否则会遇到重复连接函数执行的问题
-        dependencies_choose_box.pack_start(self.dependencies_choose, False, True, 10)
-        self.ui.add(dependencies_choose_box)
-
-        info_box = Gtk.Box()
-        info_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        info_box.set_homogeneous(True)
-        empty_label = Gtk.Label()
-        info_box.pack_start(empty_label, True, True, 0)
-        upper_num_label = Gtk.Label(label="上界")
-        lower_num_label = Gtk.Label(label="下界")
-        info_box.pack_start(lower_num_label, True, True, 0)
-        info_box.pack_start(upper_num_label, True, True, 0)
-        self.ui.add(info_box)
-
-        current_interval_box = Gtk.Box()
-        current_interval_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        current_interval_box.set_homogeneous(True)
-        current_label = Gtk.Label(label='当前区间')
-        current_interval_box.pack_start(current_label, True, True, 0)
-        current_lower_label = Gtk.Label(label='2020')
+    def get_all_widget(self):
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join(os.path.dirname(__file__), 'glade/EditDependencySegmentUI.glade'))
+        self.ui = builder.get_object('edit_dependency_segment_grid')
+        current_lower_label = builder.get_object('current_segment_lower_label')
         self._current_segment_display.append(current_lower_label)
-        current_upper_label = Gtk.Label(label='2020')
+        current_upper_label = builder.get_object('current_segment_upper_label')
         self._current_segment_display.append(current_upper_label)
-        current_interval_box.pack_start(current_lower_label, True, True, 0)
-        current_interval_box.pack_start(current_upper_label, True, True, 0)
-        self.ui.add(current_interval_box)
-
-        interval_input_box = Gtk.Box()
-        interval_input_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        interval_input_box.set_homogeneous(True)
-        label = Gtk.Label(label='新区间')
-        interval_input_box.pack_start(label, True, True, 0)
-        lower_num_entry = Gtk.Entry()
-        self.entries.append(lower_num_entry)
-        upper_num_entry = Gtk.Entry()
-        self.entries.append(upper_num_entry)
-        interval_input_box.pack_start(lower_num_entry, True, True, 0)
-        interval_input_box.pack_start(upper_num_entry, True, True, 0)
-        self.ui.add(interval_input_box)
-
-        button_box = Gtk.Box()
-        button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        confirm_button = Gtk.Button(label='确定修改')
-        confirm_button.set_margin_top(5)
-        confirm_button.set_margin_bottom(5)
+        lower_num_entry = builder.get_object('segment_lower_num_entry')
+        upper_num_entry = builder.get_object('segment_upper_num_entry')
+        self.entries = [lower_num_entry, upper_num_entry]
+        confirm_button = builder.get_object('confirm_button')
         confirm_button.connect('clicked', self.confirm)
-        button_box.pack_start(confirm_button, True, True, 50)
-        cancel_button = Gtk.Button(label='取消')
+        cancel_button = builder.get_object('cancel_button')
         cancel_button.connect('clicked', self.cancel)
-        cancel_button.set_margin_top(5)
-        cancel_button.set_margin_bottom(5)
-        button_box.pack_start(cancel_button, True, True, 50)
-        self.ui.add(button_box)
+        self.dependencies_choose = builder.get_object('dependency_choose_combo')
+        self.dependencies_choose.connect('changed', self.update_current_dependency_segment)
+    # def init_ui(self):
+    #     self.ui.set_orientation(Gtk.Orientation.VERTICAL)
+    #
+    #     dependencies_choose_box = Gtk.Box()
+    #     dependencies_choose_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     choose_label = Gtk.Label(label='依赖选择')
+    #     dependencies_choose_box.pack_start(choose_label, False, True, 10)
+    #     self.dependencies_choose = Gtk.ComboBox()
+    #     self.dependencies_choose.set_margin_top(10)
+    #     self.dependencies_choose.set_margin_bottom(10)
+    #     self.dependencies_choose.connect('changed', self.update_current_dependency_segment)
+    #     # 一种信号的连接，在初始时连接好（只连接了一次）；否则会遇到重复连接函数执行的问题
+    #     dependencies_choose_box.pack_start(self.dependencies_choose, False, True, 10)
+    #     self.ui.add(dependencies_choose_box)
+    #
+    #     info_box = Gtk.Box()
+    #     info_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     info_box.set_homogeneous(True)
+    #     empty_label = Gtk.Label()
+    #     info_box.pack_start(empty_label, True, True, 0)
+    #     upper_num_label = Gtk.Label(label="上界")
+    #     lower_num_label = Gtk.Label(label="下界")
+    #     info_box.pack_start(lower_num_label, True, True, 0)
+    #     info_box.pack_start(upper_num_label, True, True, 0)
+    #     self.ui.add(info_box)
+    #
+    #     current_interval_box = Gtk.Box()
+    #     current_interval_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     current_interval_box.set_homogeneous(True)
+    #     current_label = Gtk.Label(label='当前区间')
+    #     current_interval_box.pack_start(current_label, True, True, 0)
+    #     current_lower_label = Gtk.Label(label='2020')
+    #     self._current_segment_display.append(current_lower_label)
+    #     current_upper_label = Gtk.Label(label='2020')
+    #     self._current_segment_display.append(current_upper_label)
+    #     current_interval_box.pack_start(current_lower_label, True, True, 0)
+    #     current_interval_box.pack_start(current_upper_label, True, True, 0)
+    #     self.ui.add(current_interval_box)
+    #
+    #     interval_input_box = Gtk.Box()
+    #     interval_input_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     interval_input_box.set_homogeneous(True)
+    #     label = Gtk.Label(label='新区间')
+    #     interval_input_box.pack_start(label, True, True, 0)
+    #     lower_num_entry = Gtk.Entry()
+    #     self.entries.append(lower_num_entry)
+    #     upper_num_entry = Gtk.Entry()
+    #     self.entries.append(upper_num_entry)
+    #     interval_input_box.pack_start(lower_num_entry, True, True, 0)
+    #     interval_input_box.pack_start(upper_num_entry, True, True, 0)
+    #     self.ui.add(interval_input_box)
+    #
+    #     button_box = Gtk.Box()
+    #     button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+    #     confirm_button = Gtk.Button(label='确定修改')
+    #     confirm_button.set_margin_top(5)
+    #     confirm_button.set_margin_bottom(5)
+    #     confirm_button.connect('clicked', self.confirm)
+    #     button_box.pack_start(confirm_button, True, True, 50)
+    #     cancel_button = Gtk.Button(label='取消')
+    #     cancel_button.connect('clicked', self.cancel)
+    #     cancel_button.set_margin_top(5)
+    #     cancel_button.set_margin_bottom(5)
+    #     button_box.pack_start(cancel_button, True, True, 50)
+    #     self.ui.add(button_box)
 
     def update_dependencies_choose(self):
         dependencies = self._presenter.get_dependencies_id()
@@ -176,8 +197,7 @@ class DependenciesSegmentEditView:
                 upper_label = self._current_segment_display[1]
                 lower_label.set_text('{}'.format(lower_num))
                 upper_label.set_text('{}'.format(upper_num))
-            except Exception as ex:
-                print(ex)
+            except ValueError:
                 dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                            buttons=Gtk.ButtonsType.OK, text="提示")
                 dialog.format_secondary_text("未完成选择依赖分段")
@@ -203,11 +223,18 @@ class DependenciesSegmentEditView:
                 dialog.run()
                 dialog.destroy()
                 self.hide_()
-            except Exception as ex:
-                print(ex)
+            except ValueError:
                 dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                            buttons=Gtk.ButtonsType.OK, text="提示")
-                dialog.format_secondary_text("输入格式不正确")
+                dialog.format_secondary_text("输入格式不正确:"
+                                             "请输入浮点数或整数")
+                dialog.run()
+                dialog.destroy()
+            except intervals.exc.RangeBoundsException:
+                dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                           buttons=Gtk.ButtonsType.OK, text="提示")
+                dialog.format_secondary_text("输入格式不正确："
+                                             "上界比下界小")
                 dialog.run()
                 dialog.destroy()
 

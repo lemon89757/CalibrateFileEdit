@@ -47,8 +47,6 @@ class DependenciesEditUIPresenter:
 
     def modify_dependency_segment(self):
         lower_num, upper_num = self.load_current_entry()
-        if lower_num > upper_num:
-            raise ValueError('输入区间不正确，上界比下界小')
         chosen_dependency = self.load_chosen_dependency()
         self._editor.modify_dependency_segment(lower_num, upper_num, chosen_dependency)
 
