@@ -312,6 +312,12 @@ class SeniorUI:
             dialog.format_secondary_text("请先选择目标结点")
             dialog.run()
             dialog.destroy()
+        except OSError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("无法删除仅有的唯一依赖")
+            dialog.run()
+            dialog.destroy()
 
     def add_dependency(self, widget):
         try:
@@ -436,6 +442,12 @@ class SeniorUI:
             dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
                                        buttons=Gtk.ButtonsType.OK, text="提示")
             dialog.format_secondary_text("请先选择目标结点")
+            dialog.run()
+            dialog.destroy()
+        except OSError:
+            dialog = Gtk.MessageDialog(parent=self.window, flags=0, message_type=Gtk.MessageType.INFO,
+                                       buttons=Gtk.ButtonsType.OK, text="提示")
+            dialog.format_secondary_text("无法删除仅有的唯一分支")
             dialog.run()
             dialog.destroy()
         except AttributeError:
@@ -855,7 +867,7 @@ class Image:
         child = self.window.get_child()
         if child:
             self.window.remove(child)
-        self.image.set_from_file(r"image\two_factors_curves.png")
+        self.image.set_from_file(r"view\image\two_factors_curves.png")
         self.window.add(self.image)
 
     def set_window_header(self):

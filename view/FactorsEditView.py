@@ -166,7 +166,7 @@ class Image:
         child = self.window.get_child()
         if child:
             self.window.remove(child)
-        self.image.set_from_file(r"image\two_factors_curves.png")
+        self.image.set_from_file(r"view\image\two_factors_curves.png")
         self.window.add(self.image)
 
     def set_window_header(self):
