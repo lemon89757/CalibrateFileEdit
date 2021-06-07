@@ -114,7 +114,7 @@ class EditCalibrateParameter:
         plt.xlabel("calibrate parameter input")
         plt.ylabel("calibrate parameter output")
         plt.plot(x, y)
-        plt.savefig(r"image\factors_curve.png")
+        plt.savefig(r"view\image\factors_curve.png")
         plt.cla()
 
     @staticmethod
@@ -138,5 +138,5 @@ class EditCalibrateParameter:
         plt.plot(x, y, 'r', label='modified curve')
         plt.plot(x, modify_before_y, 'b', label='curve before modified')
         plt.legend(loc='upper right')
-        plt.savefig(r"image\two_factors_curves.png")
+        plt.savefig(r"view\image\two_factors_curves.png")
         plt.cla()
