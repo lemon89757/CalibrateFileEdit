@@ -192,6 +192,7 @@ class CalibrateFileEdit:
         self._depend_editor.add_depend(depend_id, pos, new_dependency)
 
     def delete_depend(self, root_node, depend_id):
+        self.check_is_only_dependency(root_node)
         self._depend_editor.root_node = root_node
         self._depend_editor.delete_depend(depend_id)
 
@@ -257,6 +258,7 @@ class CalibrateFileEdit:
             self.check_the_same_interval(current_node, current_chosen_interval)
             if self.check_is_only_one_segment(current_node):
                 node = self.check_whole_branch(channel, calibrate_parameter_id, path)
+                self.check_is_only_dependency_root(channel, calibrate_parameter_id, node)
                 self.delete_depend_segment(node)
             else:
                 self.delete_parameter_segment(current_node, current_chosen_interval)
@@ -264,8 +266,10 @@ class CalibrateFileEdit:
             current_node = self.get_current_node(channel, calibrate_parameter_id, path)
             if self.check_is_only_one_segment(current_node):
                 node = self.check_whole_branch(channel, calibrate_parameter_id, path)
+                self.check_is_only_dependency_root(channel, calibrate_parameter_id, node)
                 self.delete_depend_segment(node)
             else:
+                self.check_is_only_dependency_root(channel, calibrate_parameter_id, current_node)
                 self.delete_depend_segment(current_node)
 
     def add_complete_branch(self, channel, calibrate_parameter_id):
@@ -349,3 +353,14 @@ class CalibrateFileEdit:
             else:
                 break
         return depend_node
+
+    def check_is_only_dependency_root(self, channel, calibrate_parameter_id, current_deleting_node):
+        root_node = self.get_root_node(channel, calibrate_parameter_id)
+        if len(root_node.children) == 1:
+            if root_node.children[0] == current_deleting_node:
+                raise OSError("无法删除仅有的唯一分支")
+
+    @staticmethod
+    def check_is_only_dependency(root_node):
+        if root_node.height <= 2:
+            raise OSError("只剩唯一依赖")
