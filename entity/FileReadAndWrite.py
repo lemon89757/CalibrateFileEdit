@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 import json
+import msgpack
 import os
 import pandas as pd
 import entity.CalibrateFile
+from entity.SQLReadAndWrite import SQLHandler
 from intervals import FloatInterval
 
 
 class FileRW:
     def __init__(self):
         self._json_handler = JsonHandler()
-        self._sql_handler = None
-        self._bin_handler = None
+        self._sql_handler = SQLHandler()
+        self._bin_handler = BinHandler()
 
         self._file_path = 'file_path'
+        self._load_file_suffix = None
 
         self._calibrate_file = None
         self._current_calibrate_msg = None
@@ -32,20 +35,31 @@ class FileRW:
             raise ValueError
         self._file_path = value
 
-    def save(self, calibrate_file):
+    def save(self, channels):
         suffix = os.path.splitext(self.file_path)[-1]
         if suffix == '.json':
+            calibrate_file = self.calibrate_msg_to_file_form(channels)
             self._json_handler.save(self._file_path, calibrate_file)
-            print("save yes")
-        if suffix == '.bin':
-            pass
-        if suffix == '.sql':
-            pass
+        elif suffix == '.bin':
+            calibrate_file = self.calibrate_msg_to_file_form(channels)
+            self._bin_handler.save(self._file_path, calibrate_file)
+        elif suffix == '.db':
+            rev_depends = self.get_rev_depends(channels)
+            save_type = 'save'
+            self._sql_handler.write_data_to_db(self._file_path, channels, save_type, rev_depends)
 
-    def save_as(self, calibrate_file, file_path):  # TODO
+    def save_as(self, channels, file_path):
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
+            calibrate_file = self.calibrate_msg_to_file_form(channels)
             self._json_handler.save(file_path, calibrate_file)
+        elif suffix == '.bin':
+            calibrate_file = self.calibrate_msg_to_file_form(channels)
+            self._bin_handler.save(file_path, calibrate_file)
+        elif suffix == '.db':
+            rev_depends = self.get_rev_depends(channels)
+            save_type = 'save_as'
+            self._sql_handler.write_data_to_db(file_path, channels, save_type, rev_depends)
 
     @staticmethod
     def get_parameter_dict():
@@ -281,17 +295,18 @@ class FileRW:
         self._former_nodes_num += len(children_nodes)
 
     # 读取文件部分
-    def get_calibrate_file(self, file_path):  # TODO
+    def get_calibrate_file(self, file_path):
         suffix = os.path.splitext(file_path)[-1]
+        self._load_file_suffix = suffix
         if suffix == '.json':
             self._calibrate_file = self._json_handler.load(file_path)
             self._file_path = file_path
-        # elif suffix == '.bin':
-        #     calibrate_file = self._bin_handler(file_path)
-        #     return calibrate_file
-        # elif suffix == '.sql':
-        #     calibrate_file = self._sql_handler(file_path)
-        #     return calibrate_file
+        elif suffix == '.bin':
+            self._calibrate_file = self._bin_handler.load(file_path)
+            self._file_path = file_path
+        elif suffix == '.db':
+            self._sql_handler.connect_db_file(file_path)
+            self._file_path = file_path
         else:
             raise FileExistsError
 
@@ -307,17 +322,19 @@ class FileRW:
         return msg
 
     def load_all_calibrate_msg_from_file(self):  # TODO 未包含通道[]
-        all_channel_msgs = []
-        # channels = list(enumerate(self._calibrate_file[3]))
-        # lambda函数、for i, k in enumerate(list)、 list.index(channels.index) enumerate(channels)后的对象不可channels[1:]
-        channels = self._calibrate_file["channels"]
-        for channel in channels[1:]:
-            channel_msgs = {}
-            channel_index = channels.index(channel)
-            for calibrate_msg in channel:
-                msg = self.load_calibrate_msg_from_file(channel_index, calibrate_msg[0])
-                channel_msgs[calibrate_msg[0]] = msg
-            all_channel_msgs.append(channel_msgs)
+        if self._load_file_suffix == '.db':
+            all_channel_msgs = self._sql_handler.load_all_calibrate_msg_from_db()
+        else:
+            all_channel_msgs = []
+            channels = self._calibrate_file["channels"]
+            for channel in channels:
+                if len(channel) != 0:
+                    channel_msgs = {}
+                    channel_index = channels.index(channel)
+                    for calibrate_msg in channel:
+                        msg = self.load_calibrate_msg_from_file(channel_index, calibrate_msg[0])
+                        channel_msgs[calibrate_msg[0]] = msg
+                    all_channel_msgs.append(channel_msgs)
         return all_channel_msgs
 
     def get_calibrate_tree(self, channel_index, parameter_id):
@@ -412,30 +429,11 @@ class FileRW:
 
 
 class JsonHandler:
-    def __init__(self, file_path=None):
-        pass
-
-    # @property
-    # def file_path(self):
-    #     return self._file_path
-    #
-    # @file_path.setter
-    # def file_path(self, value):
-    #     suffix = os.path.splitext(value)[-1]
-    #     if suffix != '.json':
-    #         raise ValueError
-    #     self._file_path = value
-
     @staticmethod
     def load(file_path):
         with open(file_path) as file:
-            calibrate_file = json.load(file)  # TODO json.decoder.JSONDecodeError
-            # channel_number = data_json["channel_number"]
-            # rev_depends = data_json["rev_depends"]
-            # depends = data_json["depends"]
-            # channels = data_json["channels"]
-            # calibrate_file = [channel_number, rev_depends, depends, channels]
-        return calibrate_file                # 直接返回一个字典
+            calibrate_file = json.load(file)  # json.decoder.JSONDecodeError
+        return calibrate_file                 # 直接返回一个字典
 
     @staticmethod
     def save(file_path, calibrate_file):
@@ -445,10 +443,13 @@ class JsonHandler:
 
 
 class BinHandler:
-    def __init__(self):
-        pass
+    @staticmethod
+    def load(file_path):
+        with open(file_path, 'rb') as file:
+            calibrate_file = msgpack.load(file)
+        return calibrate_file
 
-
-class SQLHandler:
-    def __init__(self):
-        pass
+    @staticmethod
+    def save(file_path, calibrate_file):
+        with open(file_path, 'wb') as file:
+            msgpack.dump(calibrate_file, file)
