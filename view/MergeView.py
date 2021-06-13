@@ -95,8 +95,9 @@ class MergeView:
         self.chosen_merged_channel_index.clear()
         channels_model = Gtk.ListStore(int, str)
         channels = self._presenter.get_channels()
-        for channel in channels:
-            channels_model.append([channels.index(channel), '通道{}'.format(channels.index(channel) + 1)])
+        channel_num = len(channels)
+        for i in range(channel_num):
+            channels_model.append([i, '通道{}'.format(i + 1)])
         self.chosen_merged_channel_index.set_model(channels_model)
         channels_cell = Gtk.CellRendererText()
         self.chosen_merged_channel_index.pack_start(channels_cell, True)
@@ -176,8 +177,9 @@ class MergeView:
         channels_model = Gtk.ListStore(int, str)
         channels_model.append([2020, '--请先选择通道--'])  # 默认通道
         channels = self._presenter.get_other_file_channels()
-        for channel in channels:
-            channels_model.append([channels.index(channel), '通道{}'.format(channels.index(channel) + 1)])
+        channel_num = len(channels)
+        for i in range(channel_num):
+            channels_model.append([i, '通道{}'.format(i + 1)])
         self.chosen_other_channel_index.set_model(channels_model)
         channels_cell = Gtk.CellRendererText()
         self.chosen_other_channel_index.pack_start(channels_cell, True)

@@ -152,8 +152,9 @@ class MainUI:
         channels_model = Gtk.ListStore(int, str)
         channels_model.append([2020, '--请先选择通道--'])    # 默认通道
         channels = copy.deepcopy(self._presenter.get_channels())
-        for channel in channels:
-            channels_model.append([channels.index(channel), '通道{}'.format(channels.index(channel)+1)])
+        channel_num = len(channels)
+        for i in range(channel_num):
+            channels_model.append([i, '通道{}'.format(i+1)])
         self.channel_combobox.set_model(channels_model)
         channels_cell = Gtk.CellRendererText()
         self.channel_combobox.pack_start(channels_cell, True)
@@ -570,7 +571,7 @@ class MainUI:
         file_type_model = Gtk.ListStore(str)
         file_type_model.append(['.json'])
         file_type_model.append(['.bin'])
-        file_type_model.append(['.sql'])
+        file_type_model.append(['.db'])
         file_combobox.set_model(file_type_model)
         cell = Gtk.CellRendererText()
         file_combobox.pack_start(cell, True)
