@@ -312,22 +312,21 @@ class SQLHandler:
         conn.close()
 
     def write_data_to_db(self, file_path, all_channels, save_type, rev_depends, load_file_path):
+        suffix = os.path.splitext(load_file_path)[-1]
+        if suffix == '.db':
+            no_depend_parameters = self.get_no_depend_parameters(load_file_path)
+        else:
+            no_depend_parameters = self.find_no_depend_parameters(all_channels)
         if save_type == 'save':
             self.clear_db_all_table(file_path)
-            self.write_data_to_parameters(file_path, all_channels, load_file_path)
-            self.write_data_to_depends(all_channels)
-            self.write_data_to_sections_and_coefficients(all_channels)
-            self.write_data_to_rev_depends(rev_depends)
-            self._write_conn.commit()
-            self._write_conn.close()
         elif save_type == 'save_as':
             self.create_sql_file(file_path)
-            self.write_data_to_parameters(file_path, all_channels, load_file_path)
-            self.write_data_to_depends(all_channels)
-            self.write_data_to_sections_and_coefficients(all_channels)
-            self.write_data_to_rev_depends(rev_depends)
-            self._write_conn.commit()
-            self._write_conn.close()
+        self.write_data_to_parameters(file_path, all_channels, no_depend_parameters, suffix)
+        self.write_data_to_depends(all_channels)
+        self.write_data_to_sections_and_coefficients(all_channels)
+        self.write_data_to_rev_depends(rev_depends)
+        self._write_conn.commit()
+        self._write_conn.close()
 
     @staticmethod
     def get_no_depend_parameters(load_file_path):
@@ -338,24 +337,21 @@ class SQLHandler:
         parameters = parameters_value.fetchall()
         return parameters
 
-    def write_no_depend_parameters(self, load_file_path, all_channels):
-        suffix = os.path.splitext(load_file_path)[-1]
-        if suffix == '.db':
-            parameters = self.get_no_depend_parameters(load_file_path)
-            for parameter in parameters:
+    def write_no_depend_parameters(self, load_file_suffix, no_depend_parameters):
+        if load_file_suffix == '.db':
+            for parameter in no_depend_parameters:
                 _id = parameter[0]
                 calibration_mode = parameter[1]
                 calc_id = parameter[2]
                 self.write_to_parameters(_id, None, calibration_mode, calc_id)
         else:
-            parameters = self.find_no_depend_parameters(all_channels)
-            for parameter in parameters:
+            for parameter in no_depend_parameters:
                 self.write_to_parameters(parameter, None, 0, None)          # 默认模式为0，参与校正id为空
 
-    def write_data_to_parameters(self, file_path, all_channels, load_file_path):
+    def write_data_to_parameters(self, file_path, all_channels, no_depend_parameters, load_file_suffix):
         self._write_conn = sqlite3.connect(file_path)
         self._write_cursor = self._write_conn.cursor()
-        self.write_no_depend_parameters(load_file_path, all_channels)
+        self.write_no_depend_parameters(load_file_suffix, no_depend_parameters)
         count = 0
         for channel in all_channels:
             for calibrate_msg in channel.values():
