@@ -218,7 +218,7 @@ class CalibrateFileEdit:
     def save_as(self, file_path):
         file_handler = FileRW()
         # calibrate_file = file_handler.calibrate_msg_to_file_form(self._current_channels)
-        file_handler.save_as(self._current_channels, file_path)
+        file_handler.save_as(self._current_channels, file_path, self._current_file_path)
 
     def get_current_node(self, channel, calibrate_parameter_id, path):
         new_path = copy.deepcopy(path)
