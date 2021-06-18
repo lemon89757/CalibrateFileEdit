@@ -46,9 +46,9 @@ class FileRW:
         elif suffix == '.db':
             rev_depends = self.get_rev_depends(channels)
             save_type = 'save'
-            self._sql_handler.write_data_to_db(self._file_path, channels, save_type, rev_depends)
+            self._sql_handler.write_data_to_db(self._file_path, channels, save_type, rev_depends, self._file_path)
 
-    def save_as(self, channels, file_path):
+    def save_as(self, channels, file_path, load_file_path):
         suffix = os.path.splitext(file_path)[-1]
         if suffix == '.json':
             calibrate_file = self.calibrate_msg_to_file_form(channels)
@@ -59,7 +59,7 @@ class FileRW:
         elif suffix == '.db':
             rev_depends = self.get_rev_depends(channels)
             save_type = 'save_as'
-            self._sql_handler.write_data_to_db(file_path, channels, save_type, rev_depends)
+            self._sql_handler.write_data_to_db(file_path, channels, save_type, rev_depends, load_file_path)
 
     @staticmethod
     def get_parameter_dict():
@@ -79,7 +79,7 @@ class FileRW:
         for channel in all_channel_msg:
             for calibrate_msg in channel.values():
                 root_nodes.append(calibrate_msg.calibrate_tree)
-        calibrate_file["depends"] = self.depends_to_file_form(root_nodes)   # TODO 命名,依赖入口的生成考虑放在这里
+        calibrate_file["depends"] = self.depends_to_file_form(root_nodes)   # 命名,依赖入口的生成可考虑放在这里
         calibrate_file["channels"] = self.channels_to_file_form(all_channel_msg)
         return calibrate_file
 
@@ -101,7 +101,7 @@ class FileRW:
                 rev_depend_list.insert(0, expect_parameter_id)
                 rev_depend[1] = rev_depend_list
 
-    def get_rev_depends(self, channels):  # TODO 反向依赖的生成
+    def get_rev_depends(self, channels):  # 反向依赖的生成(.)
         rev_depends = []
         for channel in channels:
             for calibrate_msg in channel.values():
@@ -117,7 +117,6 @@ class FileRW:
                         count = 0
                         for i in rev_depends:
                             parameter_id = i[0]
-                            # rev_depend_list = i[1]
                             if dependency_id == parameter_id:
                                 i[1].append(calibrate_msg.parameter_id)
                                 i[1] = list(set(i[1]))
@@ -133,7 +132,7 @@ class FileRW:
     # 通道文件生成(先生成依赖文件再执行此步骤)
     # 依赖入口列表的生成是在depends_to_file中
     def channels_to_file_form(self, all_channel_msg):
-        channels = []                             # 考虑0通道
+        channels = []                             # 放入通道[]
         channel_0 = []
         channels.append(channel_0)
         for channel in all_channel_msg:
@@ -195,7 +194,7 @@ class FileRW:
         return dependency_list
 
     # 依赖文件生成
-    def depends_to_file_form(self, root_nodes):  # TODO 公共树文件怎么生成
+    def depends_to_file_form(self, root_nodes):
         depends = []
         for node in root_nodes:
             one_root_depends = self.root_depends_to_file_form(node)
@@ -216,10 +215,6 @@ class FileRW:
         leaf_nodes_num = self.get_leaf_nodes_num(root_node)
         root_depends = []
         parent_node = root_node
-        # self.update_children_depends_transfer_num(parent_node)
-        # children_nodes = parent_node.children
-        # children_depend = self.children_depend_to_file_form(children_nodes)
-        # depends.append(children_depend)
         parent_nodes = [parent_node]
         next_parent_nodes = []
         leaf_nodes_count = 0
@@ -321,7 +316,7 @@ class FileRW:
         msg.calibrate_model = self._current_calibrate_msg[3]
         return msg
 
-    def load_all_calibrate_msg_from_file(self):  # TODO 未包含通道[]
+    def load_all_calibrate_msg_from_file(self):  # 未包含通道[]
         if self._load_file_suffix == '.db':
             all_channel_msgs = self._sql_handler.load_all_calibrate_msg_from_db()
         else:
@@ -354,7 +349,6 @@ class FileRW:
         file_channels = self._calibrate_file['channels']
         file_depends = self._calibrate_file['depends']
         current_channel = file_channels[channel_index]
-        # root_node = Node("{},{}".format(channel_index, parameter_id))
         root_node = entity.CalibrateFile.CalibrateParameterNode()
         root_node.parameter_id = parameter_id
         for calibrate_msg in current_channel:
@@ -433,7 +427,7 @@ class JsonHandler:
     def load(file_path):
         with open(file_path) as file:
             calibrate_file = json.load(file)  # json.decoder.JSONDecodeError
-        return calibrate_file                 # 直接返回一个字典
+        return calibrate_file
 
     @staticmethod
     def save(file_path, calibrate_file):
