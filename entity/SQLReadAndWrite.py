@@ -1,6 +1,6 @@
 import sqlite3
 import anytree
-import copy
+import os
 from intervals import FloatInterval
 from entity.CalibrateFile import CalibrateParameterNode, CalibrateDependencyNode, CalibrateMsg
 
@@ -15,7 +15,6 @@ class SQLHandler:
         self._write_cursor = None
 
         self._depend_leaf_nodes_pos = None
-        self._parameters = []
 
     # 读取文件，生成cursor
     def connect_db_file(self, file_path):
@@ -180,26 +179,6 @@ class SQLHandler:
                 pass
             depend_node.parent = root_node
 
-    def generate_no_depend_parameters_channel(self):
-        channel = dict()
-        record_values = self._cursor.execute('SELECT id, calibration_mode, calc_dep_id FROM parameters '
-                                             'where depends_id IS NULL')
-        record_values = record_values.fetchall()
-        for value in record_values:
-            parameter_id = value[0]
-            calc_dep_id = value[2]
-            calibration_mode = value[1]
-            if calc_dep_id == 0:
-                join_parameter_list = []
-            else:
-                join_parameter_list = []   # TODO 需要确定参与校正参数是什么，暂定为空
-            calibrate_msg = CalibrateMsg()
-            calibrate_msg.parameter_id = parameter_id
-            calibrate_msg.calibrate_model = calibration_mode
-            calibrate_msg.join_parameters_list = join_parameter_list
-            channel[parameter_id] = calibrate_msg
-        return channel
-
     @staticmethod
     def get_dependency_list(root_node):
         dependency_list = []
@@ -224,8 +203,10 @@ class SQLHandler:
                                                  'where id={}'.format(parameter_id))
         calc_dep_id = calc_dep_id_value.fetchall()
         calc_dep_id = calc_dep_id[0][0]
-        one_unknown = 0
-        if calc_dep_id == one_unknown:
+        if calc_dep_id:
+            return join_parameter_list
+        else:
+            join_parameter_list.append(calc_dep_id)  # 暂时只考虑了参与校正参数只有一个的情况
             return join_parameter_list
 
     def generate_calibrate_tree(self, root_node, parameter_id, channel_order):
@@ -265,8 +246,6 @@ class SQLHandler:
 
     def load_all_calibrate_msg_from_db(self):
         all_calibrate_msg = []
-        # empty_depend_channel = self.generate_no_depend_parameters_channel()  # TODO 暂未处理依赖为空的参数
-        # all_calibrate_msg.append(empty_depend_channel)
         parameters_msg = self.get_parameters_from_table()
         channels_parameters_value = self.get_channels_parameters_value(parameters_msg)
         channels = self.generate_channels_msg(channels_parameters_value)
@@ -294,7 +273,8 @@ class SQLHandler:
                             upper_bound         DECIMAL NOT NULL,
                             lower_bound         DECIMAL NOT NULL,
                             parent_id           INTEGER NOT NULL,
-                            is_leaf             INTEGER NOT NULL);''')
+                            is_leaf             INTEGER NOT NULL,
+                            channel             INTEGER NOT NULL);''')
         cursor.execute('''CREATE TABLE sections
                             (id                 INTEGER PRIMARY KEY
                                                         UNIQUE,
@@ -331,10 +311,10 @@ class SQLHandler:
         conn.commit()
         conn.close()
 
-    def write_data_to_db(self, file_path, all_channels, save_type, rev_depends):
+    def write_data_to_db(self, file_path, all_channels, save_type, rev_depends, load_file_path):
         if save_type == 'save':
             self.clear_db_all_table(file_path)
-            self.write_data_to_parameters(file_path, all_channels)
+            self.write_data_to_parameters(file_path, all_channels, load_file_path)
             self.write_data_to_depends(all_channels)
             self.write_data_to_sections_and_coefficients(all_channels)
             self.write_data_to_rev_depends(rev_depends)
@@ -342,62 +322,81 @@ class SQLHandler:
             self._write_conn.close()
         elif save_type == 'save_as':
             self.create_sql_file(file_path)
-            self.write_data_to_parameters(file_path, all_channels)
+            self.write_data_to_parameters(file_path, all_channels, load_file_path)
             self.write_data_to_depends(all_channels)
             self.write_data_to_sections_and_coefficients(all_channels)
             self.write_data_to_rev_depends(rev_depends)
             self._write_conn.commit()
             self._write_conn.close()
 
-    def write_data_to_parameters(self, file_path, all_channels):
-        self._parameters = []
+    @staticmethod
+    def get_no_depend_parameters(load_file_path):
+        conn = sqlite3.connect(load_file_path)
+        cursor = conn.cursor()
+        parameters_value = cursor.execute('SELECT id, calibration_mode, calc_dep_id FROM parameters '
+                                          'where depends_id IS NULL')
+        parameters = parameters_value.fetchall()
+        return parameters
+
+    def write_no_depend_parameters(self, load_file_path, all_channels):
+        suffix = os.path.splitext(load_file_path)[-1]
+        if suffix == '.db':
+            parameters = self.get_no_depend_parameters(load_file_path)
+            for parameter in parameters:
+                _id = parameter[0]
+                calibration_mode = parameter[1]
+                calc_id = parameter[2]
+                self.write_to_parameters(_id, None, calibration_mode, calc_id)
+        else:
+            parameters = self.find_no_depend_parameters(all_channels)
+            for parameter in parameters:
+                self.write_to_parameters(parameter, None, 0, None)          # 默认模式为0，参与校正id为空
+
+    def write_data_to_parameters(self, file_path, all_channels, load_file_path):
         self._write_conn = sqlite3.connect(file_path)
         self._write_cursor = self._write_conn.cursor()
+        self.write_no_depend_parameters(load_file_path, all_channels)
         count = 0
         for channel in all_channels:
             for calibrate_msg in channel.values():
                 if len(calibrate_msg.join_parameters_list) == 0:
                     calc_dep_id = 0
                 else:
-                    calc_dep_id = 1
+                    calc_dep_id = calibrate_msg.join_parameters_list[0]     # 暂时只考虑参与校正参数个数为1的情况
                 try:
-                    self._write_cursor.execute("INSERT INTO parameters (id, depends_id, calibration_mode, calc_dep_id) "
-                                               "VALUES (?, ?, ?, ?)", (calibrate_msg.parameter_id, count,
-                                                                       calibrate_msg.calibrate_model, calc_dep_id))
+                    self.write_to_parameters(calibrate_msg.parameter_id, count, calibrate_msg.calibrate_model,
+                                             calc_dep_id)
                 except sqlite3.IntegrityError:
-                    pass                       # 略过相同参数
+                    pass                                                    # 略过相同参数
                 else:
-                    self._parameters.append(calibrate_msg.parameter_id)
                     root_node = calibrate_msg.calibrate_tree
                     step = len(root_node.descendants) - len(root_node.leaves)
                     count += step
-            # TODO 数据库中校正模式不为-1和1（本来不是0和1吗？）是为什么？这些没有依赖的参数是不是应该放入0通道或者不用考虑（可以不放入参数表格中和通道信息中），
-            #  因为校正文件中未含有该参数的完整校正信息。另外要是读json文件后写入db文件， 这时没有依赖的参数既没有校正模式也没有参与校正id怎么办？
-            # TODO 暂未处理这种参数 （没有依赖的参数（即root_node.children为（））放入了通道中）
 
-    def write_data_to_depends(self, all_channels):
-        parameters = copy.deepcopy(self._parameters)
+    def write_to_parameters(self, _id, depend_entry, mode, calc_id):
+        self._write_cursor.execute("INSERT INTO parameters (id, depends_id, calibration_mode, calc_dep_id) "
+                                   "VALUES (?, ?, ?, ?)", (_id, depend_entry, mode, calc_id))
+
+    def write_data_to_depends(self, all_channels):    # TODO
         self._depend_leaf_nodes_pos = []
         count = 0
         step = 0
         for channel in all_channels:
+            channel_index = all_channels.index(channel)
             for calibrate_msg in channel.values():
-                if calibrate_msg.parameter_id not in parameters:
-                    continue
-                parameters.remove(calibrate_msg.parameter_id)
                 parent_nodes = (calibrate_msg.calibrate_tree, )
                 while True:
                     try:
                         next_time_parent_nodes = []
                         parent_count = 0
+                        child_count = 0
                         for parent_node in parent_nodes:
-                            child_count = 0
                             for node in parent_node.children:
                                 if node.depth == 1:
-                                    self.write_depend_root_node_to_depends(node, count)
+                                    self.write_depend_root_node_to_depends(node, count, channel_index+1)
                                 elif isinstance(node, CalibrateDependencyNode):
-                                    step_sum = step + parent_count + child_count
-                                    self.write_other_depend_node_to_depends(node, count, step_sum)
+                                    step_sum = step - parent_count + child_count
+                                    self.write_other_depend_node_to_depends(node, count, step_sum, channel_index+1)
                                 elif isinstance(node, CalibrateParameterNode):
                                     raise TypeError
                                 child_count += 1
@@ -409,7 +408,7 @@ class SQLHandler:
                     except TypeError:
                         break
 
-    def write_depend_root_node_to_depends(self, node, count):
+    def write_depend_root_node_to_depends(self, node, count, channel_index):
         if node.height == 1:
             is_leaf = 1
             self._depend_leaf_nodes_pos.append(count)
@@ -417,11 +416,11 @@ class SQLHandler:
             is_leaf = 0
         segment = node.parameter_segment
         self._write_cursor.execute("INSERT INTO depends (id, parameter_id, upper_bound,"
-                                   " lower_bound, parent_id, is_leaf) VALUES (?, ?, ?, ?, ?, ?)",
+                                   " lower_bound, parent_id, is_leaf, channel) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                    (count, node.parameter_id, segment.upper, segment.lower,
-                                    count, is_leaf))
+                                    count, is_leaf, channel_index))
 
-    def write_other_depend_node_to_depends(self, node, count, step):
+    def write_other_depend_node_to_depends(self, node, count, step, channel_index):
         segment = node.parameter_segment
         if node.height == 1:
             is_leaf = 1
@@ -429,9 +428,9 @@ class SQLHandler:
         else:
             is_leaf = 0
         self._write_cursor.execute("INSERT INTO depends (id, parameter_id, upper_bound,"
-                                   " lower_bound, parent_id, is_leaf) VALUES (?, ?, ?, ?, ?, ?)",
+                                   " lower_bound, parent_id, is_leaf, channel) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                    (count, node.parameter_id, segment.upper, segment.lower,
-                                    count - step, is_leaf))
+                                    count - step, is_leaf, channel_index))
 
     def write_data_to_sections_and_coefficients(self, all_channels):
         leaf_intervals_count = 0
@@ -453,14 +452,15 @@ class SQLHandler:
             channel_count += 1
 
     def write_leaf_interval_to_section(self, leaf_node, channel, count, interval, leaf_intervals_count):
-        depend_id = self.find_leaf_node_id(leaf_node.parameter_id, count)
+        # depend_id = self.find_leaf_node_id(leaf_node.parameter_id, count)
+        depend_id = self._depend_leaf_nodes_pos[count]
         self._write_cursor.execute("INSERT INTO sections (id, parameter_id, depend_id, upper_bound, "
                                    "lower_bound, channel) VALUES (?, ?, ?, ?, ?, ?)",
                                    (leaf_intervals_count, leaf_node.parameter_id, depend_id, interval.upper,
                                     interval.lower, channel))
 
     def write_data_to_coefficients(self, factors, section_id):
-        count = 6 * section_id
+        count = 6 * section_id                                  # 现在只考虑了6个校正系数的情况
         for factor in factors:
             self._write_cursor.execute("INSERT INTO coefficients (id, section_id, coefficient) VALUES (?, ?, ?)",
                                        (count, section_id, factor))
@@ -476,23 +476,28 @@ class SQLHandler:
                                            (count, dependency, parameter))
                 count += 1
 
-    def find_leaf_node_id(self, parameter_id, count):
-        try:
-            depend_id = self._depend_leaf_nodes_pos[count]
-        except IndexError:
-            _index = self._parameters.index(parameter_id)
-            depend_id = self._depend_leaf_nodes_pos[_index]
-        return depend_id
+    # def find_leaf_node_id(self, parameter_id, count):
+    #     try:
+    #         depend_id = self._depend_leaf_nodes_pos[count]
+    #     except IndexError:
+    #         _index = self._parameters.index(parameter_id)
+    #         depend_id = self._depend_leaf_nodes_pos[_index]
+    #     return depend_id
 
+    def find_no_depend_parameters(self, all_channels):
+        parameters = []
+        for channel in all_channels:
+            for calibrate_msg in channel.values():
+                dependency_list = calibrate_msg.dependency_list
+                for depend in dependency_list:
+                    if depend not in parameters and depend not in channel:
+                        parameters.append(depend)
+        self.check_parameters(all_channels, parameters)
+        return parameters
 
-# if __name__ == '__main__':
-#     file_path_1 = r'C:\Users\helloTt\Desktop\Mock-2021-01-20-18-02-39.db'
-#     sql_handler = SQLHandler()
-#     sql_handler.connect_db_file(file_path_1)
-#     msg_1 = sql_handler.load_all_calibrate_msg_from_db()
-#     channel_1 = msg_1[2]
-#     msg_1 = channel_1[1252525]
-#     root_node_1 = msg_1.calibrate_tree
-#     for pre, _, node_1 in anytree.RenderTree(root_node_1):
-#         treestr = u"%s%s" % (pre, node_1.parameter_id)
-#         print(treestr.ljust(8), node_1.parameter_segment, node_1.parameter_segments)
+    @staticmethod
+    def check_parameters(all_channels, parameters):
+        for channel in all_channels:
+            for parameter_id in channel.keys():
+                if parameter_id in parameters:
+                    parameters.remove(parameter_id)
