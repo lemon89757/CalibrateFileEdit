@@ -68,7 +68,7 @@ class FileRW:
     # 获取与参数ID对应参数名的文件信息
     @staticmethod
     def get_parameter_dict():
-        sheet_in_file = pd.read_excel(r'ParameterName_ID.xlsx', sheet_name='Sheet1', dtype={'属性ID': 'Int64'})
+        sheet_in_file = pd.read_excel(r'document\ParameterName_ID.xlsx', sheet_name='Sheet1', dtype={'属性ID': 'Int64'})
         sheet_in_file = sheet_in_file.dropna(axis=0, how='all')
         parameter_dict = dict()
         for index_ in sheet_in_file.index:
