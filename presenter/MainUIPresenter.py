@@ -15,9 +15,9 @@ class MainUIPresenter:
     def view(self, value):
         self._view = value
 
-    def load_channels(self, file_path):
+    def load_channels(self, file_path, repeat_read):
         self._editor.current_file_path = file_path
-        channels = self._editor.get_file_channels()
+        channels = self._editor.get_file_channels(repeat_read)
         self._editor.current_channels = channels
 
     def get_channels(self):

@@ -4,6 +4,7 @@ import copy
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from intervals import FloatInterval
+from intervals import RangeBoundsException
 from presenter.MainUIPresenter import MainUIPresenter
 from view.FactorsEditView import FactorsEditView
 from view.ParameterIntervalEditView import ParameterIntervalEditView
@@ -521,12 +522,26 @@ class MainUI:
                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                                                 Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         response = dialog.run()
+        repeat_read = False
         if response == Gtk.ResponseType.OK:
             try:
                 filename = dialog.get_filename()
-                self._presenter.load_channels(filename)
+                self._presenter.load_channels(filename, repeat_read)
                 self.init_all(filename)
                 dialog.destroy()
+            except RangeBoundsException:
+                range_bounds_exception_dialog = self.range_bounds_exception_dialog()
+                range_bounds_exception_dialog.show_all()
+                response = range_bounds_exception_dialog.run()
+                if response == Gtk.ResponseType.OK:
+                    range_bounds_exception_dialog.destroy()
+                    repeat_read = True
+                    self._presenter.load_channels(filename, repeat_read)
+                    self.init_all(filename)
+                    dialog.destroy()
+                elif response == Gtk.ResponseType.CANCEL:
+                    range_bounds_exception_dialog.destroy()
+                    dialog.destroy()
             except Exception as ex:
                 print(ex)
                 error_dialog = Gtk.MessageDialog(self.main_window, 0, Gtk.MessageType.ERROR,
@@ -537,6 +552,20 @@ class MainUI:
                 dialog.destroy()
         elif response == Gtk.ResponseType.CANCEL:
             dialog.destroy()
+
+    def range_bounds_exception_dialog(self):
+        dialog = Gtk.Dialog(parent=self.main_window)
+        dialog.set_title("错误区间提示")
+        dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        dialog.set_default_size(200, 100)
+
+        label_message = Gtk.Label(label="存在错误区间（上界小于下界）")
+        label_info = Gtk.Label(label="将错误区间上界上调至无穷，是否确定")
+        box = dialog.get_content_area()
+        box.add(label_message)
+        box.add(label_info)
+
+        return dialog
 
     def save(self, widget):
         title = self.main_window.get_title()

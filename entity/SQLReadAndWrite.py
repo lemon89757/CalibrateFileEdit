@@ -1,7 +1,7 @@
 import sqlite3
 import anytree
 import os
-from intervals import FloatInterval
+from intervals import FloatInterval, RangeBoundsException
 from entity.CalibrateFile import CalibrateParameterNode, CalibrateDependencyNode, CalibrateMsg
 
 
@@ -82,7 +82,7 @@ class SQLHandler:
             factors_list.append(factor[0])
         return factors_list
 
-    def create_leaf_nodes(self, leaf_nodes_msg, parameter_id):
+    def create_leaf_nodes(self, leaf_nodes_msg, parameter_id, repeat_read):
         leaf_nodes = {}
         for depend_id, msgs in leaf_nodes_msg.items():
             leaf_node = CalibrateParameterNode()
@@ -91,7 +91,13 @@ class SQLHandler:
                 section_id = msg[0]
                 upper_num = msg[1]
                 lower_num = msg[2]
-                interval = FloatInterval.closed(lower_num, upper_num)
+                if not repeat_read:
+                    interval = FloatInterval.closed(lower_num, upper_num)
+                else:
+                    try:
+                        interval = FloatInterval.closed(lower_num, upper_num)
+                    except RangeBoundsException:
+                        interval = FloatInterval.closed(lower_num, float('inf'))
                 factors = self.get_leaf_node_factors(section_id)
                 segment = [interval, factors]
                 segments.append(segment)
@@ -209,12 +215,12 @@ class SQLHandler:
             join_parameter_list.append(calc_dep_id)  # 暂时只考虑了参与校正参数只有一个的情况
             return join_parameter_list
 
-    def generate_calibrate_tree(self, root_node, parameter_id, channel_order):
+    def generate_calibrate_tree(self, root_node, parameter_id, channel_order, repeat_read):
         root_node.parameter_id = parameter_id
         leaf_node_interval_msg = self.get_leaf_node_interval_msg(parameter_id, channel_order)
         leaf_nodes_msg = self.get_the_same_parent_node_interval_msg(leaf_node_interval_msg, channel_order,
                                                                     parameter_id)
-        leaf_nodes = self.create_leaf_nodes(leaf_nodes_msg, parameter_id)
+        leaf_nodes = self.create_leaf_nodes(leaf_nodes_msg, parameter_id, repeat_read)
         depend_nodes = self.link_leaf_node(leaf_nodes)
         while True:
             next_depend_nodes = []
@@ -230,27 +236,27 @@ class SQLHandler:
                 break
             depend_nodes = next_depend_nodes
 
-    def generate_channel(self, channel_msg, channel_order):
+    def generate_channel(self, channel_msg, channel_order, repeat_read):
         channel = dict()
         for parameter_id, calibrate_msg in channel_msg.items():
             self._nodes = []
             root_node = CalibrateParameterNode()
             calibrate_msg.parameter_id = parameter_id
             calibrate_msg.calibrate_tree = root_node
-            self.generate_calibrate_tree(root_node, parameter_id, channel_order)
+            self.generate_calibrate_tree(root_node, parameter_id, channel_order, repeat_read)
             calibrate_msg.calibrate_model = self.get_calibrate_model(parameter_id)
             calibrate_msg.join_parameters_list = self.get_join_parameter_list(parameter_id)
             calibrate_msg.dependency_list = self.get_dependency_list(root_node)
             channel[parameter_id] = calibrate_msg
         return channel
 
-    def load_all_calibrate_msg_from_db(self):
+    def load_all_calibrate_msg_from_db(self, repeat_read):
         all_calibrate_msg = []
         parameters_msg = self.get_parameters_from_table()
         channels_parameters_value = self.get_channels_parameters_value(parameters_msg)
         channels = self.generate_channels_msg(channels_parameters_value)
         for channel_order, channel_msg in channels.items():
-            channel = self.generate_channel(channel_msg, channel_order)
+            channel = self.generate_channel(channel_msg, channel_order, repeat_read)
             all_calibrate_msg.append(channel)
         self._conn.close()
         return all_calibrate_msg

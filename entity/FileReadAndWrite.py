@@ -58,11 +58,11 @@ class FileRW:
         else:
             raise FileExistsError
 
-    def load_all_calibrate_msg_from_file(self):  # 未包含通道[]
+    def load_all_calibrate_msg_from_file(self, repeat_read):  # 未包含通道[]
         if self._load_file_suffix == '.db':
-            all_channel_msgs = self._sql_handler.load_all_calibrate_msg_from_db()
+            all_channel_msgs = self._sql_handler.load_all_calibrate_msg_from_db(repeat_read)
         else:
-            all_channel_msgs = self._json_bin_handler.load_all_calibrate_msg_from_file()
+            all_channel_msgs = self._json_bin_handler.load_all_calibrate_msg_from_file(repeat_read)
         return all_channel_msgs
 
     # 获取与参数ID对应参数名的文件信息

@@ -55,10 +55,10 @@ class CalibrateFileEdit:
         self._another_channels = value
 
     # 获取校正信息
-    def get_file_channels(self):
+    def get_file_channels(self, repeat_read):
         file_handler = FileRW()
         file_handler.get_calibrate_file(self._current_file_path)
-        channels = file_handler.load_all_calibrate_msg_from_file()
+        channels = file_handler.load_all_calibrate_msg_from_file(repeat_read)
         return channels
 
     def get_calibrate_model(self, parameter_id, channel_index):
@@ -282,7 +282,7 @@ class CalibrateFileEdit:
     def get_other_file_channels(self):
         file_handler = FileRW()
         file_handler.get_calibrate_file(self._another_file_path)
-        channels = file_handler.load_all_calibrate_msg_from_file()
+        channels = file_handler.load_all_calibrate_msg_from_file(False)
         return channels
 
     @staticmethod

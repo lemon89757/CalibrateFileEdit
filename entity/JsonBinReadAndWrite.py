@@ -1,7 +1,7 @@
 import msgpack
 import json
 import entity.CalibrateFile
-from intervals import FloatInterval
+from intervals import FloatInterval, RangeBoundsException
 
 
 class JsonBinHandler:
@@ -42,36 +42,36 @@ class JsonBinHandler:
             with open(file_path, 'wb') as file:
                 msgpack.dump(calibrate_file, file)
 
-    def load_all_calibrate_msg_from_file(self):
+    def load_all_calibrate_msg_from_file(self, repeat_read):
         channels = self._calibrate_file["channels"]
         all_channel_msgs = []
         for channel in channels:
             if len(channel) != 0:       # 未包含通道[]
                 channel_index = channels.index(channel)
-                channel_msgs = self.load_one_channel_calibrate_msgs_from_file(channel, channel_index)
+                channel_msgs = self.load_one_channel_calibrate_msgs_from_file(channel, channel_index, repeat_read)
                 all_channel_msgs.append(channel_msgs)
         return all_channel_msgs
 
-    def load_one_channel_calibrate_msgs_from_file(self, channel, channel_index):
+    def load_one_channel_calibrate_msgs_from_file(self, channel, channel_index, repeat_read):
         channel_msgs = {}
         for calibrate_msg in channel:
             parameter_id = calibrate_msg[0]
-            msg = self.load_calibrate_msg_from_file(channel_index, parameter_id)
+            msg = self.load_calibrate_msg_from_file(channel_index, parameter_id, repeat_read)
             channel_msgs[parameter_id] = msg
         return channel_msgs
 
-    def load_calibrate_msg_from_file(self, channel_index, parameter_id):
+    def load_calibrate_msg_from_file(self, channel_index, parameter_id, repeat_read):
         self._dependency_leaves = []
         self._parameter_nodes = []
         msg = entity.CalibrateFile.CalibrateMsg()
-        msg.calibrate_tree = self.get_calibrate_tree(channel_index, parameter_id)
+        msg.calibrate_tree = self.get_calibrate_tree(channel_index, parameter_id, repeat_read)
         msg.join_parameters_list = self.get_join_parameters_list()
         msg.parameter_id = parameter_id
         msg.dependency_list = self._current_calibrate_msg[2]
         msg.calibrate_model = self._current_calibrate_msg[3]
         return msg
 
-    def get_calibrate_tree(self, channel_index, parameter_id):
+    def get_calibrate_tree(self, channel_index, parameter_id, repeat_read):
         root_node = self.get_root_node(channel_index, parameter_id)
         parent_nodes = root_node.children
         while True:
@@ -81,7 +81,7 @@ class JsonBinHandler:
             except InterruptedError:
                 break
         self.link_parameter_nodes()
-        self.link_parameter_nodes_factors()
+        self.link_parameter_nodes_factors(repeat_read)
         return root_node
 
     def get_root_node(self, channel_index, parameter_id):
@@ -164,13 +164,19 @@ class JsonBinHandler:
             parameter_nodes.append(parameter_node)
         self._parameter_nodes += parameter_nodes
 
-    def link_parameter_nodes_factors(self):
+    def link_parameter_nodes_factors(self, repeat_read):
         all_factors = self._current_calibrate_msg[6]
         for node in self._parameter_nodes:
             for segment in node.parameter_segments:
                 left_num = segment[0][0]
                 right_num = segment[0][1]
-                interval = FloatInterval.closed(left_num, right_num)
+                if not repeat_read:
+                    interval = FloatInterval.closed(left_num, right_num)
+                else:
+                    try:
+                        interval = FloatInterval.closed(left_num, right_num)
+                    except RangeBoundsException:
+                        interval = FloatInterval.closed(left_num, float('inf'))
                 segment[0] = interval
                 transfer_num = segment[1]
                 factors = all_factors[transfer_num]
