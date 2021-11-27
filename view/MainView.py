@@ -529,8 +529,8 @@ class MainUI:
                 self._presenter.load_channels(filename, repeat_read)
                 self.init_all(filename)
                 dialog.destroy()
-            except RangeBoundsException:
-                range_bounds_exception_dialog = self.range_bounds_exception_dialog()
+            except RangeBoundsException as error:
+                range_bounds_exception_dialog = self.range_bounds_exception_dialog(error)
                 range_bounds_exception_dialog.show_all()
                 response = range_bounds_exception_dialog.run()
                 if response == Gtk.ResponseType.OK:
@@ -553,14 +553,14 @@ class MainUI:
         elif response == Gtk.ResponseType.CANCEL:
             dialog.destroy()
 
-    def range_bounds_exception_dialog(self):
+    def range_bounds_exception_dialog(self, error_message):
         dialog = Gtk.Dialog(parent=self.main_window)
         dialog.set_title("错误区间提示")
         dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK)
         dialog.set_default_size(200, 100)
 
-        label_message = Gtk.Label(label="存在错误区间（上界小于下界）")
-        label_info = Gtk.Label(label="将错误区间上界上调至无穷，是否确定")
+        label_message = Gtk.Label(label="存在错误区间：{}".format(error_message))
+        label_info = Gtk.Label(label="将错误区间上界上调至比下界大2，是否确定")
         box = dialog.get_content_area()
         box.add(label_message)
         box.add(label_info)

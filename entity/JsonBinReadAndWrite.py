@@ -176,7 +176,7 @@ class JsonBinHandler:
                     try:
                         interval = FloatInterval.closed(left_num, right_num)
                     except RangeBoundsException:
-                        interval = FloatInterval.closed(left_num, float('inf'))
+                        interval = FloatInterval.closed(left_num, left_num + 2)
                 segment[0] = interval
                 transfer_num = segment[1]
                 factors = all_factors[transfer_num]

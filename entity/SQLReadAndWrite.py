@@ -97,7 +97,7 @@ class SQLHandler:
                     try:
                         interval = FloatInterval.closed(lower_num, upper_num)
                     except RangeBoundsException:
-                        interval = FloatInterval.closed(lower_num, float('inf'))
+                        interval = FloatInterval.closed(lower_num, lower_num + 2)
                 factors = self.get_leaf_node_factors(section_id)
                 segment = [interval, factors]
                 segments.append(segment)
